@@ -1,0 +1,21 @@
+.model refactor_win
+.inputs a b c d e
+.outputs f
+.names a b ab
+11 1
+.names a c ac
+11 1
+.names a d ad
+11 1
+.names a e ae
+11 1
+.names ab ac t1
+1- 1
+-1 1
+.names t1 ad t2
+1- 1
+-1 1
+.names t2 ae f
+1- 1
+-1 1
+.end
