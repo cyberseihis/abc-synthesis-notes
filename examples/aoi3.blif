@@ -1,0 +1,16 @@
+.model aoi3
+.inputs a b c d
+.outputs f
+.names a b n5
+11 1
+.names a d n6
+11 1
+.names c d n7
+11 1
+.names n5 n6 n8
+1- 1
+-1 1
+.names n8 n7 f
+1- 1
+-1 1
+.end

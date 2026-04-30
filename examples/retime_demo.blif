@@ -1,0 +1,18 @@
+.model retime_demo
+.inputs a b c
+.outputs y
+.latch n1 r1 0
+.latch n2 r2 0
+.latch n3 r3 0
+.names a b n1
+11 1
+.names a c n2
+11 1
+.names b c n3
+11 1
+.names r1 r2 m1
+11 1
+.names m1 r3 y
+1- 1
+-1 1
+.end

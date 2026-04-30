@@ -1,0 +1,12 @@
+.model fraig_eq
+.inputs a b c
+.outputs f1 f2
+.names a b ab
+11 1
+.names ab c f1
+11 1
+.names b c bc
+11 1
+.names a bc f2
+11 1
+.end

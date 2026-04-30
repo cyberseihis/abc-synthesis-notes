@@ -1,0 +1,10 @@
+.model maj4
+.inputs a b c d
+.outputs f
+.names a b c d f
+1110 1
+1101 1
+1011 1
+0111 1
+1111 1
+.end

@@ -1,0 +1,11 @@
+.model seq
+.inputs a b c
+.outputs y
+.latch t1 r1 0
+.latch r1 r2 0
+.latch r2 r3 0
+.names a b t1
+11 1
+.names r3 c y
+11 1
+.end

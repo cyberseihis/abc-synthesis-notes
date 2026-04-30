@@ -1,0 +1,12 @@
+.model resub_win
+.inputs a b c d
+.outputs f g
+.names a b n5
+00 1
+.names n5 c n6
+10 1
+.names n5 n6 f
+00 1
+.names n5 d g
+11 1
+.end

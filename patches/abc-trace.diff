@@ -1,0 +1,131 @@
+diff --git a/src/base/abci/abcRefactor.c b/src/base/abci/abcRefactor.c
+index ee034c9..be083d0 100644
+--- a/src/base/abci/abcRefactor.c
++++ b/src/base/abci/abcRefactor.c
+@@ -152,7 +152,7 @@ int Abc_NodeConeIsConst1( word * pTruth, int nVars )
+ Dec_Graph_t * Abc_NodeRefactor( Abc_ManRef_t * p, Abc_Obj_t * pNode, Vec_Ptr_t * vFanins, int nMinSaved, int fUpdateLevel, int fUseZeros, int fUseDcs, int fVerbose )
+ {
+     extern int    Dec_GraphToNetworkCount( Abc_Obj_t * pRoot, Dec_Graph_t * pGraph, int NodeMax, int LevelMax );
+-    int fVeryVerbose = 0;
++    int fVeryVerbose = getenv("ABC_TRACE") ? 1 : 0;
+     int nVars = Vec_PtrSize(vFanins);
+     int nWordsMax = Abc_Truth6WordNum(p->nNodeSizeMax);
+     Dec_Graph_t * pFForm;
+diff --git a/src/base/abci/abcResub.c b/src/base/abci/abcResub.c
+index b7b8dbb..8d9a243 100644
+--- a/src/base/abci/abcResub.c
++++ b/src/base/abci/abcResub.c
+@@ -2004,11 +2004,16 @@ p->timeSim += Abc_Clock() - clk;
+     }
+ 
+ clk = Abc_Clock();
++    int abcTrace = getenv("ABC_TRACE") ? 1 : 0;
++    if ( abcTrace )
++        printf("[resub] node %s: leaves=%d mffc=%d divs=%d\n",
++               Abc_ObjName(pRoot), p->nLeaves, p->nMffc, p->nDivs);
+     // consider constants
+     if ( (pGraph = Abc_ManResubQuit( p )) )
+     {
+         p->nUsedNodeC++;
+         p->nLastGain = p->nMffc;
++        if ( abcTrace ) printf("[resub]   -> Const  gain=%d\n", p->nLastGain);
+         return pGraph;
+     }
+ 
+@@ -2018,11 +2023,13 @@ clk = Abc_Clock();
+ p->timeRes1 += Abc_Clock() - clk;
+         p->nUsedNode0++;
+         p->nLastGain = p->nMffc;
++        if ( abcTrace ) printf("[resub]   -> Divs0  gain=%d\n", p->nLastGain);
+         return pGraph;
+     }
+     if ( nSteps == 0 || p->nMffc == 1 )
+     {
+ p->timeRes1 += Abc_Clock() - clk;
++        if ( abcTrace ) printf("[resub]   -> reject (mffc<=1 or steps=0)\n");
+         return NULL;
+     }
+ 
+@@ -2037,11 +2044,15 @@ p->timeRes1 += Abc_Clock() - clk;
+     {
+ p->timeRes1 += Abc_Clock() - clk;
+         p->nLastGain = p->nMffc - 1;
++        if ( abcTrace ) printf("[resub]   -> Divs1  gain=%d\n", p->nLastGain);
+         return pGraph;
+     }
+ p->timeRes1 += Abc_Clock() - clk;
+     if ( nSteps == 1 || p->nMffc == 2 )
++    {
++        if ( abcTrace ) printf("[resub]   -> reject (mffc<=2 or steps=1)\n");
+         return NULL;
++    }
+ 
+ clk = Abc_Clock();
+     // consider triples
+@@ -2049,6 +2060,7 @@ clk = Abc_Clock();
+     {
+ p->timeRes2 += Abc_Clock() - clk;
+         p->nLastGain = p->nMffc - 2;
++        if ( abcTrace ) printf("[resub]   -> Divs12 gain=%d\n", p->nLastGain);
+         return pGraph;
+     }
+ p->timeRes2 += Abc_Clock() - clk;
+@@ -2064,11 +2076,15 @@ clk = Abc_Clock();
+     {
+ p->timeRes2 += Abc_Clock() - clk;
+         p->nLastGain = p->nMffc - 2;
++        if ( abcTrace ) printf("[resub]   -> Divs2  gain=%d\n", p->nLastGain);
+         return pGraph;
+     }
+ p->timeRes2 += Abc_Clock() - clk;
+     if ( nSteps == 2 || p->nMffc == 3 )
++    {
++        if ( abcTrace ) printf("[resub]   -> reject (mffc<=3 or steps=2)\n");
+         return NULL;
++    }
+ 
+     // consider two nodes
+ clk = Abc_Clock();
+@@ -2076,6 +2092,7 @@ clk = Abc_Clock();
+     {
+ p->timeRes3 += Abc_Clock() - clk;
+         p->nLastGain = p->nMffc - 3;
++        if ( abcTrace ) printf("[resub]   -> Divs3  gain=%d\n", p->nLastGain);
+         return pGraph;
+     }
+ p->timeRes3 += Abc_Clock() - clk;
+diff --git a/src/opt/rwr/rwrEva.c b/src/opt/rwr/rwrEva.c
+index 1856f7b..77ea233 100644
+--- a/src/opt/rwr/rwrEva.c
++++ b/src/opt/rwr/rwrEva.c
+@@ -58,7 +58,7 @@ static int Rwr_NodeGetDepth_rec( Abc_Obj_t * pObj, Vec_Ptr_t * vLeaves );
+ ***********************************************************************/
+ int Rwr_NodeRewrite( Rwr_Man_t * p, Cut_Man_t * pManCut, Abc_Obj_t * pNode, int fUpdateLevel, int fUseZeros, int fPlaceEnable )
+ {
+-    int fVeryVerbose = 0;
++    int fVeryVerbose = getenv("ABC_TRACE") ? 1 : 0;
+     Dec_Graph_t * pGraph;
+     Cut_Cut_t * pCut;//, * pTemp;
+     Abc_Obj_t * pFanin;
+@@ -227,6 +227,8 @@ p->timeRes += Abc_Clock() - clk;
+     // report the progress
+     if ( fVeryVerbose && GainBest > 0 )
+     {
++        Abc_Obj_t * pFan;
++        int j;
+         printf( "Node %6s :   ", Abc_ObjName(pNode) );
+         printf( "Fanins = %d. ", p->vFanins->nSize );
+         printf( "Save = %d.  ", nNodesSaveCur );
+@@ -234,7 +236,11 @@ p->timeRes += Abc_Clock() - clk;
+         printf( "GAIN = %d.  ", GainBest );
+         printf( "Cone = %d.  ", p->pGraph? Dec_GraphNodeNum((Dec_Graph_t *)p->pGraph) : 0 );
+         printf( "Class = %d.  ", p->pMap[uTruthBest] );
+-        printf( "\n" );
++        printf( "TT = 0x%04X.  ", uTruthBest & 0xFFFF );
++        printf( "Cut = {" );
++        Vec_PtrForEachEntry( Abc_Obj_t *, p->vFanins, pFan, j )
++            printf( " %s", Abc_ObjName(Abc_ObjRegular(pFan)) );
++        printf( " }\n" );
+     }
+     return GainBest;
+ }

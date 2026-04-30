@@ -1,0 +1,12 @@
+.model chain
+.inputs a b c d e
+.outputs f
+.names a b n1
+11 1
+.names n1 c n2
+11 1
+.names n2 d n3
+11 1
+.names n3 e f
+11 1
+.end
