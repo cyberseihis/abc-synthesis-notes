@@ -155,52 +155,204 @@ The cut is bounded by `nNodeSizeMax` leaves (default 10 for refactor,
 For our refactor example (`refactor_win.blif`, see §4), the cone at the
 top node grows to 5 leaves `{a, b, c, d, e}` — exactly the inputs.
 
-### §0.4  MFFC labeling — the boundary trick
+### §0.4  MFFC — the "private cone" of a node
 
-Source: `src/base/abci/abcMffc.c`, called as `Abc_NodeMffcLabelAig`.
+Source: `src/base/abc/abcRefs.c:Abc_NodeMffcLabelAig` (line 100) and
+its workhorse `Abc_NodeRefDeref` (line 126).
 
-The MFFC (Maximum Fanout-Free Cone) of `pNode` w.r.t. cut leaves
-`L = {l1, l2, …}` is the set of internal nodes that would be deleted if
-`pNode` were replaced. The trick:
+#### What an MFFC is
 
-1. **Increment** `vFanouts.nSize` of every leaf so each looks "external".
-2. Run a DFS deref+ref: a node belongs to the MFFC iff every fanout is
-   already marked.
-3. **Decrement** the leaves' `nSize` to restore.
+The **MFFC** (Maximum Fanout-Free Cone) of a node `pNode` is the set
+of internal AIG nodes whose only downstream consumer — directly or
+transitively — is `pNode` itself. They exist solely to feed `pNode`.
+If `pNode` were replaced or deleted, exactly these nodes would
+become unreachable; nodes outside the MFFC have at least one other
+consumer and have to stay alive.
 
-Walked on `f` of aoi3 with `L = {a,b,c,d}`:
+This is the quantity rewrite, refactor, and resub call `nNodesSaved`
+(or `p->nMffc`). It is the upper bound on what a replacement can
+"give back": replacing `pNode` deletes the MFFC, so a replacement
+that adds *fewer* than `|MFFC|` new nodes is profitable.
+
+When operators talk about the MFFC "with respect to cut leaves
+`L = {l_1, …}`", they mean: stop the cone at `L` rather than
+running back to PIs. The leaves are treated as already-existing
+inputs the replacement may freely re-use, so they are *never* in
+the MFFC even if their only fanout happens to be inside it.
+
+#### Why a fanout-based walk works
+
+Think of each AND's `Abc_ObjFanoutNum` as a reference count: how
+many other nodes currently point at it. Mentally remove `pNode`:
+
+1. Each fanin of `pNode` loses one reference.
+2. If a fanin's count thereby reaches **zero**, that fanin is no
+   longer consumed by anything → it joins the MFFC and the same
+   logic propagates to *its* fanins.
+3. A fanin whose count stays > 0 is still referenced by something
+   outside `pNode`'s cone; it is not in the MFFC, and the recursion
+   stops there.
+
+The set of nodes whose counts hit zero in this thought experiment is
+exactly the MFFC. Counting them gives the MFFC size.
+
+This is the same trick reference-counted garbage collectors use to
+decide which objects are dead.
+
+#### The actual algorithm
+
+`Abc_NodeMffcLabelAig` performs the deref-as-thought-experiment, then
+re-references everything to put the AIG back the way it was:
+
+```c
+nConeSize1 = Abc_NodeRefDeref(pNode, fReference=0, fLabel=1);  // deref
+nConeSize2 = Abc_NodeRefDeref(pNode, fReference=1, fLabel=0);  // re-ref
+assert(nConeSize1 == nConeSize2);
+return nConeSize1;
+```
+
+`Abc_NodeRefDeref(pNode, fReference, fLabel)` (line 126) is:
 
 ```
-fanouts before increment:
-  a: {n5, n6}        (2)
-  b: {n5}            (1)
-  c: {n7}            (1)
-  d: {n6, n7}        (2)
-  n5: {n8}           (1)
-  n6: {n8}           (1)
-  n7: {f}            (1)
-  n8: {f}            (1)
-  f:  {PO_f}         (1, the CO is the only fanout)
-
-after incrementing leaves:
-  a: 3, b: 2, c: 2, d: 3 (artificial)
-
-DFS from f, marking nodes with current TravId:
-  f   : 1 fanout (CO).        all marked → MFFC ← f
-  n7  : 1 fanout (f marked).  all marked → MFFC ← n7
-  n8  : 1 fanout (f marked).  all marked → MFFC ← n8
-  n5  : 1 fanout (n8 marked). all marked → MFFC ← n5
-  n6  : 1 fanout (n8 marked). all marked → MFFC ← n6
-  a,b,c,d : leaves, never enter MFFC
-
-MFFC(f) = {f, n8, n7, n5, n6}      |MFFC| = 5
+if pNode is a CI:    return 0          # PIs/latches never in MFFC
+count = 1
+if fLabel:           pNode.travid = current   # tag this node "in MFFC"
+for each fanin f of pNode:
+    if !fReference:  # deref pass
+        f.fanouts -= 1
+        if f.fanouts == 0:
+            count += recurse(f)
+    else:            # re-reference pass
+        if f.fanouts == 0:
+            count += recurse(f)        # mirror the deref recursion
+        f.fanouts += 1
+return count
 ```
 
-That's the MFFC w.r.t. the natural cut `{a,b,c,d}`. The rewrite engine
-in §3 is free to pick a different 4-cut; if it picks one that includes
-an internal AND as a leaf (like `{a, c, d, n5}`), the MFFC shrinks
-because the now-leaf node is protected. The trace's `Save = 4` reflects
-that — see §3.
+The two passes do exactly opposite things to fanout counters, so the
+AIG is left untouched on return. The `fLabel` flag is used only on
+the deref pass to stamp every MFFC member with the current
+`TravId`. Downstream code (most importantly `Dec_GraphToNetworkCount`,
+§0.7) checks `Abc_NodeIsTravIdCurrent(node)` in O(1) to ask "is this
+node in the MFFC?".
+
+#### The boundary trick — protecting cut leaves
+
+Without protection, the deref happily recurses through cut leaves and
+keeps walking up the DAG. That over-counts: it absorbs nodes the
+replacement is supposed to *re-use*, not delete.
+
+Rewrite/refactor/resub bracket the call with a `+1/–1` on every cut
+leaf's fanout count
+(`abcRewrite.c:138..148`, `abcRefactor.c:191..194`):
+
+```c
+foreach leaf in cut: leaf.fanouts += 1;     // pre-protect
+
+Abc_NodeMffcLabelAig(pNode);                // deref / ref / label
+
+foreach leaf in cut: leaf.fanouts -= 1;     // restore
+```
+
+The +1 means a leaf's count *cannot* fall to zero during the deref:
+even if every cone-internal fanout decrements it, the boost keeps it
+positive, so no recursion enters the leaf. After the second pass
+restores everything and we strip the boost, the AIG is byte-identical
+to before — only the TravId labels survive.
+
+#### Worked example: f-node of aoi3 with cut leaves {a, b, c, d}
+
+(Cone from §0.1: `n5 = a&b`, `n6 = a&d`, `n7 = c&d`,
+                 `n8 = n5 ∨ n6`, `f = n8 ∨ n7`.)
+
+**Step 1 — fanout counts before MFFC.** From the AIG:
+
+| Node | Fanouts (consumers) | count |
+| ---- | ------------------- | ----- |
+| a    | n5, n6              | 2     |
+| b    | n5                  | 1     |
+| c    | n7                  | 1     |
+| d    | n6, n7              | 2     |
+| n5   | n8                  | 1     |
+| n6   | n8                  | 1     |
+| n7   | f                   | 1     |
+| n8   | f                   | 1     |
+| f    | PO                  | 1     |
+
+**Step 2 — apply boundary boost on `{a, b, c, d}`.** Each leaf
+counter gets `+1`:
+
+| Node | count after boost |
+| ---- | ----------------- |
+| a    | 3   (= 2 + 1)     |
+| b    | 2   (= 1 + 1)     |
+| c    | 2                 |
+| d    | 3                 |
+
+Internal nodes are unchanged.
+
+**Step 3 — deref pass from `f`.** The recursion (and the running
+`count`) unfolds top-down:
+
+```
+deref(f):                     count = 1, label f
+  fanin n8.fanouts: 1 → 0     ⇒ recurse n8
+    deref(n8):                count = 2, label n8
+      fanin n5.fanouts: 1 → 0 ⇒ recurse n5
+        deref(n5):            count = 3, label n5
+          fanin a.fanouts: 3 → 2   (boundary boost held)
+          fanin b.fanouts: 2 → 1   (boundary boost held)
+      fanin n6.fanouts: 1 → 0 ⇒ recurse n6
+        deref(n6):            count = 4, label n6
+          fanin a.fanouts: 2 → 1
+          fanin d.fanouts: 3 → 2
+  fanin n7.fanouts: 1 → 0     ⇒ recurse n7
+    deref(n7):                count = 5, label n7
+      fanin c.fanouts: 2 → 1
+      fanin d.fanouts: 2 → 1
+```
+
+`return count = 5`. **MFFC = {f, n8, n5, n6, n7}**, all five marked
+with the current TravId.
+
+Notice each leaf's counter was decremented multiple times but never
+reached zero — that's the boundary trick in action. Without the +1
+boost, `b.fanouts` would have gone 1 → 0 inside `deref(n5)` and the
+recursion would have walked into `b` (a CI) — harmless here because
+CIs return 0, but for a leaf that *is* an internal AND (e.g. when
+the cut contains `n5` itself) the lack of protection would absorb
+the whole cone above the leaf and over-report the MFFC.
+
+**Step 4 — re-reference pass.** Same recursion path; each fanin
+counter is incremented back to its original value. `count` again
+sums to 5; the assert in `Abc_NodeMffcLabelAig` confirms consistency.
+
+**Step 5 — strip the boundary boost.** Subtract 1 from each leaf;
+the AIG is now identical to its state before the call, except every
+node in `{f, n8, n5, n6, n7}` has its TravId equal to the current
+network TravId.
+
+#### What downstream code does with `nNodesSaved = 5`
+
+* **Rewrite / refactor / resub** use it as the gain ceiling.
+  `Gain = nNodesSaved − nNodesAdded`; the move is accepted iff
+  `Gain > 0` (or `≥ 0` with `-z`).
+* **`Dec_GraphToNetworkCount`** (§0.7) treats any strash-table hit
+  whose node is in the MFFC (TravId match) as "doesn't actually
+  reuse" — because that node will be deleted with the MFFC.
+* **Resub's Divs ladder** caps replacement complexity at
+  `nMffc - 1`, `nMffc - 2`, … because anything that needs more
+  ANDs than the MFFC has cannot pay back.
+
+#### Why §3's trace shows `Save = 4`, not 5
+
+Rewrite is free to pick *any* 4-cut, not necessarily `{a,b,c,d}`.
+The chosen cut for `f` in our trace is `{a, c, d, new_n6}` — i.e. it
+treats the internal AND `new_n6 = a & b` as a leaf. With `new_n6`
+boundary-boosted, the deref of `f` no longer recurses into `new_n6`
+and the MFFC shrinks to `{f, n8, n6_other, n7} = 4` nodes. Different
+cut → different MFFC → different `nNodesSaved`. See §3 for the full
+trace.
 
 ### §0.5  Truth-table simulation on machine words
 
