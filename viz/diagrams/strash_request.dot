@@ -1,30 +1,49 @@
-// Aux SVG for strash: shows the AND request currently being processed.
-// Per-step text replacement updates aux-in0 / aux-in1 / aux-verdict labels.
+// Aux SVG for strash: the "naive un-strashed" build of the 5 AND requests,
+// drawn as 5 separate AND nodes (r1..r5) with their as-requested fanins.
+// At each walkthrough step, one r-node is highlighted as the current
+// request; the main view shows what it strashes to (or eliminates).
+//
+//   r1 = a · b           → strashes to main n1 (CREATE)
+//   r2 = a · c           → strashes to main n2 (CREATE)
+//   r3 = a · b           → strashes to main n1 (HIT — dedup of r1)
+//   r4 = r1 · ¬r1        → folds to const0 (FOLD — never reaches the table)
+//   r5 = r1 · r2         → strashes to main n3 (CREATE)
 digraph strash_request {
     rankdir = TB
+    ranksep = 0.5
+    nodesep = 0.3
     bgcolor = "transparent"
-    label = "Hash-table query"
+    label = "Naive build (5 separate ANDs, no strash)"
     labelloc = "t"
     fontname = "monospace"
-    fontsize = 14
-    nodesep = 0.4
-    ranksep = 0.55
+    fontsize = 12
 
-    node [fontname = "monospace", fontsize = 14, color = "#333333"]
-    edge [color = "#888888", penwidth = 1.4, style = dashed]
+    node [fontname = "monospace", fontsize = 12, color = "#333333"]
+    edge [color = "#888888", penwidth = 1.2]
 
     { rank = source
-      in0 [id="aux-in0", label="?", shape=circle, width=0.6, fixedsize=true, style=filled, fillcolor="#e0eaff", color="#1a4d80", penwidth=2]
-      in1 [id="aux-in1", label="?", shape=circle, width=0.6, fixedsize=true, style=filled, fillcolor="#e0eaff", color="#1a4d80", penwidth=2]
+      a [id="aux-a", label="a", shape=plaintext, fontsize=14, fontcolor="#1a4d80"]
+      b [id="aux-b", label="b", shape=plaintext, fontsize=14, fontcolor="#1a4d80"]
+      c [id="aux-c", label="c", shape=plaintext, fontsize=14, fontcolor="#1a4d80"]
     }
 
-    candidate [id="aux-candidate", label="AND?", shape=circle, width=0.75, fixedsize=true, style="filled,dashed", fillcolor="#fff6e6", color="#b08040", penwidth=2]
+    r1 [id="aux-r1", label="r1\na·b",   shape=circle, width=0.7, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
+    r2 [id="aux-r2", label="r2\na·c",   shape=circle, width=0.7, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
+    r3 [id="aux-r3", label="r3\na·b",   shape=circle, width=0.7, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
+    r4 [id="aux-r4", label="r4\nr1·¬r1", shape=circle, width=0.75, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
+    r5 [id="aux-r5", label="r5\nr1·r2", shape=circle, width=0.7, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
 
-    { rank = sink
-      verdict [id="aux-verdict", label="(awaiting request)", shape=plaintext, fontsize=13, fontcolor="#666666"]
-    }
+    { rank = same; r1; r2; r3; }
+    { rank = same; r4; r5; }
 
-    in0 -> candidate [id="aux-edge-in0"]
-    in1 -> candidate [id="aux-edge-in1"]
-    candidate -> verdict [id="aux-edge-result"]
+    a -> r1 [id="aux-edge-a-r1"]
+    b -> r1 [id="aux-edge-b-r1"]
+    a -> r2 [id="aux-edge-a-r2"]
+    c -> r2 [id="aux-edge-c-r2"]
+    a -> r3 [id="aux-edge-a-r3"]
+    b -> r3 [id="aux-edge-b-r3"]
+    r1 -> r4 [id="aux-edge-r1-r4"]
+    r1 -> r4 [id="aux-edge-r1n-r4", style=dashed]
+    r1 -> r5 [id="aux-edge-r1-r5"]
+    r2 -> r5 [id="aux-edge-r2-r5"]
 }

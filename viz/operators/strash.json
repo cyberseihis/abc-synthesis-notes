@@ -5,9 +5,14 @@
   "title": "strash — structural hashing of the AIG",
   "steps": [
     {
-      "title": "Empty AIG; we'll replay 5 AND-insertion requests",
-      "narrative": "<code>strash</code> processes incoming AND requests in order. The aux panel on the right shows the <strong>current request</strong> &mdash; the (child0, child1) pair being looked up. The strash table starts empty; constants and PIs (a, b, c) exist. For each request, <code>Abc_AigAnd</code> calls <code>Abc_AigAndLookup</code> first.",
+      "title": "5 AND requests; aux shows the un-strashed plan",
+      "narrative": "<code>strash</code> processes incoming AND requests in order. The <strong>aux panel</strong> on the right shows the <em>naive</em> build — what the AIG would look like if every <code>Abc_AigAnd(...)</code> created a fresh node. <strong>5 ANDs requested → 5 ANDs in the aux.</strong><br><br>The <strong>main panel</strong> on the left shows what really happens: <code>Abc_AigAndLookup</code> deduplicates and folds, so only 3 ANDs survive. We'll walk the 5 requests one at a time and watch what each one maps to.",
       "highlights": {
+        "aux-r1": ["dimmed"],
+        "aux-r2": ["dimmed"],
+        "aux-r3": ["dimmed"],
+        "aux-r4": ["dimmed"],
+        "aux-r5": ["dimmed"],
         "node-n1": ["hidden"],
         "node-n2": ["hidden"],
         "node-n3": ["hidden"],
@@ -21,6 +26,18 @@
         "edge-n3-PO": ["hidden"]
       },
       "panes": [
+        {
+          "type": "table",
+          "title": "Request → strash result",
+          "header": ["#", "request", "outcome", "main-AIG node"],
+          "rows": [
+            ["r1", "a · b",   "(pending)", "&mdash;"],
+            ["r2", "a · c",   "(pending)", "&mdash;"],
+            ["r3", "a · b",   "(pending)", "&mdash;"],
+            ["r4", "r1 · ¬r1", "(pending)", "&mdash;"],
+            ["r5", "r1 · r2", "(pending)", "&mdash;"]
+          ]
+        },
         {
           "type": "table",
           "title": "Strash hash table",
@@ -40,20 +57,17 @@
       ]
     },
     {
-      "title": "Request 1: AND(a, b) — miss → create n1",
-      "narrative": "<code>Abc_AigAndLookup(a, b)</code> orders args by id (a &lt; b), hashes <code>Key1 = HashKey2(a,b)</code>. The bin is empty — miss. <code>Abc_AigAndCreate</code> allocates n1 with fanin0=a, fanin1=b. The strash table records the binding.",
-      "textReplace": {
-        "aux-in0": "a",
-        "aux-in1": "b",
-        "aux-candidate": "n1",
-        "aux-verdict": "miss → CREATE"
-      },
+      "title": "Request r1 = a · b — miss → CREATE main n1",
+      "narrative": "<code>Abc_AigAndLookup(a, b)</code> orders args by id (a &lt; b), hashes <code>Key1 = HashKey2(a,b)</code>. Bin empty → miss. <code>Abc_AigAndCreate</code> allocates the first main-AIG AND, <strong>n1</strong>. Aux <strong>r1</strong> is the current request (yellow); main <strong>n1</strong> is what it became (green pulse).",
       "highlights": {
-        "aux-candidate": ["verdict-miss"],
-        "aux-verdict":   ["verdict-text", "verdict-miss"],
+        "aux-r1": ["considering"],
+        "aux-edge-a-r1": ["active"],
+        "aux-edge-b-r1": ["active"],
+        "aux-r2": ["dimmed"],
+        "aux-r3": ["dimmed"],
+        "aux-r4": ["dimmed"],
+        "aux-r5": ["dimmed"],
         "node-n1": ["fresh"],
-        "edge-a-n1": [],
-        "edge-b-n1": [],
         "node-n2": ["hidden"],
         "node-n3": ["hidden"],
         "node-PO": ["hidden"],
@@ -64,6 +78,18 @@
         "edge-n3-PO": ["hidden"]
       },
       "panes": [
+        {
+          "type": "table",
+          "title": "Request → strash result",
+          "header": ["#", "request", "outcome", "main-AIG node"],
+          "rows": [
+            [{"_cells": ["r1", "a · b",   "<span style='color:#2a8b46;font-weight:700'>CREATE</span>", "<strong>n1</strong>"], "_cls": "changed"}],
+            ["r2", "a · c",   "(pending)", "&mdash;"],
+            ["r3", "a · b",   "(pending)", "&mdash;"],
+            ["r4", "r1 · ¬r1", "(pending)", "&mdash;"],
+            ["r5", "r1 · r2", "(pending)", "&mdash;"]
+          ]
+        },
         {
           "type": "table",
           "title": "Strash hash table",
@@ -85,20 +111,17 @@
       ]
     },
     {
-      "title": "Request 2: AND(a, c) — miss → create n2",
-      "narrative": "Different key (<code>Key2 = HashKey2(a,c)</code>); empty bin → miss → create n2.",
-      "textReplace": {
-        "aux-in0": "a",
-        "aux-in1": "c",
-        "aux-candidate": "n2",
-        "aux-verdict": "miss → CREATE"
-      },
+      "title": "Request r2 = a · c — miss → CREATE main n2",
+      "narrative": "Different key (<code>Key2 = HashKey2(a,c)</code>); empty bin → miss → create <strong>n2</strong>. Aux r1 is now resolved (green); aux r2 is the current request.",
       "highlights": {
-        "aux-candidate": ["verdict-miss"],
-        "aux-verdict":   ["verdict-text", "verdict-miss"],
+        "aux-r1": ["verdict-miss"],
+        "aux-r2": ["considering"],
+        "aux-edge-a-r2": ["active"],
+        "aux-edge-c-r2": ["active"],
+        "aux-r3": ["dimmed"],
+        "aux-r4": ["dimmed"],
+        "aux-r5": ["dimmed"],
         "node-n2": ["fresh"],
-        "edge-a-n2": [],
-        "edge-c-n2": [],
         "node-n3": ["hidden"],
         "node-PO": ["hidden"],
         "edge-n1-n3": ["hidden"],
@@ -106,6 +129,18 @@
         "edge-n3-PO": ["hidden"]
       },
       "panes": [
+        {
+          "type": "table",
+          "title": "Request → strash result",
+          "header": ["#", "request", "outcome", "main-AIG node"],
+          "rows": [
+            ["r1", "a · b",   "<span style='color:#2a8b46;font-weight:700'>CREATE</span>", "n1"],
+            [{"_cells": ["r2", "a · c", "<span style='color:#2a8b46;font-weight:700'>CREATE</span>", "<strong>n2</strong>"], "_cls": "changed"}],
+            ["r3", "a · b",   "(pending)", "&mdash;"],
+            ["r4", "r1 · ¬r1", "(pending)", "&mdash;"],
+            ["r5", "r1 · r2", "(pending)", "&mdash;"]
+          ]
+        },
         {
           "type": "table",
           "title": "Strash hash table",
@@ -128,18 +163,17 @@
       ]
     },
     {
-      "title": "Request 3: AND(a, b) AGAIN — HIT, return n1",
-      "narrative": "Key1 hits. <code>Abc_AigBinForEachEntry</code> walks the chain; the entry's (child0, child1) matches (a, b) exactly → return <strong>n1</strong>. No new node. The aux panel highlights this is a HIT — the candidate dissolves and the request is redirected to the existing n1.",
-      "textReplace": {
-        "aux-in0": "a",
-        "aux-in1": "b",
-        "aux-candidate": "→ n1",
-        "aux-verdict": "HIT → return n1"
-      },
+      "title": "Request r3 = a · b AGAIN — HIT, return existing n1",
+      "narrative": "Same key as r1. <code>Abc_AigBinForEachEntry</code> walks the chain; the entry's <code>(child0, child1)</code> matches <code>(a, b)</code> → return <strong>n1</strong>. <strong>r3 maps to the same main-AIG node as r1</strong> — the structural hash dedupes them. The aux <code>r3</code> is the request; the main <code>n1</code> lights up as its target (blue).",
       "highlights": {
-        "aux-candidate": ["verdict-hit"],
-        "aux-verdict":   ["verdict-text", "verdict-hit"],
-        "node-n1": ["considering"],
+        "aux-r1": ["verdict-miss"],
+        "aux-r2": ["verdict-miss"],
+        "aux-r3": ["considering"],
+        "aux-edge-a-r3": ["active"],
+        "aux-edge-b-r3": ["active"],
+        "aux-r4": ["dimmed"],
+        "aux-r5": ["dimmed"],
+        "node-n1": ["verdict-hit"],
         "node-n3": ["hidden"],
         "node-PO": ["hidden"],
         "edge-n1-n3": ["hidden"],
@@ -147,6 +181,18 @@
         "edge-n3-PO": ["hidden"]
       },
       "panes": [
+        {
+          "type": "table",
+          "title": "Request → strash result",
+          "header": ["#", "request", "outcome", "main-AIG node"],
+          "rows": [
+            ["r1", "a · b",   "<span style='color:#2a8b46;font-weight:700'>CREATE</span>", "n1"],
+            ["r2", "a · c",   "<span style='color:#2a8b46;font-weight:700'>CREATE</span>", "n2"],
+            [{"_cells": ["r3", "a · b", "<span style='color:#1a4d80;font-weight:700'>HIT</span>", "<strong>n1</strong> (reused)"], "_cls": "changed"}],
+            ["r4", "r1 · ¬r1", "(pending)", "&mdash;"],
+            ["r5", "r1 · r2", "(pending)", "&mdash;"]
+          ]
+        },
         {
           "type": "table",
           "title": "Strash hash table (unchanged)",
@@ -169,18 +215,16 @@
       ]
     },
     {
-      "title": "Request 4: AND(n1, ~n1) — trivial-law fold to const0",
-      "narrative": "<code>Abc_AigAndLookup(n1, ~n1)</code> spots the case <code>p == ~q</code> at <code>abcAig.c:413..414</code> and returns <code>~const1 = const0</code> directly — never even reaching the hash table. The other folds at <code>abcAig.c:411..426</code>: <code>p == q → p</code>, <code>p == const1 → q</code>, <code>p == ~const1 → 0</code>.",
-      "textReplace": {
-        "aux-in0": "n1",
-        "aux-in1": "~n1",
-        "aux-candidate": "→ 0",
-        "aux-verdict": "FOLD → const0"
-      },
+      "title": "Request r4 = r1 · ¬r1 — trivial-law FOLD to const0",
+      "narrative": "<code>Abc_AigAndLookup(r1, ¬r1)</code> spots the case <code>p == ~q</code> at <code>abcAig.c:413..414</code> and returns <code>const0</code> directly — never even reaching the hash table. <strong>r4 maps to nothing in the main AIG</strong> — the fold absorbs it. Other folds at <code>abcAig.c:411..426</code>: <code>p == q → p</code>, <code>p == const1 → q</code>, <code>p == ~const1 → 0</code>.",
       "highlights": {
-        "aux-candidate": ["verdict-fold"],
-        "aux-verdict":   ["verdict-text", "verdict-fold"],
-        "node-n1": ["considering"],
+        "aux-r1": ["verdict-miss"],
+        "aux-r2": ["verdict-miss"],
+        "aux-r3": ["verdict-hit"],
+        "aux-r4": ["considering", "verdict-fold"],
+        "aux-edge-r1-r4": ["active"],
+        "aux-edge-r1n-r4": ["active"],
+        "aux-r5": ["dimmed"],
         "node-n3": ["hidden"],
         "node-PO": ["hidden"],
         "edge-n1-n3": ["hidden"],
@@ -189,12 +233,24 @@
       },
       "panes": [
         {
+          "type": "table",
+          "title": "Request → strash result",
+          "header": ["#", "request", "outcome", "main-AIG node"],
+          "rows": [
+            ["r1", "a · b",   "<span style='color:#2a8b46;font-weight:700'>CREATE</span>", "n1"],
+            ["r2", "a · c",   "<span style='color:#2a8b46;font-weight:700'>CREATE</span>", "n2"],
+            ["r3", "a · b",   "<span style='color:#1a4d80;font-weight:700'>HIT</span>", "n1 (reused)"],
+            [{"_cells": ["r4", "r1 · ¬r1", "<span style='color:#b04040;font-weight:700'>FOLD</span>", "<strong>const0</strong>"], "_cls": "changed"}],
+            ["r5", "r1 · r2", "(pending)", "&mdash;"]
+          ]
+        },
+        {
           "type": "kv",
           "title": "Trivial-law check",
           "entries": {
-            "Inputs": "(n1, ~n1)",
+            "Inputs": "(r1, ¬r1) — same node, opposite polarity",
             "Match":  "<code>p == ~q</code>",
-            "Result": "<span class=\"counter-zeroed\">const0</span>"
+            "Result": "<span class=\"counter-zeroed\">const0</span> — never hits the table"
           }
         },
         {
@@ -219,17 +275,16 @@
       ]
     },
     {
-      "title": "Request 5: AND(n1, n2) — miss → create n3",
-      "narrative": "Key3 = <code>HashKey2(n1, n2)</code>. Empty bin → miss → allocate n3. The AIG now has 3 ANDs total — exactly the number that <em>survives</em> the 5 requests after dedup and constant-folding. <strong>5 requests, 3 nodes.</strong>",
-      "textReplace": {
-        "aux-in0": "n1",
-        "aux-in1": "n2",
-        "aux-candidate": "n3",
-        "aux-verdict": "miss → CREATE"
-      },
+      "title": "Request r5 = r1 · r2 — miss → CREATE main n3",
+      "narrative": "<code>Key3 = HashKey2(r1, r2)</code>. Empty bin → miss → allocate <strong>n3</strong>. <strong>5 requests, 3 surviving main-AIG nodes.</strong> The mapping is now complete:",
       "highlights": {
-        "aux-candidate": ["verdict-miss"],
-        "aux-verdict":   ["verdict-text", "verdict-miss"],
+        "aux-r1": ["verdict-miss"],
+        "aux-r2": ["verdict-miss"],
+        "aux-r3": ["verdict-hit"],
+        "aux-r4": ["verdict-fold"],
+        "aux-r5": ["considering"],
+        "aux-edge-r1-r5": ["active"],
+        "aux-edge-r2-r5": ["active"],
         "node-n3": ["fresh"],
         "edge-n1-n3": [],
         "edge-n2-n3": [],
@@ -238,12 +293,24 @@
       "panes": [
         {
           "type": "table",
+          "title": "Request → strash result (final)",
+          "header": ["#", "request", "outcome", "main-AIG node"],
+          "rows": [
+            ["r1", "a · b",   "<span style='color:#2a8b46;font-weight:700'>CREATE</span>", "n1"],
+            ["r2", "a · c",   "<span style='color:#2a8b46;font-weight:700'>CREATE</span>", "n2"],
+            ["r3", "a · b",   "<span style='color:#1a4d80;font-weight:700'>HIT</span>", "n1 (reused)"],
+            ["r4", "r1 · ¬r1", "<span style='color:#b04040;font-weight:700'>FOLD</span>", "const0"],
+            [{"_cells": ["r5", "r1 · r2", "<span style='color:#2a8b46;font-weight:700'>CREATE</span>", "<strong>n3</strong>"], "_cls": "changed"}]
+          ]
+        },
+        {
+          "type": "table",
           "title": "Strash hash table (final)",
           "header": ["key", "child0", "child1", "node"],
           "rows": [
             ["Key1", "a", "b", "n1"],
             ["Key2", "a", "c", "n2"],
-            [{"_cells": ["Key3", "n1", "n2", "<strong>n3</strong>"], "_cls": "changed"}]
+            [{"_cells": ["Key3", "r1", "r2", "<strong>n3</strong>"], "_cls": "changed"}]
           ]
         },
         {
@@ -258,7 +325,7 @@
         },
         {
           "type": "text",
-          "body": "Without strash, the AIG would hold 5 ANDs (one per request); strash collapsed it to 3. Every later operator (rewrite/refactor/resub) relies on <code>Abc_AigAndLookup</code> the same way — for &quot;is this AND already here?&quot; queries when scoring potential replacements (§Dec_Graph)."
+          "body": "Without strash, the AIG would hold 5 ANDs (the aux). Strash collapsed it to 3 (the main): r1, r3 share n1; r4 disappears; r2, r5 are unique. Every later operator (rewrite/refactor/resub) relies on <code>Abc_AigAndLookup</code> the same way — for &quot;is this AND already here?&quot; queries when scoring potential replacements (§Dec_Graph)."
         }
       ]
     }
