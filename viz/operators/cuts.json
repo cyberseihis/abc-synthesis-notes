@@ -154,15 +154,36 @@
       ]
     },
     {
-      "title": "Step 6: containment filter",
-      "narrative": "<code>Cut_NodeFilter</code> drops any cut C2 that is a (proper) superset of another cut C1 still in the set: anything covered by C1 is also covered by C2, but C1 has fewer leaves so it's strictly better. This is the same idea as redundant-implicant removal in SOP minimization.",
+      "title": "Step 6: containment filter (no-op on this circuit)",
+      "narrative": "<code>Cut_NodeFilter</code> drops any cut C2 that is a (proper) superset of another cut C1 still in the set: anything covered by C1 is also covered by C2, but C1 has fewer leaves so it's strictly better. Same idea as redundant-implicant removal in SOP minimization.<br><br>For aoi3, none of f's surviving cuts contains another — the trivial <code>{f}</code> shares no element with the others, and the size-2 <code>{n8,n9}</code> isn't a subset of any larger cut (no other cut contains both n8 and n9). So <strong>no drop fires here</strong>. On bigger circuits with shared internal nodes the filter routinely halves the cut set.",
       "highlights": {
         "node-f":  ["considering"]
       },
       "panes": [
         {
           "type": "table",
-          "title": "Final cut set at f (after filter, K=4)",
+          "title": "Containment check (none fire)",
+          "header": ["check", "result"],
+          "rows": [
+            ["{f} ⊂ {n8,n9}?",          "no — f ∉ {n8,n9}"],
+            ["{n8,n9} ⊂ {n8,c,d}?",     "no — n9 ∉"],
+            ["{n8,n9} ⊂ {n6,n7,n9}?",   "no — n8 ∉"],
+            ["{n6,n7,n9} ⊂ {n6,n7,c,d}?","no — n9 ∉"],
+            ["…",                        "all checks fail"]
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Step 7: optionally drop the worst cuts (nCutsMax cap)",
+      "narrative": "Each cut manager has a per-node cap, <code>nCutsMax</code> (default 8 for rewrite's manager; varies elsewhere). With 10 cuts and a cap of 8, ABC drops the 2 cuts that score worst by some priority (typically size + leaf-fanout heuristic). On aoi3 with cap = 8 we'd lose 2 of the size-4 cuts.<br><br>For this walkthrough we'll keep all 10 to show the full set. Note that not every operator uses the same cap: refactor's cut manager uses much larger limits since it computes its own single recon-cut anyway.",
+      "highlights": {
+        "node-f":  ["considering"]
+      },
+      "panes": [
+        {
+          "type": "table",
+          "title": "Final cut set at f (K=4, no nCutsMax cap applied here)",
           "header": ["cut", "size"],
           "rows": [
             ["{f}",                "1"],
@@ -179,7 +200,7 @@
         },
         {
           "type": "text",
-          "body": "These are the 10 cuts that <code>rewrite</code>, <code>refactor</code>, and the FPGA <code>if</code> mapper see at f. Operators that need 4-leaf cuts (rewrite) iterate the 4-leaf rows; the LUT mapper picks the cut that minimizes its current cost objective (delay / area-flow / exact area)."
+          "body": "These are the 10 cuts <code>rewrite</code>, <code>refactor</code>, and the FPGA <code>if</code> mapper see at f. Operators that need 4-leaf cuts (rewrite) iterate the 4-leaf rows; the LUT mapper picks the cut minimizing its current cost objective (delay / area-flow / exact area)."
         }
       ]
     }

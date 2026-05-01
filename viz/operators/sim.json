@@ -23,30 +23,34 @@
     },
     {
       "title": "Exhaustive 4-input enumeration with one word",
-      "narrative": "If the cut has 4 inputs, 32 patterns is enough to evaluate <em>every</em> input combination twice. ABC seeds the four input columns with these constants — convince yourself that bit i has (x0=bit0, x1=bit1, x2=bit2, x3=bit3) of the integer i mod 16 (and the upper 16 patterns repeat).",
+      "narrative": "For a 4-input cut, 32 patterns is enough to evaluate <em>every</em> input combination twice (16 patterns × 2). ABC seeds the four input columns with these standard constants. Read each row left-to-right as <strong>MSB-first hex</strong> (bit 31 is leftmost, bit 0 is rightmost). <strong>Bit i</strong> of the column corresponds to <strong>input pattern i</strong>: x_k = bit k of i, for k = 0..3. The upper 16 patterns repeat the lower 16.",
       "highlights": {
         "node-cut": ["considering"]
       },
       "panes": [
         {
           "type": "bitvec",
-          "title": "sim(x0) = 0xAAAAAAAA",
+          "title": "sim(x0) = 0xAAAAAAAA — bit i = (i mod 2)",
           "bits": "10101010101010101010101010101010"
         },
         {
           "type": "bitvec",
-          "title": "sim(x1) = 0xCCCCCCCC",
+          "title": "sim(x1) = 0xCCCCCCCC — bit i = ((i &gt;&gt; 1) mod 2)",
           "bits": "11001100110011001100110011001100"
         },
         {
           "type": "bitvec",
-          "title": "sim(x2) = 0xF0F0F0F0",
+          "title": "sim(x2) = 0xF0F0F0F0 — bit i = ((i &gt;&gt; 2) mod 2)",
           "bits": "11110000111100001111000011110000"
         },
         {
           "type": "bitvec",
-          "title": "sim(x3) = 0xFF00FF00",
+          "title": "sim(x3) = 0xFF00FF00 — bit i = ((i &gt;&gt; 3) mod 2)",
           "bits": "11111111000000001111111100000000"
+        },
+        {
+          "type": "text",
+          "body": "Quick check: <strong>bit 0</strong> (rightmost) = pattern 0 (all inputs = 0). All four columns end with '0' — correct. <strong>Bit 3</strong> (4th from right in each row) = pattern 3 = (x0=1, x1=1, x2=0, x3=0). Confirms x0=1, x1=1, x2=0, x3=0."
         }
       ]
     },

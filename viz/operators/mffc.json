@@ -83,8 +83,62 @@
       ]
     },
     {
-      "title": "Deref n8 (1 → 0) → recurse, then n5 (1 → 0), n6 (1 → 0)",
-      "narrative": "f.fanin0 = n8 hits 0 → recurse. Inside <code>deref(n8)</code>, both its fanins (n6 and n7) hit 0 in turn. Each becomes a new MFFC member. Each of <em>their</em> fanins is a cut leaf — boundary-boosted, so they decrement (3→2 etc.) but stay positive: no recursion past the cut.",
+      "title": "Deref n8 (1 → 0) → recurse",
+      "narrative": "f.fanin0 = n8. Decrement n8.fanouts: 1 → 0. Zero ⇒ recurse into n8.",
+      "highlights": {
+        "node-a": ["fanout-protected"],
+        "node-b": ["fanout-protected"],
+        "node-c": ["fanout-protected"],
+        "node-d": ["fanout-protected"],
+        "node-f":  ["in-mffc"],
+        "node-n8": ["in-mffc"],
+        "edge-n8-f": ["in-mffc"]
+      },
+      "panes": [
+        {
+          "type": "kv",
+          "title": "Deref state",
+          "entries": {
+            "count": "<span class=\"counter-bumped\">2</span>",
+            "MFFC": "{ f, n8 }",
+            "n8.fanouts": "<span class=\"counter-zeroed\">1 → 0</span>"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Inside deref(n8): fanin n6 → 0, recurse; n6's fanins are leaves",
+      "narrative": "n8.fanin0 = n6 → fanout 1 → 0 → recurse. Inside <code>deref(n6)</code>: n6's fanins are <code>a</code> and <code>b</code>, both cut leaves. Decrement their boosted counts (3→2 for a, 2→1 for b); both still &gt; 0 → no recursion past the cut.",
+      "highlights": {
+        "node-a": ["fanout-protected"],
+        "node-b": ["fanout-protected"],
+        "node-c": ["fanout-protected"],
+        "node-d": ["fanout-protected"],
+        "node-f":  ["in-mffc"],
+        "node-n8": ["in-mffc"],
+        "node-n6": ["in-mffc"],
+        "edge-n8-f":  ["in-mffc"],
+        "edge-n6-n8": ["in-mffc"],
+        "edge-a-n6":  ["active"],
+        "edge-b-n6":  ["active"]
+      },
+      "panes": [
+        {
+          "type": "kv",
+          "title": "Deref state",
+          "entries": {
+            "count":      "<span class=\"counter-bumped\">3</span>",
+            "MFFC":       "{ f, n8, n6 }",
+            "n6.fanouts": "<span class=\"counter-zeroed\">1 → 0</span>",
+            "a.fanouts":  "<span class=\"boost\">3 → 2</span>",
+            "b.fanouts":  "<span class=\"boost\">2 → 1</span>"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Back to deref(n8): fanin n7 → 0, recurse; n7's fanins are leaves",
+      "narrative": "n8.fanin1 = n7 → fanout 1 → 0 → recurse. n7's fanins are <code>a</code> and <code>d</code>, both cut leaves. Decrement (a: 2→1; d: 3→2); still &gt; 0.",
       "highlights": {
         "node-a": ["fanout-protected"],
         "node-b": ["fanout-protected"],
@@ -94,37 +148,29 @@
         "node-n8": ["in-mffc"],
         "node-n6": ["in-mffc"],
         "node-n7": ["in-mffc"],
-        "edge-n8-f": ["in-mffc"],
+        "edge-n8-f":  ["in-mffc"],
         "edge-n6-n8": ["in-mffc"],
-        "edge-n7-n8": ["in-mffc"]
+        "edge-n7-n8": ["in-mffc"],
+        "edge-a-n7":  ["active"],
+        "edge-d-n7":  ["active"]
       },
       "panes": [
         {
           "type": "kv",
           "title": "Deref state",
           "entries": {
-            "count": "<span class=\"counter-bumped\">4</span>",
-            "MFFC": "{ f, n8, n6, n7 }",
-            "n8.fanouts": "<span class=\"counter-zeroed\">1 → 0</span>",
-            "n6.fanouts": "<span class=\"counter-zeroed\">1 → 0</span>",
-            "n7.fanouts": "<span class=\"counter-zeroed\">1 → 0</span>"
+            "count":      "<span class=\"counter-bumped\">4</span>",
+            "MFFC":       "{ f, n8, n6, n7 }",
+            "n7.fanouts": "<span class=\"counter-zeroed\">1 → 0</span>",
+            "a.fanouts":  "<span class=\"boost\">2 → 1</span>",
+            "d.fanouts":  "<span class=\"boost\">3 → 2</span>"
           }
-        },
-        {
-          "type": "table",
-          "title": "Cut-leaf decrements (still positive — no recurse)",
-          "header": ["leaf", "before", "after"],
-          "rows": [
-            ["a (via n6, n7)", "3", "<span class=\"boost\">1</span>"],
-            ["b (via n6)",     "2", "<span class=\"boost\">1</span>"],
-            ["d (via n7)",     "3", "<span class=\"boost\">2</span>"]
-          ]
         }
       ]
     },
     {
-      "title": "Deref n9 (1 → 0) → recurse, count = 5",
-      "narrative": "Back at f, fanin1 = n9 hits 0 → recurse. n9's fanins (c, d) are cut leaves, decrement-but-no-recurse.",
+      "title": "Back to deref(f): fanin n9 → 0, recurse; n9's fanins are leaves",
+      "narrative": "f.fanin1 = n9 → fanout 1 → 0 → recurse. n9's fanins are <code>c</code>, <code>d</code> (cut leaves). Decrement; still &gt; 0.",
       "highlights": {
         "node-a": ["fanout-protected"],
         "node-b": ["fanout-protected"],
@@ -135,18 +181,20 @@
         "node-n6": ["in-mffc"],
         "node-n7": ["in-mffc"],
         "node-n9": ["in-mffc"],
-        "edge-n8-f": ["in-mffc"],
-        "edge-n9-f": ["in-mffc"],
+        "edge-n8-f":  ["in-mffc"],
+        "edge-n9-f":  ["in-mffc"],
         "edge-n6-n8": ["in-mffc"],
-        "edge-n7-n8": ["in-mffc"]
+        "edge-n7-n8": ["in-mffc"],
+        "edge-c-n9":  ["active"],
+        "edge-d-n9":  ["active"]
       },
       "panes": [
         {
           "type": "kv",
           "title": "Deref state",
           "entries": {
-            "count": "<span class=\"counter-bumped\">5</span>",
-            "MFFC": "{ f, n8, n6, n7, n9 }",
+            "count":      "<span class=\"counter-bumped\">5</span>",
+            "MFFC":       "{ f, n8, n6, n7, n9 }",
             "n9.fanouts": "<span class=\"counter-zeroed\">1 → 0</span>",
             "c.fanouts":  "<span class=\"boost\">2 → 1</span>",
             "d.fanouts":  "<span class=\"boost\">2 → 1</span>"

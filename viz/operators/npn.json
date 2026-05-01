@@ -5,7 +5,7 @@
   "steps": [
     {
       "title": "What ABC precomputes once at startup",
-      "narrative": "<code>Extra_Truth4VarNPN</code> (in <code>extraUtilMisc.c:643</code>) builds four parallel arrays indexed by 16-bit truth tables (65,536 entries each). For every 4-input function it records its NPN class index and the canonicalizing permutation+phase. The library is built once when <code>Dec_ManStart</code> runs (called by rewrite, refactor, etc.).",
+      "narrative": "<code>Extra_Truth4VarNPN</code> (in <code>extraUtilMisc.c:643</code>) builds four parallel arrays indexed by 16-bit truth tables (65,536 entries each). For every 4-input function it records which NPN class it lies in, and the canonicalizing permutation+phase that brings it to the class's representative TT. The table is built once when <code>Dec_ManStart</code> runs (called by rewrite, refactor, etc.).",
       "highlights": {},
       "panes": [
         {
@@ -27,7 +27,7 @@
     },
     {
       "title": "How the table is built (sketch)",
-      "narrative": "For each truth table u in [1, 32768) not yet assigned a class:<ol><li>Allocate a new class index.</li><li>For each of the 16 input-phase masks i and 24 permutations k:<ul><li>Compute <code>uPerm = perm(polarize(u, i), k)</code>.</li><li>Mark uPerm and its complement as members of this class.</li></ul></li></ol>This explores all 32 &times; 24 = 768 NPN-equivalent forms. Note: NPN's &quot;N&quot; counts both input and output negation; the inner loop also processes <code>~u</code>.",
+      "narrative": "For each truth table u in [1, 32768) not yet assigned a class:<ol><li>Allocate a new class index.</li><li>For each of the 16 input-phase masks i and 24 permutations k:<ul><li>Compute <code>uPerm = perm(polarize(u, i), k)</code>.</li><li>Mark <em>uPerm</em> and its complement as members of this class.</li></ul></li></ol>Each class's orbit is at most 16 × 24 × 2 = 768 NPN-equivalent forms.",
       "highlights": {
         "node-cut": ["considering"]
       },
@@ -39,80 +39,117 @@
             "Total functions": "65,536",
             "NPN classes":     "222",
             "Avg orbit":       "≈ 295",
-            "Max orbit":       "768 (24 perms × 32 phase combos)"
+            "Max orbit":       "768"
           }
         }
       ]
     },
     {
-      "title": "Lookup example: aoi3's f-function",
-      "narrative": "Take the natural cut <code>{a, b, c, d}</code> at f. The function is <code>f = ab + ad + cd</code>. Its 16-bit truth table u, written MSB-first by input combination (d,c,b,a):",
+      "title": "Concrete example: u = 0x001F",
+      "narrative": "From the §3 rewrite trace, the cut chosen at f had truth <code>0x001F</code> (i.e. f = 1 only when input pattern is 0,1,2,3, or 4). Bit i of the truth table is f's value for input pattern i, where pattern bit k = x_k.",
       "highlights": {
         "node-cut": ["considering"]
       },
       "panes": [
         {
           "type": "tt-grid",
-          "title": "u = 0xFA88",
-          "label": "MSB ← bit index 15 .. 0 → LSB",
-          "tt": "0001000110101111",
+          "title": "u = 0x001F",
+          "label": "patterns 0..15 — green = 1, gray = 0",
+          "tt": "0000000000011111",
           "order": "msb-first"
         },
         {
           "type": "table",
           "title": "Verify by enumeration",
-          "header": ["d c b a", "ab+ad+cd"],
+          "header": ["pattern", "x3 x2 x1 x0", "bit"],
           "rows": [
-            ["0 0 0 0", "0"], ["0 0 0 1", "0"], ["0 0 1 0", "0"], ["0 0 1 1", "1"],
-            ["0 1 0 0", "0"], ["0 1 0 1", "0"], ["0 1 1 0", "0"], ["0 1 1 1", "1"],
-            ["1 0 0 0", "0"], ["1 0 0 1", "1"], ["1 0 1 0", "0"], ["1 0 1 1", "1"],
-            ["1 1 0 0", "1"], ["1 1 0 1", "1"], ["1 1 1 0", "1"], ["1 1 1 1", "1"]
+            [" 0", "0 0 0 0", "<span style='color:#2a8b46;font-weight:700'>1</span>"],
+            [" 1", "0 0 0 1", "<span style='color:#2a8b46;font-weight:700'>1</span>"],
+            [" 2", "0 0 1 0", "<span style='color:#2a8b46;font-weight:700'>1</span>"],
+            [" 3", "0 0 1 1", "<span style='color:#2a8b46;font-weight:700'>1</span>"],
+            [" 4", "0 1 0 0", "<span style='color:#2a8b46;font-weight:700'>1</span>"],
+            [" 5", "0 1 0 1", "0"],
+            ["…",  "…",       "0"],
+            ["15", "1 1 1 1", "0"]
           ]
         }
       ]
     },
     {
-      "title": "Three array reads → class + canonical form",
-      "narrative": "rewrite reads <code>pMap[0xFA88]</code>, <code>pPhases[0xFA88]</code>, <code>pPerms[0xFA88]</code>. The phase mask says which inputs to invert (and whether to invert the output); the perm index selects one of 24 reorderings of (x0,x1,x2,x3). Apply both to the cut's fanins to bring them into canonical order — then the cut's truth table matches the class's canonical representative bit-for-bit.",
+      "title": "Lookup result for u = 0x001F",
+      "narrative": "Read the four arrays at index 0x001F. The values shown here were verified by running <code>print_npn 001F</code> against a built ABC. Note <code>puCanons[0x001F] = 0x001F</code> &mdash; this TT is itself the canonical representative of its class. So pPhases and pPerms encode the identity transformation.",
       "highlights": {
         "node-cut": ["considering"]
       },
       "panes": [
         {
           "type": "kv",
-          "title": "Lookup result for u = 0xFA88",
+          "title": "Lookup result",
           "entries": {
-            "pMap[u]":      "<strong>X (a class index in 0..221)</strong>",
-            "pPhases[u]":   "5-bit value; low 4 bits = input inverters, bit 4 = output negation",
-            "pPerms[u]":    "0..23 — index into Extra_Permutations(4)",
-            "puCanons[u]":  "the canonical TT for this class"
+            "pMap[0x001F]":      "<strong>12</strong>  (matches §3 rewrite trace's <code>Class = 12</code>)",
+            "puCanons[0x001F]":  "<strong>0x001F</strong>  (this TT is its own canonical)",
+            "pPhases[0x001F]":   "<strong>0</strong>  (no inverters, no output negation)",
+            "pPerms[0x001F]":    "<strong>0</strong>  (identity permutation: x0→x0, x1→x1, …)"
           }
         },
         {
-          "type": "text",
-          "body": "(Exact values depend on the build's tie-breaking; rewrite's trace prints the resulting canonical TT and class index as <code>TT</code> and <code>Class</code>.)"
+          "type": "kv",
+          "title": "Class 12 orbit",
+          "entries": {
+            "Distinct TTs": "<strong>384</strong>  (i.e. 384 different 16-bit truth tables sit in class 12)",
+            "Frequency":    "2  (each TT is reached twice across the 768 perm × phase × output combinations)"
+          }
         }
       ]
     },
     {
-      "title": "Why rewrite uses this",
-      "narrative": "The library's per-class subgraph list (<code>p-&gt;vClasses[k]</code>) stores AIG implementations <em>in canonical-form coordinate space</em>. To re-use a stored subgraph for our cut, we must:<ol><li>permute fanins by <code>pPerms[u]</code>,</li><li>complement them by the low 4 bits of <code>pPhases[u]</code>,</li><li>and complement the output by bit 4 of <code>pPhases[u]</code>.</li></ol>That maps any of the 768 NPN-equivalent 4-input cuts to the same precomputed implementations.",
+      "title": "A nearby orbit member: u = 0x010F",
+      "narrative": "<code>print_npn 0x001F</code> enumerates orbit members. Row 1 of the verbose dump shows: <strong>perm = 2 3 1 0</strong>, phase = 0 → F = 0x010F. So if rewrite encountered a cut with TT 0x010F, it would still want to use class 12's library subgraphs &mdash; but first apply this perm to its 4 fanins.",
+      "highlights": {
+        "node-cut": ["considering"]
+      },
+      "panes": [
+        {
+          "type": "kv",
+          "title": "If a cut has u = 0x010F",
+          "entries": {
+            "pMap[0x010F]":     "<strong>12</strong>  (same class as 0x001F)",
+            "puCanons[0x010F]": "<strong>0x001F</strong>  (canonical of the class)",
+            "pPhases[0x010F]":  "0  (no inversions)",
+            "pPerms[0x010F]":   "non-zero  (encodes the permutation 2 3 1 0)"
+          }
+        },
+        {
+          "type": "table",
+          "title": "What rewrite does with this",
+          "header": ["step", "action"],
+          "rows": [
+            ["1", "look up <code>pMap[0x010F]</code> → 12"],
+            ["2", "fetch the precomputed subgraph list <code>p->vClasses[12]</code>"],
+            ["3", "permute fanins by <code>p->pPerms4[ pPerms[0x010F] ]</code>"],
+            ["4", "complement fanins by low 4 bits of <code>pPhases[0x010F]</code>"],
+            ["5", "if pPhases bit 4 set, complement the output"],
+            ["6", "evaluate each candidate subgraph in this canonical-coordinate frame"],
+            ["7", "after picking, apply the inverse to wire the new subgraph back into the AIG"]
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Storage savings",
+      "narrative": "Storing per-truth-table subgraphs would need 65,536 × N entries. Storing them per <em>NPN class</em> needs 222 × N — a ~300× compression — at the cost of a few cheap permute/complement operations per use. The same trick is used by <code>map</code> (supergate library) and exact-synthesis caches.",
       "highlights": {
         "node-cut": ["considering"]
       },
       "panes": [
         {
           "type": "table",
-          "title": "Storage savings",
-          "header": ["scheme", "stored subgraphs"],
+          "title": "Storage",
+          "header": ["scheme", "entries"],
           "rows": [
-            ["one per truth table",  "65,536 × N"],
-            ["one per NPN class",    "222 × N (~ 300× smaller)"]
+            ["per truth table", "65,536 × N"],
+            ["per NPN class",   "222 × N"]
           ]
-        },
-        {
-          "type": "text",
-          "body": "Same trick is used by <code>map</code> (supergate library) and by exact-synthesis caches."
         }
       ]
     }
