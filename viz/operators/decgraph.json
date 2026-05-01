@@ -1,0 +1,202 @@
+{
+  "operator": "decgraph",
+  "circuit": "aoi3",
+  "title": "Dec_GraphToNetworkCount: counting reuse vs. add",
+  "steps": [
+    {
+      "title": "What this function answers",
+      "narrative": "Given a candidate replacement <code>pGraph</code> (an algebraic DAG over cut leaves) and a current root <code>pRoot</code>, return <strong>how many AIG ANDs would actually be added</strong> if we materialized the graph — taking strash-table reuse into account. This is the number every &quot;is the move profitable?&quot; check sits on top of: gain = MFFC size − count.",
+      "highlights": {
+        "node-f": ["in-mffc"]
+      },
+      "panes": [
+        {
+          "type": "kv",
+          "title": "Source",
+          "entries": {
+            "File": "<code>decAbc.c:167</code>",
+            "Used by": "rewrite, refactor, resub (every commit-or-skip decision)"
+          }
+        },
+        {
+          "type": "text",
+          "title": "Two pre-call setups",
+          "body": "(1) Cut leaves' <code>pFunc</code> fields are pre-set to the current AIG nodes that will play those roles in the materialized graph. (2) The MFFC of <code>pRoot</code> is already labeled with the current TravId (§0.4)."
+        }
+      ]
+    },
+    {
+      "title": "Setup: assume rewrite chose cut {a, c, d, n6}",
+      "narrative": "From §3, rewrite picked the cut <code>{a, c, d, n6}</code> at f and labeled MFFC = <code>{f, n8, n7, n9}</code> with the current TravId. The candidate Dec_Graph has 3 internal ANDs over the 4 leaves.",
+      "highlights": {
+        "node-a":  ["cut-leaf"],
+        "node-c":  ["cut-leaf"],
+        "node-d":  ["cut-leaf"],
+        "node-n6": ["cut-leaf"],
+        "node-f":  ["in-mffc"],
+        "node-n8": ["in-mffc"],
+        "node-n7": ["in-mffc"],
+        "node-n9": ["in-mffc"]
+      },
+      "panes": [
+        {
+          "type": "text",
+          "title": "Candidate Dec_Graph_t (illustrative)",
+          "body": "Three internal nodes m1, m2, m3 over leaves {a, c, d, n6}.<br>m1 = a · d &nbsp;&nbsp;&nbsp;&nbsp;(reuses leaf a, d)<br>m2 = c · d &nbsp;&nbsp;&nbsp;&nbsp;(reuses leaf c, d)<br>m3 = NOR(m1, m2, n6) &mdash; written in AIG as m3 = (~m1)·(~m2)·(~n6) wired into one AND-tree<br>The graph's root is m3 with negation, implementing <code>n6 + (a·d) + (c·d) = ab + ad + cd</code>."
+        }
+      ]
+    },
+    {
+      "title": "Iterate Dec_Graph nodes in order",
+      "narrative": "<code>Dec_GraphForEachNode</code> walks each internal Dec_Graph node. For each:<ol><li>Look up its two child positions in the AIG via <code>Abc_AigAndLookup(child0, child1)</code>.</li><li>If the lookup hits AND the hit is NOT in the MFFC: <strong>reuse</strong> (no count).</li><li>If lookup misses, OR hits but the result is in the MFFC: <strong>add</strong> (count += 1).</li><li>Compute level. If level &gt; LevelMax, return -1 (reject).</li></ol>",
+      "highlights": {
+        "node-a":  ["cut-leaf"],
+        "node-c":  ["cut-leaf"],
+        "node-d":  ["cut-leaf"],
+        "node-n6": ["cut-leaf"],
+        "node-f":  ["in-mffc"],
+        "node-n8": ["in-mffc"],
+        "node-n7": ["in-mffc"],
+        "node-n9": ["in-mffc"]
+      },
+      "panes": [
+        {
+          "type": "kv",
+          "title": "Initial state",
+          "entries": {
+            "count":      "0",
+            "NodeMax":    "MFFC size = 4",
+            "LevelMax":   "Required level at f"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Visit m1 = a · d → strash hits n7, but n7 ∈ MFFC → count",
+      "narrative": "<code>Abc_AigAndLookup(a, d)</code> finds the existing AND <code>n7</code>. But <code>n7</code> has the current TravId (we labeled it during MFFC). It will be deleted along with the rest of the MFFC, so the lookup hit is illusory. Treat as add. count = 1.",
+      "highlights": {
+        "node-a":  ["cut-leaf"],
+        "node-c":  ["cut-leaf"],
+        "node-d":  ["cut-leaf"],
+        "node-n6": ["cut-leaf"],
+        "node-n7": ["considering", "in-mffc"],
+        "node-f":  ["in-mffc"],
+        "node-n8": ["in-mffc"],
+        "node-n9": ["in-mffc"]
+      },
+      "panes": [
+        {
+          "type": "kv",
+          "title": "Lookup",
+          "entries": {
+            "Abc_AigAndLookup(a, d)": "&rarr; n7 (exists)",
+            "Abc_NodeIsTravIdCurrent(n7)": "<span class=\"counter-zeroed\">true (in MFFC)</span>",
+            "Decision":               "<strong>add</strong>",
+            "count":                  "<span class=\"counter-bumped\">1</span>"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Visit m2 = c · d → hits n9, also in MFFC → count",
+      "narrative": "Same outcome: <code>n9</code> exists but is MFFC-tagged. count = 2.",
+      "highlights": {
+        "node-a":  ["cut-leaf"],
+        "node-c":  ["cut-leaf"],
+        "node-d":  ["cut-leaf"],
+        "node-n6": ["cut-leaf"],
+        "node-n7": ["in-mffc"],
+        "node-n9": ["considering", "in-mffc"],
+        "node-f":  ["in-mffc"],
+        "node-n8": ["in-mffc"]
+      },
+      "panes": [
+        {
+          "type": "kv",
+          "title": "Lookup",
+          "entries": {
+            "Abc_AigAndLookup(c, d)": "&rarr; n9 (exists, in MFFC)",
+            "Decision":               "<strong>add</strong>",
+            "count":                  "<span class=\"counter-bumped\">2</span>"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Visit m3 = root → no existing AND with these children → count",
+      "narrative": "<code>m3</code> combines m1, m2, and n6 in a way that doesn't structurally match any existing AND in the strash. <code>Abc_AigAndLookup</code> misses → add. count = 3.<br><br>(In ABC's actual library, m3 is built as a small AND-tree of two binary ANDs internally — the &quot;Cone = 3&quot; in the rewrite trace counts those binary ANDs.)",
+      "highlights": {
+        "node-a":  ["cut-leaf"],
+        "node-c":  ["cut-leaf"],
+        "node-d":  ["cut-leaf"],
+        "node-n6": ["cut-leaf"],
+        "node-f":  ["in-mffc"],
+        "node-n7": ["in-mffc"],
+        "node-n8": ["in-mffc"],
+        "node-n9": ["in-mffc"]
+      },
+      "panes": [
+        {
+          "type": "kv",
+          "title": "Lookup",
+          "entries": {
+            "Strash for m3's children": "miss",
+            "Decision":                 "<strong>add</strong>",
+            "count":                    "<span class=\"counter-bumped\">3</span>"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Return: nNodesAdded = 3 → gain = 4 − 3 = 1",
+      "narrative": "Final answer: 3 ANDs would be added if rewrite materializes this candidate. Combined with MFFC = 4, gain = 1 → accept (under default <code>fUseZeros=0</code>).",
+      "highlights": {
+        "node-a":  ["cut-leaf"],
+        "node-c":  ["cut-leaf"],
+        "node-d":  ["cut-leaf"],
+        "node-n6": ["cut-leaf"],
+        "node-f":  ["in-mffc"],
+        "node-n7": ["in-mffc"],
+        "node-n8": ["in-mffc"],
+        "node-n9": ["in-mffc"]
+      },
+      "panes": [
+        {
+          "type": "kv",
+          "title": "Result",
+          "entries": {
+            "nNodesAdded": "<strong>3</strong>",
+            "MFFC size":   "4",
+            "Gain":        "<strong>1</strong>",
+            "Verdict":     "accept"
+          }
+        },
+        {
+          "type": "text",
+          "title": "When this function returns -1",
+          "body": "Two cases: (a) the running count exceeds <code>NodeMax</code> = MFFC size — bail out early (the move can't be profitable). (b) The new top-level node would equal <code>pRoot</code> structurally (a self-loop, <code>decAbc.c:196..197</code>) — also bail. Both are short-circuits; not all candidates need full evaluation."
+        }
+      ]
+    },
+    {
+      "title": "Why MFFC tagging matters",
+      "narrative": "Without the TravId check, rewrite would happily &quot;reuse&quot; n7 and n9 from the existing strash table, claim count = 1, gain = 3, and commit. But after committing, n7 and n9 — being inside the original MFFC — get deallocated by reference counting, leaving dangling pointers in the new graph. The TravId check at <code>decAbc.c:202</code> is the safety belt: it forces the count to reflect what will actually exist post-commit.",
+      "highlights": {
+        "node-a":  ["cut-leaf"],
+        "node-c":  ["cut-leaf"],
+        "node-d":  ["cut-leaf"],
+        "node-n6": ["cut-leaf"],
+        "node-f":  ["in-mffc"],
+        "node-n7": ["in-mffc"],
+        "node-n8": ["in-mffc"],
+        "node-n9": ["in-mffc"]
+      },
+      "panes": [
+        {
+          "type": "text",
+          "body": "Same logic governs refactor (<code>abcRefactor.c:207</code>) and the various candidate-scoring sites in resub. All three operators commit only if <code>Dec_GraphToNetworkCount</code>'s return strictly beats their <code>nMinSaved</code> threshold."
+        }
+      ]
+    }
+  ]
+}

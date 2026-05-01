@@ -1,0 +1,159 @@
+{
+  "operator": "reconv",
+  "circuit": "aoi3",
+  "title": "Reconvergence-driven cut (used by refactor / resub)",
+  "steps": [
+    {
+      "title": "Different problem from K-cuts",
+      "narrative": "Refactor and resub want a <em>single</em>, larger cut at each node — not the full k-feasible cut <em>set</em> the rewrite/mapper enumerate. Their cut is grown <strong>greedily outward</strong> from <code>pNode</code>, picking at each step the leaf whose expansion best preserves &quot;reconvergence&quot; — i.e., paths that re-merge inside the cone.<br><br>Reconvergent leaves are good targets because expanding them tends to keep the cone size bounded (multiple paths merge back rather than fanning out wildly).",
+      "highlights": {
+        "node-f": ["considering"]
+      },
+      "panes": [
+        {
+          "type": "kv",
+          "title": "Source",
+          "entries": {
+            "Function": "<code>Abc_NodeFindCut</code>",
+            "File":     "<code>abcReconv.c:abcReconv.c</code>",
+            "Bounds":   "<code>nNodeSizeMax</code> leaves (default 10), <code>nConeSizeMax</code> internal nodes (16 / 100k)"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Initial leaf set: just the fanins of pNode",
+      "narrative": "Start with <code>L = {fanin0(f), fanin1(f)} = {n8, n9}</code>. The cone is the single node f. Each leaf gets a <em>cost</em>: for fanout-1 nodes the cost prefers expansion (cheap, no new sharing); for higher-fanout leaves expansion would push them out of the cone.",
+      "highlights": {
+        "node-f":  ["considering"],
+        "node-n8": ["cut-leaf"],
+        "node-n9": ["cut-leaf"]
+      },
+      "panes": [
+        {
+          "type": "kv",
+          "title": "State",
+          "entries": {
+            "Cone":  "{ f }",
+            "Leaves L": "{ n8, n9 }",
+            "|L| = 2": "≤ nNodeSizeMax = 10 → can grow"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Iter 1: expand n8 (cheapest leaf)",
+      "narrative": "<code>n8</code> has fanout 1 (only f uses it) → cheap to absorb. Pop n8 from L, push its two fanins. New leaves: <code>{n6, n7, n9}</code>. Cone gains n8.",
+      "highlights": {
+        "node-f":  ["in-mffc"],
+        "node-n8": ["in-mffc"],
+        "edge-n8-f": ["in-mffc"],
+        "node-n6": ["cut-leaf"],
+        "node-n7": ["cut-leaf"],
+        "node-n9": ["cut-leaf"]
+      },
+      "panes": [
+        {
+          "type": "kv",
+          "title": "State",
+          "entries": {
+            "Cone":     "{ f, n8 }",
+            "Leaves L": "{ n6, n7, n9 }",
+            "|L| = 3":  "still under cap"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Iter 2: expand n9 (also fanout 1)",
+      "narrative": "n9 fans out only to f → cheap to absorb. Pop n9, push its fanins {c, d}. New leaves: <code>{n6, n7, c, d}</code>. d was already a fanin of n7 — it doesn't appear twice; it's a set.",
+      "highlights": {
+        "node-f":  ["in-mffc"],
+        "node-n8": ["in-mffc"],
+        "node-n9": ["in-mffc"],
+        "edge-n8-f": ["in-mffc"],
+        "edge-n9-f": ["in-mffc"],
+        "node-n6": ["cut-leaf"],
+        "node-n7": ["cut-leaf"],
+        "node-c":  ["cut-leaf"],
+        "node-d":  ["cut-leaf"]
+      },
+      "panes": [
+        {
+          "type": "kv",
+          "title": "State",
+          "entries": {
+            "Cone":     "{ f, n8, n9 }",
+            "Leaves L": "{ n6, n7, c, d }",
+            "|L| = 4":  "still under cap"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Iter 3+: shall we expand more?",
+      "narrative": "Both remaining fanout-1 leaves (n6, n7) could be absorbed cheaply. Expanding n6 = a∧b would push <code>{a, b}</code> into L; expanding n7 = a∧d would push <code>{a, d}</code>. Note that expanding either creates the leaf <code>a</code> — and since a is also produced by the other expansion, the leaves <em>reconverge</em>. That is exactly the situation the cost function rewards: expanding both keeps |L| small (a is shared, not duplicated).",
+      "highlights": {
+        "node-f":  ["in-mffc"],
+        "node-n8": ["in-mffc"],
+        "node-n9": ["in-mffc"],
+        "node-n6": ["in-mffc"],
+        "node-n7": ["in-mffc"],
+        "edge-n8-f":  ["in-mffc"],
+        "edge-n9-f":  ["in-mffc"],
+        "edge-n6-n8": ["in-mffc"],
+        "edge-n7-n8": ["in-mffc"],
+        "node-a":  ["cut-leaf"],
+        "node-b":  ["cut-leaf"],
+        "node-c":  ["cut-leaf"],
+        "node-d":  ["cut-leaf"]
+      },
+      "panes": [
+        {
+          "type": "kv",
+          "title": "State",
+          "entries": {
+            "Cone":     "{ f, n8, n9, n6, n7 } &mdash; the whole f-cone",
+            "Leaves L": "{ a, b, c, d }",
+            "|L| = 4":  "still under cap"
+          }
+        },
+        {
+          "type": "text",
+          "title": "Why stop here?",
+          "body": "All remaining leaves are PIs. PIs cannot be expanded (no fanins). The procedure terminates."
+        }
+      ]
+    },
+    {
+      "title": "Result for refactor / resub",
+      "narrative": "The single returned cut is <code>L = {a, b, c, d}</code> with cone <code>{f, n8, n9, n6, n7}</code> — 4 leaves, 5 internal nodes. Refactor will compute the truth table over L; resub will use the cone's internal nodes as a divisor pool. The leaf-and-cone bounds (<code>nNodeSizeMax</code>, <code>nConeSizeMax</code>) protect against pathological growth on bigger circuits.",
+      "highlights": {
+        "node-f":  ["in-mffc"],
+        "node-n8": ["in-mffc"],
+        "node-n9": ["in-mffc"],
+        "node-n6": ["in-mffc"],
+        "node-n7": ["in-mffc"],
+        "node-a":  ["cut-leaf"],
+        "node-b":  ["cut-leaf"],
+        "node-c":  ["cut-leaf"],
+        "node-d":  ["cut-leaf"]
+      },
+      "panes": [
+        {
+          "type": "kv",
+          "title": "Output",
+          "entries": {
+            "Leaves":   "{ a, b, c, d }",
+            "Cone":     "{ f, n8, n9, n6, n7 }",
+            "Stop reason": "all leaves are PIs"
+          }
+        },
+        {
+          "type": "text",
+          "body": "<strong>Larger circuits.</strong> On real designs the bound <code>|L| ≤ 10</code> stops growth long before reaching PIs; the cost function biases toward leaves whose expansion <em>shrinks or preserves</em> |L| via reconvergence."
+        }
+      ]
+    }
+  ]
+}

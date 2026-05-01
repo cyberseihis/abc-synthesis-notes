@@ -1,0 +1,225 @@
+{
+  "operator": "strash",
+  "circuit": "strash_demo",
+  "title": "strash — structural hashing of the AIG",
+  "steps": [
+    {
+      "title": "Empty AIG: just constants and PIs",
+      "narrative": "<code>strash</code> processes incoming AND requests in order. The strash table starts empty; only <code>const0/const1</code> and the PIs (<code>a</code>, <code>b</code>, <code>c</code>) exist. We will replay 5 AND-insertion requests; for each, <code>Abc_AigAnd</code> calls <code>Abc_AigAndLookup</code> first.",
+      "highlights": {
+        "node-n1": ["hidden"],
+        "node-n2": ["hidden"],
+        "node-n3": ["hidden"],
+        "node-PO": ["hidden"],
+        "edge-a-n1": ["hidden"],
+        "edge-b-n1": ["hidden"],
+        "edge-a-n2": ["hidden"],
+        "edge-c-n2": ["hidden"],
+        "edge-n1-n3": ["hidden"],
+        "edge-n2-n3": ["hidden"],
+        "edge-n3-PO": ["hidden"]
+      },
+      "panes": [
+        {
+          "type": "table",
+          "title": "Strash hash table",
+          "header": ["key", "child0", "child1", "node"],
+          "rows": []
+        },
+        {
+          "type": "kv",
+          "title": "Counters",
+          "entries": {
+            "Inserts requested": "0",
+            "New nodes":         "0",
+            "Hash hits":         "0",
+            "Trivial-law folds": "0"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Request 1: AND(a, b) — miss, create n1",
+      "narrative": "<code>Abc_AigAndLookup(a, b)</code> orders args by id (a &lt; b), hashes <code>Key1 = HashKey2(a,b)</code>. The bin is empty — miss. <code>Abc_AigAndCreate</code> allocates a new node, n1, with fanin0=a, fanin1=b. The strash table records the binding.",
+      "highlights": {
+        "node-n1": ["fresh"],
+        "edge-a-n1": [],
+        "edge-b-n1": [],
+        "node-n2": ["hidden"],
+        "node-n3": ["hidden"],
+        "node-PO": ["hidden"],
+        "edge-a-n2": ["hidden"],
+        "edge-c-n2": ["hidden"],
+        "edge-n1-n3": ["hidden"],
+        "edge-n2-n3": ["hidden"],
+        "edge-n3-PO": ["hidden"]
+      },
+      "panes": [
+        {
+          "type": "table",
+          "title": "Strash hash table",
+          "header": ["key", "child0", "child1", "node"],
+          "rows": [
+            [{"_cells": ["Key1", "a", "b", "<strong>n1</strong>"], "_cls": "changed"}]
+          ]
+        },
+        {
+          "type": "kv",
+          "title": "Counters",
+          "entries": {
+            "Inserts requested": "1",
+            "New nodes":         "<strong>1</strong>",
+            "Hash hits":         "0",
+            "Trivial-law folds": "0"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Request 2: AND(a, c) — miss, create n2",
+      "narrative": "Different key (<code>Key2 = HashKey2(a,c)</code>); empty bin → miss → create n2.",
+      "highlights": {
+        "node-n2": ["fresh"],
+        "edge-a-n2": [],
+        "edge-c-n2": [],
+        "node-n3": ["hidden"],
+        "node-PO": ["hidden"],
+        "edge-n1-n3": ["hidden"],
+        "edge-n2-n3": ["hidden"],
+        "edge-n3-PO": ["hidden"]
+      },
+      "panes": [
+        {
+          "type": "table",
+          "title": "Strash hash table",
+          "header": ["key", "child0", "child1", "node"],
+          "rows": [
+            ["Key1", "a", "b", "n1"],
+            [{"_cells": ["Key2", "a", "c", "<strong>n2</strong>"], "_cls": "changed"}]
+          ]
+        },
+        {
+          "type": "kv",
+          "title": "Counters",
+          "entries": {
+            "Inserts requested": "2",
+            "New nodes":         "<strong>2</strong>",
+            "Hash hits":         "0",
+            "Trivial-law folds": "0"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Request 3: AND(a, b) again — HIT, return existing n1",
+      "narrative": "Key1 hits. <code>Abc_AigBinForEachEntry</code> walks the chain; the entry's (child0, child1) matches (a, b) exactly → return <strong>n1</strong>. No new node. This is the dedup that makes structural hashing essential.",
+      "highlights": {
+        "node-n1": ["considering"],
+        "node-n3": ["hidden"],
+        "node-PO": ["hidden"],
+        "edge-n1-n3": ["hidden"],
+        "edge-n2-n3": ["hidden"],
+        "edge-n3-PO": ["hidden"]
+      },
+      "panes": [
+        {
+          "type": "table",
+          "title": "Strash hash table (unchanged)",
+          "header": ["key", "child0", "child1", "node"],
+          "rows": [
+            [{"_cells": ["Key1", "a", "b", "<strong>n1</strong> &larr; HIT"], "_cls": "changed"}],
+            ["Key2", "a", "c", "n2"]
+          ]
+        },
+        {
+          "type": "kv",
+          "title": "Counters",
+          "entries": {
+            "Inserts requested": "3",
+            "New nodes":         "2",
+            "Hash hits":         "<strong>1</strong>",
+            "Trivial-law folds": "0"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Request 4: AND(n1, ~n1) — trivial law, return const0",
+      "narrative": "<code>Abc_AigAndLookup(n1, ~n1)</code> spots the case <code>p == ~q</code> at <code>abcAig.c:413..414</code> and returns <code>~const1 = const0</code> directly — never even reaching the hash table.<br><br>The other trivial folds at <code>abcAig.c:411..426</code>: <code>p == q → p</code>, <code>p == const1 → q</code>, <code>p == ~const1 → 0</code>.",
+      "highlights": {
+        "node-n1": ["considering"],
+        "node-n3": ["hidden"],
+        "node-PO": ["hidden"],
+        "edge-n1-n3": ["hidden"],
+        "edge-n2-n3": ["hidden"],
+        "edge-n3-PO": ["hidden"]
+      },
+      "panes": [
+        {
+          "type": "kv",
+          "title": "Trivial-law check",
+          "entries": {
+            "Inputs": "(n1, ~n1)",
+            "Match":  "<code>p == ~q</code>",
+            "Result": "<span class=\"counter-zeroed\">const0</span>"
+          }
+        },
+        {
+          "type": "table",
+          "title": "Strash hash table (unchanged)",
+          "header": ["key", "child0", "child1", "node"],
+          "rows": [
+            ["Key1", "a", "b", "n1"],
+            ["Key2", "a", "c", "n2"]
+          ]
+        },
+        {
+          "type": "kv",
+          "title": "Counters",
+          "entries": {
+            "Inserts requested": "4",
+            "New nodes":         "2",
+            "Hash hits":         "1",
+            "Trivial-law folds": "<strong>1</strong>"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Request 5: AND(n1, n2) — miss, create n3",
+      "narrative": "Key3 = <code>HashKey2(n1, n2)</code>. Empty bin → miss → allocate n3 with fanin0=n1, fanin1=n2. n3 is the f-output. Strash table now has 3 entries; the AIG has 3 ANDs total — exactly the number that <em>survives</em> the 5 requests after dedup and constant-folding.",
+      "highlights": {
+        "node-n3": ["fresh"],
+        "edge-n1-n3": [],
+        "edge-n2-n3": [],
+        "edge-n3-PO": []
+      },
+      "panes": [
+        {
+          "type": "table",
+          "title": "Strash hash table (final)",
+          "header": ["key", "child0", "child1", "node"],
+          "rows": [
+            ["Key1", "a", "b", "n1"],
+            ["Key2", "a", "c", "n2"],
+            [{"_cells": ["Key3", "n1", "n2", "<strong>n3</strong>"], "_cls": "changed"}]
+          ]
+        },
+        {
+          "type": "kv",
+          "title": "Counters (final)",
+          "entries": {
+            "Inserts requested": "5",
+            "New nodes":         "<strong>3</strong>",
+            "Hash hits":         "1",
+            "Trivial-law folds": "1"
+          }
+        },
+        {
+          "type": "text",
+          "body": "<strong>Why this matters.</strong> Without strash, the AIG would have grown to 5 ANDs (one per request); with strash, it holds 3. Every later operator (rewrite/refactor/resub/&#8230;) relies on <code>Abc_AigAndLookup</code> the same way — for &quot;is this AND already here?&quot; queries when scoring potential replacements (&sect;0.7)."
+        }
+      ]
+    }
+  ]
+}

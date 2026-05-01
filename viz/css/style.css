@@ -255,6 +255,26 @@ footer a { color: #2c3e50; }
 [id^="edge-"].dimmed { opacity: 0.2; }
 [id^="edge-"].active path { stroke: #b08040 !important; stroke-width: 2.5px; }
 [id^="edge-"].in-mffc path { stroke: #b04040 !important; stroke-width: 2.2px; }
+[id^="edge-"].cut-leaf path { stroke: #1a4d80 !important; stroke-width: 2.2px; }
+
+/* Not-yet-introduced */
+[id^="node-"].hidden, [id^="edge-"].hidden { opacity: 0.08; }
+
+/* Just-introduced (one-shot glow) */
+[id^="node-"].fresh ellipse {
+    fill: #b3ffc4 !important;
+    stroke: #2a8b46;
+    stroke-width: 3px;
+    animation: pulse 1s ease-out;
+}
+@keyframes pulse {
+    0%   { stroke-width: 6px; }
+    100% { stroke-width: 3px; }
+}
+
+/* Constants */
+[id^="node-"].const-true text { fill: #2a8b46; font-weight: 700; }
+[id^="node-"].const-false text { fill: #b04040; font-weight: 700; }
 
 /* Counter highlight on side pane */
 .counter-bumped { color: #2a8b46; font-weight: 700; }

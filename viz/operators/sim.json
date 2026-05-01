@@ -1,0 +1,127 @@
+{
+  "operator": "sim",
+  "circuit": "blackbox4",
+  "title": "Truth-table simulation on machine words",
+  "steps": [
+    {
+      "title": "32 patterns per word, propagated bitwise",
+      "narrative": "Resub, fraig, and dch all need to ask &quot;do these two nodes compute the same function?&quot; quickly. ABC's answer: simulate every node on the same set of input patterns packed 32-per-word, then hash on the resulting bitvector. Two nodes with different signatures are <em>guaranteed</em> different; two with the same signature are equivalence <em>candidates</em> (a real proof needs SAT).",
+      "highlights": {
+        "node-cut": ["considering"]
+      },
+      "panes": [
+        {
+          "type": "kv",
+          "title": "Storage",
+          "entries": {
+            "Per-node":    "<code>nWords</code> × 32-bit unsigned",
+            "Default":     "<code>nWords</code> = 1 (32 patterns); 8 in dch (256 patterns)",
+            "Allocation":  "fixed pool, one slot per AIG object"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Exhaustive 4-input enumeration with one word",
+      "narrative": "If the cut has 4 inputs, 32 patterns is enough to evaluate <em>every</em> input combination twice. ABC seeds the four input columns with these constants — convince yourself that bit i has (x0=bit0, x1=bit1, x2=bit2, x3=bit3) of the integer i mod 16 (and the upper 16 patterns repeat).",
+      "highlights": {
+        "node-cut": ["considering"]
+      },
+      "panes": [
+        {
+          "type": "bitvec",
+          "title": "sim(x0) = 0xAAAAAAAA",
+          "bits": "10101010101010101010101010101010"
+        },
+        {
+          "type": "bitvec",
+          "title": "sim(x1) = 0xCCCCCCCC",
+          "bits": "11001100110011001100110011001100"
+        },
+        {
+          "type": "bitvec",
+          "title": "sim(x2) = 0xF0F0F0F0",
+          "bits": "11110000111100001111000011110000"
+        },
+        {
+          "type": "bitvec",
+          "title": "sim(x3) = 0xFF00FF00",
+          "bits": "11111111000000001111111100000000"
+        }
+      ]
+    },
+    {
+      "title": "Propagate bitwise through ANDs",
+      "narrative": "For each AIG AND, simulate via <code>sim(z) = sim(p0) AND sim(p1)</code>, applying complements where edges are negated. This is a single 32-bit AND per node — extremely cheap. After one pass, every node carries a 32-bit signature.",
+      "highlights": {
+        "node-cut": ["considering"]
+      },
+      "panes": [
+        {
+          "type": "bitvec",
+          "title": "sim(x0 ∧ x1) = 0xAA & 0xCC = 0x88",
+          "bits": "10001000100010001000100010001000"
+        },
+        {
+          "type": "bitvec",
+          "title": "sim(x0 ∧ x3) = 0xAA & 0xFF00 = 0xAA00",
+          "bits": "10101010000000001010101000000000"
+        },
+        {
+          "type": "bitvec",
+          "title": "sim(x2 ∧ x3) = 0xF0 & 0xFF00 = 0xF000",
+          "bits": "11110000000000001111000000000000"
+        },
+        {
+          "type": "bitvec",
+          "title": "sim(f) = 0xFA88_FA88 — the truth table of <code>x0·x1 + x0·x3 + x2·x3</code>",
+          "bits": "11111010100010001111101010001000"
+        }
+      ]
+    },
+    {
+      "title": "Two nodes with equal sim(): equivalence candidates",
+      "narrative": "Resub looks for <em>divisors</em> whose sim signature matches the target node's. Hash the divisors' signatures into a bucket; when a target arrives, hash and look in the bucket. Hits are candidate equivalences; either:<ul><li>they really are equivalent (then ABC may merge or substitute), or</li><li>they happen to agree on these 32 patterns but disagree on some unrepresented pattern (a <em>spurious</em> hit). Resub falls back to local truth-table verification; fraig falls back to SAT.</li></ul>",
+      "highlights": {
+        "node-cut": ["considering"]
+      },
+      "panes": [
+        {
+          "type": "text",
+          "body": "<strong>fraig's dynamic patterns.</strong> When SAT returns SAT (i.e., it disproves equivalence), the counterexample is appended to the simulation vectors of all nodes (<code>fraigSim.c</code>). The next round of bucket-hashing benefits from a discriminating pattern, so spurious hits are rare in practice."
+        },
+        {
+          "type": "table",
+          "title": "Cost",
+          "header": ["operation", "cost"],
+          "rows": [
+            ["per-node sim update",   "1 AND + 1 NOT (32 patterns/cycle)"],
+            ["bucket hash",           "1 word hash"],
+            ["false-positive check",  "SAT call (resub: cone re-eval)"],
+            ["counterexample replay", "1 bit append, 1 word ext"]
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Bigger cuts: more words",
+      "narrative": "For a k-input cut, 2^k input patterns are needed; that's <code>nWords = max(1, 2^k / 32)</code>. resub's default nLeavesMax=8 → 256 patterns → 8 words. dch uses 8 words by default for richer pattern coverage even on small cuts. Operations stay bitwise: <code>for (w=0; w&lt;nWords; w++) sim_z[w] = sim_p0[w] & sim_p1[w];</code>",
+      "highlights": {
+        "node-cut": ["considering"]
+      },
+      "panes": [
+        {
+          "type": "table",
+          "title": "Words per support size",
+          "header": ["support", "patterns", "nWords (resub default cap)"],
+          "rows": [
+            ["≤ 5 inputs", "32", "1"],
+            ["6 inputs",   "64", "2"],
+            ["7 inputs",   "128","4"],
+            ["8 inputs",   "256","8"]
+          ]
+        }
+      ]
+    }
+  ]
+}

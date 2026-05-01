@@ -12,7 +12,8 @@ const state = {
 
 const HIGHLIGHT_CLASSES = [
     'cut-leaf', 'in-mffc', 'considering', 'replacement-new',
-    'fanout-protected', 'dimmed', 'active'
+    'fanout-protected', 'dimmed', 'active', 'hidden', 'fresh',
+    'const-true', 'const-false'
 ];
 
 async function loadOperator(name) {
@@ -89,6 +90,8 @@ function renderPane(pane) {
         case 'kv':          return renderKV(div, pane);
         case 'text':        return renderText(div, pane);
         case 'formula':     return renderFormula(div, pane);
+        case 'tt-grid':     return renderTtGrid(div, pane);
+        case 'bitvec':      return renderBitvec(div, pane);
         default:
             div.appendChild(document.createTextNode(`[unknown pane type: ${pane.type}]`));
             return div;
@@ -163,6 +166,70 @@ function renderFormula(div, pane) {
     p.className = 'formula';
     p.innerHTML = pane.body || '';
     div.appendChild(p);
+    return div;
+}
+
+// Render a 4-input truth table (16 bits) as a 4×4 grid of 0/1 cells.
+// pane.tt = string of 16 chars '0' or '1' (LSB first; or reversed if pane.order=='msb-first')
+// pane.label = optional caption (e.g. "0xFA88")
+function renderTtGrid(div, pane) {
+    if (pane.label) {
+        const lab = document.createElement('div');
+        lab.style.fontFamily = 'monospace';
+        lab.style.fontSize = '0.85rem';
+        lab.style.marginBottom = '0.3rem';
+        lab.innerHTML = pane.label;
+        div.appendChild(lab);
+    }
+    const tt = pane.tt || ''.padEnd(16, '0');
+    const grid = document.createElement('div');
+    grid.style.display = 'grid';
+    grid.style.gridTemplateColumns = 'repeat(4, 1fr)';
+    grid.style.gap = '2px';
+    grid.style.maxWidth = '160px';
+    for (let i = 0; i < 16; i++) {
+        const idx = pane.order === 'msb-first' ? 15 - i : i;
+        const bit = tt[idx];
+        const cell = document.createElement('div');
+        cell.textContent = bit;
+        cell.style.fontFamily = 'monospace';
+        cell.style.fontSize = '0.9rem';
+        cell.style.padding = '4px 0';
+        cell.style.textAlign = 'center';
+        cell.style.background = bit === '1' ? '#b3ffc4' : '#f0f0f0';
+        cell.style.color = bit === '1' ? '#1a4d22' : '#999';
+        cell.style.borderRadius = '2px';
+        grid.appendChild(cell);
+    }
+    div.appendChild(grid);
+    return div;
+}
+
+// Render a bitvector as a row of cells.
+// pane.bits = string of '0'/'1'
+// pane.width = optional width (default fills container)
+function renderBitvec(div, pane) {
+    const bits = pane.bits || '';
+    const wrap = document.createElement('div');
+    wrap.style.fontFamily = 'monospace';
+    wrap.style.fontSize = '0.75rem';
+    wrap.style.letterSpacing = '0';
+    wrap.style.wordBreak = 'break-all';
+    wrap.style.padding = '0.4rem';
+    wrap.style.background = '#f7f7f7';
+    wrap.style.borderRadius = '3px';
+    for (let i = 0; i < bits.length; i++) {
+        const span = document.createElement('span');
+        span.textContent = bits[i];
+        span.style.color = bits[i] === '1' ? '#2a8b46' : '#aaa';
+        span.style.fontWeight = bits[i] === '1' ? '700' : '400';
+        wrap.appendChild(span);
+        // group every 4 bits
+        if ((i + 1) % 4 === 0 && i !== bits.length - 1) {
+            wrap.appendChild(document.createTextNode(' '));
+        }
+    }
+    div.appendChild(wrap);
     return div;
 }
 

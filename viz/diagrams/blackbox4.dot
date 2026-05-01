@@ -1,0 +1,29 @@
+// Placeholder SVG for primitives that don't need a full AIG diagram.
+// Shows a 4-input cut as a black box; details go in side panes.
+digraph blackbox4 {
+    rankdir = TB
+    ranksep = 0.7
+    nodesep = 0.6
+    bgcolor = "transparent"
+    node [fontname = "monospace", fontsize = 14, color = "#333333"]
+    edge [color = "#333333", penwidth = 1.4]
+
+    { rank = source
+      x0 [id="node-x0", label="x0", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
+      x1 [id="node-x1", label="x1", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
+      x2 [id="node-x2", label="x2", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
+      x3 [id="node-x3", label="x3", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
+    }
+
+    cut [id="node-cut", label="cut\nf(x0..x3)", shape=box, width=2.0, height=1.2, fixedsize=true, style=filled, fillcolor="#fff6e6", color="#b08040", penwidth=2]
+
+    { rank = sink
+      out [id="node-out", label="f", shape=plaintext, fontsize=16, fontcolor="#806000"]
+    }
+
+    x0 -> cut [id="edge-x0-cut"]
+    x1 -> cut [id="edge-x1-cut"]
+    x2 -> cut [id="edge-x2-cut"]
+    x3 -> cut [id="edge-x3-cut"]
+    cut -> out [id="edge-cut-out"]
+}

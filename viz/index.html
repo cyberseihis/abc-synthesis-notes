@@ -12,7 +12,18 @@
         <nav>
             <label for="operator-select">Operator:</label>
             <select id="operator-select">
-                <option value="rewrite">rewrite (on aoi3)</option>
+                <optgroup label="Section 0 — primitives">
+                    <option value="strash">strash — structural hashing</option>
+                    <option value="cuts">K-feasible cut enumeration</option>
+                    <option value="reconv">reconvergence-driven cut</option>
+                    <option value="mffc">MFFC labeling</option>
+                    <option value="sim">simulation vectors</option>
+                    <option value="npn">NPN canonization</option>
+                    <option value="decgraph">Dec_GraphToNetworkCount</option>
+                </optgroup>
+                <optgroup label="Section 1 — operators">
+                    <option value="rewrite">rewrite (on aoi3)</option>
+                </optgroup>
             </select>
         </nav>
     </header>

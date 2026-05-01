@@ -1,0 +1,187 @@
+{
+  "operator": "cuts",
+  "circuit": "aoi3",
+  "title": "K-feasible cut enumeration (bottom-up)",
+  "steps": [
+    {
+      "title": "Bottom-up cut enumeration with K = 4",
+      "narrative": "ABC's cut manager (<code>Cut_NodeDoComputeCuts</code>, also <code>If_CutMerge</code> for the FPGA mapper) computes cuts <strong>bottom-up</strong>. Each AND's cut set is built by merging cut sets of its two fanins. We'll walk the aoi3 AIG node by node.",
+      "highlights": {},
+      "panes": [
+        {
+          "type": "text",
+          "body": "<strong>Definitions.</strong> A <em>cut</em> at node n is a set of nodes L such that every path from the PIs to n passes through L. A <em>K-feasible cut</em> has |L| &le; K."
+        },
+        {
+          "type": "text",
+          "title": "Merge rule",
+          "body": "For each pair (cut0 from fanin0, cut1 from fanin1): merge = cut0 &cup; cut1. If |merge| &gt; K, drop it."
+        },
+        {
+          "type": "text",
+          "title": "Plus the trivial cut",
+          "body": "Every node has the trivial cut <code>{n}</code> (the singleton-self), regardless of K."
+        }
+      ]
+    },
+    {
+      "title": "Step 1: PIs have only the trivial cut",
+      "narrative": "Cut sets at the PIs are seeded as <code>{ {a} }</code>, <code>{ {b} }</code>, <code>{ {c} }</code>, <code>{ {d} }</code>.",
+      "highlights": {
+        "node-a": ["cut-leaf"],
+        "node-b": ["cut-leaf"],
+        "node-c": ["cut-leaf"],
+        "node-d": ["cut-leaf"]
+      },
+      "panes": [
+        {
+          "type": "table",
+          "title": "Cut sets so far",
+          "header": ["node", "cuts"],
+          "rows": [
+            ["a", "{ {a} }"],
+            ["b", "{ {b} }"],
+            ["c", "{ {c} }"],
+            ["d", "{ {d} }"]
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Step 2: n6 = a & b — merge cut sets of a, b",
+      "narrative": "Pair every cut at a with every cut at b. Here only one pair: <code>{a} &cup; {b} = {a, b}</code> &mdash; size 2 &le; K=4, keep. Plus the trivial cut <code>{n6}</code>.",
+      "highlights": {
+        "node-a":  ["cut-leaf"],
+        "node-b":  ["cut-leaf"],
+        "node-n6": ["considering"]
+      },
+      "panes": [
+        {
+          "type": "table",
+          "title": "Cut sets so far",
+          "header": ["node", "cuts"],
+          "rows": [
+            ["a",  "{ {a} }"],
+            ["b",  "{ {b} }"],
+            ["c",  "{ {c} }"],
+            ["d",  "{ {d} }"],
+            [{"_cells": ["n6", "{ {n6}, {a, b} }"], "_cls": "changed"}]
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Step 3: n7 = a & d, n9 = c & d — same recipe",
+      "narrative": "Same merge-and-add-trivial pattern. Each yields exactly two cuts: the trivial self-cut and the union of the fanin trivial cuts.",
+      "highlights": {
+        "node-n6": ["cut-leaf"],
+        "node-n7": ["considering"],
+        "node-n9": ["considering"]
+      },
+      "panes": [
+        {
+          "type": "table",
+          "title": "Cut sets so far",
+          "header": ["node", "cuts"],
+          "rows": [
+            ["n6", "{ {n6}, {a, b} }"],
+            [{"_cells": ["n7", "{ {n7}, {a, d} }"], "_cls": "changed"}],
+            [{"_cells": ["n9", "{ {n9}, {c, d} }"], "_cls": "changed"}]
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Step 4: n8 = NOR(n6, n7) — first interesting merge",
+      "narrative": "n8's fanins are n6 (with cuts <code>{n6}</code>, <code>{a,b}</code>) and n7 (with cuts <code>{n7}</code>, <code>{a,d}</code>). Pair every cut from each side:",
+      "highlights": {
+        "node-n8": ["considering"],
+        "node-n6": ["cut-leaf"],
+        "node-n7": ["cut-leaf"]
+      },
+      "panes": [
+        {
+          "type": "table",
+          "title": "Pairwise merges at n8",
+          "header": ["from n6", "from n7", "union", "size", "keep?"],
+          "rows": [
+            ["{n6}",   "{n7}",   "{n6, n7}",     "2", "&#10003;"],
+            ["{n6}",   "{a, d}", "{n6, a, d}",   "3", "&#10003;"],
+            ["{a, b}", "{n7}",   "{a, b, n7}",   "3", "&#10003;"],
+            ["{a, b}", "{a, d}", "{a, b, d}",    "3", "&#10003;"]
+          ]
+        },
+        {
+          "type": "table",
+          "title": "Cut set at n8 (after adding trivial)",
+          "header": ["cuts"],
+          "rows": [
+            ["{n8}"],
+            ["{n6, n7}"],
+            ["{n6, a, d}"],
+            ["{a, b, n7}"],
+            ["{a, b, d}"]
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Step 5: f = AND(n8, ~n9) — bigger merge, K=4 starts to bite",
+      "narrative": "f's fanins are n8 (5 cuts) and n9 (2 cuts) → 5&times;2 = 10 candidate merges. With K=4, several get rejected.",
+      "highlights": {
+        "node-f":  ["considering"],
+        "node-n8": ["cut-leaf"],
+        "node-n9": ["cut-leaf"]
+      },
+      "panes": [
+        {
+          "type": "table",
+          "title": "Pairwise merges at f",
+          "header": ["from n8", "from n9", "union", "size", "keep?"],
+          "rows": [
+            ["{n8}",        "{n9}",    "{n8, n9}",        "2", "&#10003;"],
+            ["{n8}",        "{c, d}",  "{n8, c, d}",      "3", "&#10003;"],
+            ["{n6, n7}",    "{n9}",    "{n6, n7, n9}",    "3", "&#10003;"],
+            ["{n6, n7}",    "{c, d}",  "{n6, n7, c, d}",  "4", "&#10003;"],
+            ["{n6, a, d}",  "{n9}",    "{n6, a, d, n9}",  "4", "&#10003;"],
+            ["{n6, a, d}",  "{c, d}",  "{n6, a, c, d}",   "4", "&#10003;"],
+            ["{a, b, n7}",  "{n9}",    "{a, b, n7, n9}",  "4", "&#10003;"],
+            ["{a, b, n7}",  "{c, d}",  "{a, b, n7, c, d}", "5", "<span class=\"counter-zeroed\">&#10007; &gt;K</span>"],
+            ["{a, b, d}",   "{n9}",    "{a, b, d, n9}",   "4", "&#10003;"],
+            ["{a, b, d}",   "{c, d}",  "{a, b, c, d}",    "4", "&#10003;"]
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Step 6: containment filter",
+      "narrative": "<code>Cut_NodeFilter</code> drops any cut C2 that is a (proper) superset of another cut C1 still in the set: anything covered by C1 is also covered by C2, but C1 has fewer leaves so it's strictly better. This is the same idea as redundant-implicant removal in SOP minimization.",
+      "highlights": {
+        "node-f":  ["considering"]
+      },
+      "panes": [
+        {
+          "type": "table",
+          "title": "Final cut set at f (after filter, K=4)",
+          "header": ["cut", "size"],
+          "rows": [
+            ["{f}",                "1"],
+            ["{n8, n9}",           "2"],
+            ["{n8, c, d}",         "3"],
+            ["{n6, n7, n9}",       "3"],
+            ["{n6, n7, c, d}",     "4"],
+            ["{n6, a, d, n9}",     "4"],
+            ["{n6, a, c, d}",      "4"],
+            ["{a, b, n7, n9}",     "4"],
+            ["{a, b, d, n9}",      "4"],
+            ["{a, b, c, d}",       "4"]
+          ]
+        },
+        {
+          "type": "text",
+          "body": "These are the 10 cuts that <code>rewrite</code>, <code>refactor</code>, and the FPGA <code>if</code> mapper see at f. Operators that need 4-leaf cuts (rewrite) iterate the 4-leaf rows; the LUT mapper picks the cut that minimizes its current cost objective (delay / area-flow / exact area)."
+        }
+      ]
+    }
+  ]
+}
