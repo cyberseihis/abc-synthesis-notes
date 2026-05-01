@@ -1,26 +1,31 @@
 // Circuit for the MFFC walkthrough.
-// Target node t. Cut for t is {p, q, e, h} — two internal ANDs (p, q)
-// and two PIs (e, h). The boost on cut leaves is what stops the deref
-// from walking past p and q into a, b, c, d.
 //
-// Every node carries an xlabel "[N]" where N is its initial fanout count.
-// Per-step textReplace updates each node's "name\n[count]" to animate
-// the counters as deref/ref decrements them.
+// Two outputs: t (target) and g (separate). They share PI a but have
+// disjoint internal cones. So the AIG has visible structure outside
+// t's MFFC, namely g and its PI y.
+//
+// Cut for t: {p, q, e, h} — two internal ANDs (p, q) and two PIs.
+// Cut leaves all have fanout 1 INTO t's cone, so the boost is what
+// stops deref from walking past them.
+//
+// Initial fanouts per node are baked into xlabels [N]; per-step
+// textReplace updates them as deref decrements.
 digraph mffc_demo {
     rankdir = TB
-    ranksep = 0.7
-    nodesep = 0.55
+    ranksep = 0.55
+    nodesep = 0.4
     bgcolor = "transparent"
     node [fontname = "monospace", fontsize = 14, color = "#333333"]
     edge [color = "#333333", penwidth = 1.4]
 
     { rank = source
-      a [id="node-a", label="a", xlabel="[1]", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
+      a [id="node-a", label="a", xlabel="[2]", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
       b [id="node-b", label="b", xlabel="[1]", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
       c [id="node-c", label="c", xlabel="[1]", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
       d [id="node-d", label="d", xlabel="[1]", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
       e [id="node-e", label="e", xlabel="[1]", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
       h [id="node-h", label="h", xlabel="[1]", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
+      y [id="node-y", label="y", xlabel="[1]", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
     }
 
     p [id="node-p", label="p", xlabel="[1]", shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
@@ -28,9 +33,11 @@ digraph mffc_demo {
     m [id="node-m", label="m", xlabel="[1]", shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
     n [id="node-n", label="n", xlabel="[1]", shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
     t [id="node-t", label="t", xlabel="[1]", shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
+    g [id="node-g", label="g", xlabel="[1]", shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
 
     { rank = sink
-      PO [id="node-PO", label="PO", shape=plaintext, fontsize=13, fontcolor="#806000"]
+      POt [id="node-POt", label="PO_t", shape=plaintext, fontsize=13, fontcolor="#806000"]
+      POg [id="node-POg", label="PO_g", shape=plaintext, fontsize=13, fontcolor="#806000"]
     }
 
     a -> p [id="edge-a-p"]
@@ -43,5 +50,8 @@ digraph mffc_demo {
     h -> n [id="edge-h-n"]
     m -> t [id="edge-m-t"]
     n -> t [id="edge-n-t"]
-    t -> PO [id="edge-t-PO"]
+    a -> g [id="edge-a-g"]
+    y -> g [id="edge-y-g"]
+    t -> POt [id="edge-t-POt"]
+    g -> POg [id="edge-g-POg"]
 }

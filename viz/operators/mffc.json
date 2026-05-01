@@ -4,8 +4,8 @@
   "title": "MFFC — the &quot;private cone&quot; of a node",
   "steps": [
     {
-      "title": "Setup: target = t, cut = {p, q, e, h} (two internal ANDs + two PIs)",
-      "narrative": "An MFFC w.r.t. a cut is the set of internal ANDs that would die if t were replaced — but only counting nodes <em>above</em> the cut. Cut leaves and everything below them must stay alive (the replacement may reuse them).<br><br>The interesting case is when cut leaves are <strong>internal ANDs</strong> (like p, q here): without protection, dereferencing would walk through them into their fanins and absorb structure that doesn't belong in the MFFC. The boundary boost is what stops that.<br><br>Every node shows its <code>fanouts</code> count next to it as <code>[N]</code>. Watch them update.",
+      "title": "Setup: AIG has TWO outputs (t and g); we focus on t, cut = {p, q, e, h}",
+      "narrative": "An MFFC w.r.t. a cut is the set of internal ANDs that would die if the target were replaced — but only counting nodes <em>above</em> the cut. Cut leaves and everything below them must stay alive.<br><br>This AIG has two outputs: <strong>t</strong> (target) and <strong>g</strong> (separate). They share PI <code>a</code> but have disjoint internal cones. <em>g and its branch should NOT end up in t's MFFC.</em><br><br>Cut for t: <code>{p, q, e, h}</code> — two internal ANDs and two PIs. Each cut leaf has fanout <code>[1]</code> INTO t's cone, so without protection deref would walk past them.<br><br>Every node shows its current <code>fanouts</code> count next to it as <code>[N]</code>.",
       "highlights": {
         "node-t": ["considering"]
       },
@@ -14,23 +14,24 @@
           "type": "kv",
           "title": "Circuit",
           "entries": {
-            "p": "a · b   <em>(cut leaf — internal AND)</em>",
-            "q": "c · d   <em>(cut leaf — internal AND)</em>",
+            "p": "a · b   <em>(cut leaf — internal AND, fanout 1)</em>",
+            "q": "c · d   <em>(cut leaf — internal AND, fanout 1)</em>",
             "m": "p · q",
             "n": "e · h",
-            "t": "m · n   <em>(target)</em>"
+            "t": "m · n   <em>(target)</em>",
+            "g": "a · y   <em>(separate output — outside t's cone)</em>"
           }
         },
         {
           "type": "text",
-          "title": "Cut: { p, q, e, h }",
-          "body": "The cone of t bounded by this cut is <code>{ t, m, n }</code>. Anything below the cut (a, b, c, d, p's and q's fanin cones) is treated as &quot;already exists&quot; and must not be absorbed."
+          "title": "What the answer should be",
+          "body": "MFFC of t = <code>{ t, m, n }</code>. p, q, e, h survive (cut leaves). g, y, PO_g and PI a's fanout to g are <strong>untouched</strong> — they're not in t's cone at all."
         }
       ]
     },
     {
-      "title": "Counterfactual: what would happen WITHOUT the boost",
-      "narrative": "Imagine we skipped the boundary boost. <code>Abc_NodeRefDeref(t, deref)</code> would walk:<br><br>deref(t) → deref(m) → <span style='color:#b04040'>deref(p)</span> → ... a, b are PIs (return 0). count for p added.<br>then <span style='color:#b04040'>deref(q)</span> → c, d. count for q added.<br>then deref(n) → e, h.<br><br>Result: count = 5; <strong>MFFC = {t, m, n, p, q}</strong> — wrongly absorbing p and q. Any replacement built on top of {p, q, e, h} would lose its references to p, q after commit.",
+      "title": "Counterfactual: WITHOUT the boost",
+      "narrative": "Imagine we skipped the boundary boost. <code>Abc_NodeRefDeref(t, deref)</code> would walk:<br><br>deref(t) → deref(m) → <span style='color:#b04040'>deref(p)</span> → a, b are PIs (CI returns 0). p added.<br>then <span style='color:#b04040'>deref(q)</span> → c, d. q added.<br>then deref(n) → e, h.<br><br>Result: count = 5; <strong>MFFC = {t, m, n, p, q}</strong>. p and q wrongly absorbed.<br><br>g's branch is still untouched (it's not connected to t's cone via internal ANDs). But the wrong absorption of p, q would break any replacement built on the cut.",
       "highlights": {
         "node-t": ["in-mffc"],
         "node-m": ["in-mffc"],
@@ -40,9 +41,7 @@
         "edge-m-t": ["in-mffc"],
         "edge-n-t": ["in-mffc"],
         "edge-p-m": ["in-mffc"],
-        "edge-q-m": ["in-mffc"],
-        "edge-e-n": ["active"],
-        "edge-h-n": ["active"]
+        "edge-q-m": ["in-mffc"]
       },
       "panes": [
         {
@@ -51,7 +50,7 @@
           "entries": {
             "count":   "<span class=\"counter-zeroed\">5</span>",
             "MFFC":    "{ t, m, n, p, q }",
-            "Problem": "p and q absorbed into MFFC — they're cut leaves and should survive"
+            "Problem": "p, q are cut leaves and should survive"
           }
         }
       ]
@@ -80,14 +79,15 @@
             "p.fanouts": "1 → <span class=\"boost\">2</span>",
             "q.fanouts": "1 → <span class=\"boost\">2</span>",
             "e.fanouts": "1 → <span class=\"boost\">2</span>",
-            "h.fanouts": "1 → <span class=\"boost\">2</span>"
+            "h.fanouts": "1 → <span class=\"boost\">2</span>",
+            "(unchanged)": "a, b, c, d, y, m, n, g, t — not cut leaves"
           }
         }
       ]
     },
     {
-      "title": "Deref t → count = 1",
-      "narrative": "<code>deref(t)</code>: count = 1, mark t (assign current TravId). t's fanouts go 1→0 too, but that's the root itself — counted in the running total directly.",
+      "title": "Deref t → count = 1, mark t",
+      "narrative": "<code>deref(t)</code>: count = 1, label t with current TravId. t.fanouts: 1 → 0. Walk into fanins m and n.",
       "textReplace": {
         "node-p": "p\n[2]",
         "node-q": "q\n[2]",
@@ -108,15 +108,14 @@
           "title": "Deref state",
           "entries": {
             "count":     "<span class=\"counter-bumped\">1</span>",
-            "MFFC":      "{ t }",
-            "t.fanouts": "<span class=\"counter-zeroed\">1 → 0</span>"
+            "MFFC":      "{ t }"
           }
         }
       ]
     },
     {
       "title": "Deref m (t.fanin0): 1 → 0 → recurse, count = 2",
-      "narrative": "Decrement m.fanouts: 1 → 0 → recurse into m, mark it.",
+      "narrative": "Decrement m.fanouts: 1 → 0 → recurse, mark m.",
       "textReplace": {
         "node-p": "p\n[2]",
         "node-q": "q\n[2]",
@@ -148,7 +147,7 @@
     },
     {
       "title": "Boost saves the day: deref p (m.fanin0): 2 → 1, NOT zero — STOP",
-      "narrative": "m's fanin0 is <strong>p</strong>, a cut leaf. Boosted count: 2. Decrement → 1. <strong>Not zero</strong> → recursion STOPS. p is <em>not</em> added to the MFFC. Without the boost, p would have gone 1 → 0 here and we would have walked past the cut.",
+      "narrative": "m's fanin0 is <strong>p</strong>, a cut leaf. Boosted count: 2. Decrement → 1. <strong>Not zero</strong> → recursion STOPS. p is <em>not</em> added to the MFFC. Without the boost, p would have gone 1 → 0 here and we would have walked into a, b.",
       "textReplace": {
         "node-p": "p\n[1]",
         "node-q": "q\n[2]",
@@ -175,14 +174,14 @@
             "p.fanouts":      "<span class=\"boost\">2 → 1</span>",
             "Reaches zero?":  "<strong>no</strong> (boost held)",
             "Recurse into p?":"<strong>no</strong>",
-            "p in MFFC?":     "<strong>no</strong> &mdash; protected"
+            "p in MFFC?":     "<strong>no</strong> &mdash; cone below p (a, b) untouched"
           }
         }
       ]
     },
     {
       "title": "Same for q (m.fanin1): 2 → 1, STOP",
-      "narrative": "q is the other cut leaf reached from m. Same outcome: 2 → 1, no recurse, q not in MFFC.",
+      "narrative": "q is the other cut leaf reached from m. Same outcome.",
       "textReplace": {
         "node-p": "p\n[1]",
         "node-q": "q\n[1]",
@@ -206,15 +205,14 @@
           "type": "kv",
           "title": "Cut-leaf protection",
           "entries": {
-            "q.fanouts":      "<span class=\"boost\">2 → 1</span>",
-            "Recurse into q?":"<strong>no</strong>"
+            "q.fanouts": "<span class=\"boost\">2 → 1</span>"
           }
         }
       ]
     },
     {
       "title": "Deref n (t.fanin1): 1 → 0 → recurse, count = 3",
-      "narrative": "Back at t, deref the second fanin n. n only feeds t → its count was 1. Decrement → 0 → recurse, mark n. count = 3.",
+      "narrative": "Back at t, deref the second fanin n. n only feeds t → 1 → 0 → recurse, mark n.",
       "textReplace": {
         "node-p": "p\n[1]",
         "node-q": "q\n[1]",
@@ -249,7 +247,7 @@
     },
     {
       "title": "n's fanins (e, h) are PI cut leaves — boost holds",
-      "narrative": "e and h are PI cut leaves. Their boosted counts decrement (2 → 1) but stay positive. Recursion stops, count finalises at 3.",
+      "narrative": "e and h decrement (2 → 1) but stay positive. count finalises at 3.",
       "textReplace": {
         "node-p": "p\n[1]",
         "node-q": "q\n[1]",
@@ -285,8 +283,8 @@
       ]
     },
     {
-      "title": "Result: MFFC = {t, m, n}, nNodesSaved = 3",
-      "narrative": "Recursion done. MFFC has the 3 red nodes — exactly the cone <em>above</em> the cut. p, q, e, h survive (blue) thanks to the boost; everything below them (a, b, c, d) is untouched.<br><br><strong>Without the boost, count would have been 5</strong> and p, q would have been wrongly tagged. The +1/-1 trick is the difference between a correct MFFC and a wrong one.",
+      "title": "Result: MFFC = {t, m, n} — strict subset of the AIG",
+      "narrative": "Recursion done. The 3 red nodes are exactly the cone above the cut. The 4 blue cut leaves (p, q, e, h) survive thanks to the boost. <strong>And critically: g, y, PO_g, plus a's fanout edge to g are entirely untouched</strong> — they are outside t's cone, and the MFFC walk never reached them. The MFFC is 3 nodes out of 6 internal ANDs, NOT &quot;the whole AIG&quot;.",
       "textReplace": {
         "node-p": "p\n[1]",
         "node-q": "q\n[1]",
@@ -310,10 +308,10 @@
           "type": "kv",
           "title": "Result",
           "entries": {
-            "nNodesSaved":       "<strong>3</strong>",
-            "TravId-tagged":     "t, m, n (red)",
-            "Cut leaves preserved": "p, q, e, h (blue)",
-            "Untouched":         "a, b, c, d (and p, q's fanin cones)"
+            "nNodesSaved":         "<strong>3</strong>",
+            "TravId-tagged (red)": "t, m, n",
+            "Cut leaves (blue)":   "p, q, e, h — survived",
+            "Outside t's cone":    "g, y, PO_g — untouched"
           }
         },
         {
