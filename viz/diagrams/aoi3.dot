@@ -1,0 +1,48 @@
+// AIG of aoi3: f = (a & b) | (a & d) | (c & d)
+// Post-strash node naming (matches write_blif output)
+digraph aoi3 {
+    rankdir = TB
+    ranksep = 0.55
+    nodesep = 0.35
+    bgcolor = "transparent"
+    splines = true
+
+    node [fontname = "monospace", fontsize = 14, color = "#333333"]
+    edge [fontname = "monospace", fontsize = 11, color = "#333333", penwidth = 1.4]
+
+    // Primary inputs (top row)
+    { rank = source
+      a [id = "node-a", label = "a", shape = plaintext, fontsize = 18, fontcolor = "#1a4d80"]
+      b [id = "node-b", label = "b", shape = plaintext, fontsize = 18, fontcolor = "#1a4d80"]
+      c [id = "node-c", label = "c", shape = plaintext, fontsize = 18, fontcolor = "#1a4d80"]
+      d [id = "node-d", label = "d", shape = plaintext, fontsize = 18, fontcolor = "#1a4d80"]
+    }
+
+    // Internal AND nodes
+    n6 [id = "node-n6", label = "n6", shape = circle, width = 0.55, fixedsize = true, style = filled, fillcolor = "#f7f7f7"]
+    n7 [id = "node-n7", label = "n7", shape = circle, width = 0.55, fixedsize = true, style = filled, fillcolor = "#f7f7f7"]
+    n9 [id = "node-n9", label = "n9", shape = circle, width = 0.55, fixedsize = true, style = filled, fillcolor = "#f7f7f7"]
+    n8 [id = "node-n8", label = "n8", shape = circle, width = 0.55, fixedsize = true, style = filled, fillcolor = "#f7f7f7"]
+    f  [id = "node-f",  label = "f",  shape = circle, width = 0.55, fixedsize = true, style = filled, fillcolor = "#f7f7f7"]
+
+    // Primary output (bottom row)
+    { rank = sink
+      PO [id = "node-PO", label = "PO", shape = plaintext, fontsize = 14, fontcolor = "#806000"]
+    }
+
+    // Edges: positive (solid), negated (dashed)
+    a -> n6 [id = "edge-a-n6"]
+    b -> n6 [id = "edge-b-n6"]
+    a -> n7 [id = "edge-a-n7"]
+    d -> n7 [id = "edge-d-n7"]
+    c -> n9 [id = "edge-c-n9"]
+    d -> n9 [id = "edge-d-n9"]
+
+    n6 -> n8 [id = "edge-n6-n8", style = dashed]
+    n7 -> n8 [id = "edge-n7-n8", style = dashed]
+
+    n8 -> f  [id = "edge-n8-f"]
+    n9 -> f  [id = "edge-n9-f", style = dashed]
+
+    f -> PO  [id = "edge-f-PO", style = dashed]
+}

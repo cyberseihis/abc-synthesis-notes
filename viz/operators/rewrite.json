@@ -1,0 +1,421 @@
+{
+  "operator": "rewrite",
+  "circuit": "aoi3",
+  "title": "rewrite on aoi3",
+  "steps": [
+    {
+      "title": "Strashed AIG: 5 ANDs, level 3",
+      "narrative": "Starting circuit: <code>f = ab + ad + cd</code>, written as a 5-AND AIG. ABC's <code>strash</code> assigned IDs <code>n6 = a&amp;b</code>, <code>n7 = a&amp;d</code>, <code>n9 = c&amp;d</code>; <code>n8 = NOR(n6, n7) = ~(ab+ad)</code>; the f-AND is <code>n8 &amp; ~n9</code> with the <em>output</em> negated, giving <code>f = ~n8 + n9 = (ab+ad) + cd</code>.<br><br>Dashed edges = inverter on the wire.",
+      "highlights": {},
+      "panes": [
+        {
+          "type": "kv",
+          "title": "Stats",
+          "entries": {
+            "ANDs": "5",
+            "Level": "3",
+            "PIs/POs": "4 / 1"
+          }
+        },
+        {
+          "type": "table",
+          "title": "Fanout counts",
+          "header": ["node", "fanouts", "count"],
+          "rows": [
+            ["a", "n6, n7", "2"],
+            ["b", "n6", "1"],
+            ["c", "n9", "1"],
+            ["d", "n7, n9", "2"],
+            ["n6", "n8", "1"],
+            ["n7", "n8", "1"],
+            ["n8", "f", "1"],
+            ["n9", "f", "1"],
+            ["f", "PO", "1"]
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Pick a node to rewrite — start with f",
+      "narrative": "<code>Abc_NtkRewrite</code> visits every internal AND in topological order. We focus on <strong>f</strong> — that's where the trace's gain happens. The other four ANDs (n6, n7, n8, n9) will also be tried but won't yield gain.",
+      "highlights": {
+        "node-f":  ["considering"],
+        "node-n6": ["dimmed"],
+        "node-n7": ["dimmed"],
+        "node-n8": ["dimmed"],
+        "node-n9": ["dimmed"]
+      },
+      "panes": [
+        {
+          "type": "text",
+          "title": "What rewrite tries to do",
+          "body": "For every 4-input cut at f, look up the cut's truth table in a precomputed library of NPN-canonical AIG subgraphs. Pick the variant that, after MFFC accounting, replaces the cone with fewer ANDs."
+        }
+      ]
+    },
+    {
+      "title": "Enumerate 4-input cuts at f",
+      "narrative": "<code>Abc_NodeGetCutsRecursive</code> returns the cut chain at f. Cuts are computed bottom-up by merging fanin cut sets (<code>Cut_NodeMerge</code>); each is a set of leaves whose conjunction-cone covers f.<br><br>Rewrite skips cuts with &lt; 4 leaves (<code>rwrEva.c:96</code>) — only the <strong>full 4-leaf cuts</strong> are evaluated.",
+      "highlights": {},
+      "panes": [
+        {
+          "type": "list",
+          "title": "All cuts at f (subset)",
+          "items": [
+            "<code>{f}</code> &nbsp;&mdash; trivial",
+            "<code>{n8, n7}</code> &nbsp;&mdash; 2-leaf, skipped",
+            "<code>{n5, n6, n7}</code> &nbsp;&mdash; 3-leaf, skipped",
+            "<code>{a, b, c, d}</code> &nbsp;&mdash; 4-leaf <em>candidate</em>",
+            "<code>{a, c, d, n6}</code> &nbsp;&mdash; 4-leaf <em>candidate</em>",
+            "<code>{a, d, n5, n7}</code> &nbsp;&mdash; 4-leaf <em>candidate</em>",
+            "<code>{n5, n6, c, d}</code> &nbsp;&mdash; 4-leaf <em>candidate</em>",
+            "<code>{a, b, n6, n7}</code> &nbsp;&mdash; 4-leaf <em>candidate</em>"
+          ]
+        },
+        {
+          "type": "text",
+          "body": "(<em>n5</em> in this list refers to the same AND that the post-strash dump renames to <em>n6</em>; ABC's internal IDs depend on visit order.)"
+        }
+      ]
+    },
+    {
+      "title": "Cut filter: reject cuts with > 2 fanout-1 leaves",
+      "narrative": "Cuts whose leaves have fanout 1 represent leaves that are <em>captive</em> to the MFFC — their absence from the rest of the network means there's no shared structure to reuse. <code>rwrEva.c:122..129</code> rejects cuts with strictly more than 2 such leaves.<br><br>For each candidate, count the leaves whose fanout count = 1.",
+      "highlights": {},
+      "panes": [
+        {
+          "type": "table",
+          "title": "Cut filter",
+          "header": ["cut", "fanouts", "fanout-1 count", "verdict"],
+          "rows": [
+            ["{a,b,c,d}",     "2,1,1,2", "<strong>2</strong>", "&#10003; OK"],
+            ["{a,c,d,n6}",    "2,1,2,1", "<strong>2</strong>", "&#10003; OK"],
+            ["{a,d,n5,n7}",   "2,2,1,1", "<strong>2</strong>", "&#10003; OK"],
+            ["{n5,n6,c,d}",   "1,1,1,2", "<strong>3</strong>", "&#10007; REJECT"],
+            ["{a,b,n6,n7}",   "2,1,1,1", "<strong>3</strong>", "&#10007; REJECT"]
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Try each surviving cut, score by gain",
+      "narrative": "For each surviving cut, compute the cut's truth table, look up its NPN class, evaluate the library's candidate subgraphs, and pick the best gain. The cut <strong>{a, c, d, n6}</strong> wins (per the actual ABC trace).",
+      "highlights": {
+        "node-a":  ["cut-leaf"],
+        "node-c":  ["cut-leaf"],
+        "node-d":  ["cut-leaf"],
+        "node-n6": ["cut-leaf"]
+      },
+      "panes": [
+        {
+          "type": "kv",
+          "title": "Selected cut",
+          "entries": {
+            "Leaves":  "{ a, c, d, n6 }",
+            "Cone":    "{ f, n8, n7, n9 } &mdash; 4 internal nodes",
+            "Truth":   "<code>0x001F</code> &mdash; printed by patched trace",
+            "NPN class": "<code>12</code> &mdash; from <code>pMap[0x001F]</code>"
+          }
+        },
+        {
+          "type": "text",
+          "body": "Note that <code>n6</code> (= <code>a&amp;b</code>) is treated as a <em>leaf</em> even though it's an internal AND. Its sub-cone (the <code>a&amp;b</code> AND) is &quot;outside&quot; the cut from rewrite's perspective and won't be touched."
+        }
+      ]
+    },
+    {
+      "title": "Apply boundary boost: leaf fanouts +1",
+      "narrative": "Before computing the MFFC, <code>abcRewrite.c:138..148</code> increments each cut leaf's fanout count by 1 to protect them from the upcoming dereference. This guarantees the recursion stops at the cut.",
+      "highlights": {
+        "node-a":  ["fanout-protected"],
+        "node-c":  ["fanout-protected"],
+        "node-d":  ["fanout-protected"],
+        "node-n6": ["fanout-protected"]
+      },
+      "panes": [
+        {
+          "type": "table",
+          "title": "Fanout counts after boost",
+          "header": ["node", "before", "after"],
+          "rows": [
+            [{"_cells": ["a",  "2", "<span class=\"boost\">3</span>"], "_cls": "changed"}],
+            ["b", "1", "1"],
+            [{"_cells": ["c",  "1", "<span class=\"boost\">2</span>"], "_cls": "changed"}],
+            [{"_cells": ["d",  "2", "<span class=\"boost\">3</span>"], "_cls": "changed"}],
+            [{"_cells": ["n6", "1", "<span class=\"boost\">2</span>"], "_cls": "changed"}],
+            ["n7", "1", "1"],
+            ["n8", "1", "1"],
+            ["n9", "1", "1"],
+            ["f",  "1", "1"]
+          ]
+        }
+      ]
+    },
+    {
+      "title": "MFFC deref step 1: visit f",
+      "narrative": "<code>Abc_NodeRefDeref(f, deref, label=1)</code> begins. <code>count = 1</code>; mark f with the current TravId; deref f's two fanins next.",
+      "highlights": {
+        "node-a":  ["fanout-protected"],
+        "node-c":  ["fanout-protected"],
+        "node-d":  ["fanout-protected"],
+        "node-n6": ["fanout-protected", "cut-leaf"],
+        "node-f":  ["in-mffc"]
+      },
+      "panes": [
+        {
+          "type": "kv",
+          "title": "Deref state",
+          "entries": {
+            "count": "<span class=\"counter-bumped\">1</span>",
+            "MFFC": "{ f }"
+          }
+        }
+      ]
+    },
+    {
+      "title": "MFFC deref step 2: f.fanin0 = n8 → fanout 1→0, recurse",
+      "narrative": "f's fanin0 is n8. Decrement its fanout count: 1 → 0. Zero ⇒ recurse into n8.",
+      "highlights": {
+        "node-a":  ["fanout-protected"],
+        "node-c":  ["fanout-protected"],
+        "node-d":  ["fanout-protected"],
+        "node-n6": ["fanout-protected", "cut-leaf"],
+        "node-f":  ["in-mffc"],
+        "node-n8": ["in-mffc"],
+        "edge-n8-f": ["in-mffc"]
+      },
+      "panes": [
+        {
+          "type": "kv",
+          "title": "Deref state",
+          "entries": {
+            "count": "<span class=\"counter-bumped\">2</span>",
+            "MFFC": "{ f, n8 }",
+            "n8.fanouts": "<span class=\"counter-zeroed\">1 → 0</span>"
+          }
+        }
+      ]
+    },
+    {
+      "title": "MFFC deref step 3: n8.fanin0 = n6 → 2→1, no recurse",
+      "narrative": "n8's fanin0 is <strong>n6</strong>, which is a <em>cut leaf</em>. Its boundary-boosted fanout decrements 2 → 1. <strong>Not zero</strong> ⇒ recursion stops here. This is the boundary trick in action.",
+      "highlights": {
+        "node-a":  ["fanout-protected"],
+        "node-c":  ["fanout-protected"],
+        "node-d":  ["fanout-protected"],
+        "node-n6": ["cut-leaf"],
+        "node-f":  ["in-mffc"],
+        "node-n8": ["in-mffc"],
+        "edge-n8-f":  ["in-mffc"],
+        "edge-n6-n8": ["active"]
+      },
+      "panes": [
+        {
+          "type": "kv",
+          "title": "Deref state",
+          "entries": {
+            "count": "2",
+            "MFFC": "{ f, n8 }",
+            "n6.fanouts": "<span class=\"boost\">2 → 1</span> (no recurse)"
+          }
+        }
+      ]
+    },
+    {
+      "title": "MFFC deref step 4: n8.fanin1 = n7 → 1→0, recurse",
+      "narrative": "n8's other fanin is n7. Fanout 1 → 0 ⇒ recurse into n7. count=3, mark n7.",
+      "highlights": {
+        "node-a":  ["fanout-protected"],
+        "node-c":  ["fanout-protected"],
+        "node-d":  ["fanout-protected"],
+        "node-n6": ["cut-leaf"],
+        "node-f":  ["in-mffc"],
+        "node-n8": ["in-mffc"],
+        "node-n7": ["in-mffc"],
+        "edge-n8-f":  ["in-mffc"],
+        "edge-n7-n8": ["in-mffc"]
+      },
+      "panes": [
+        {
+          "type": "kv",
+          "title": "Deref state",
+          "entries": {
+            "count": "<span class=\"counter-bumped\">3</span>",
+            "MFFC": "{ f, n8, n7 }",
+            "n7.fanouts": "<span class=\"counter-zeroed\">1 → 0</span>"
+          }
+        }
+      ]
+    },
+    {
+      "title": "MFFC deref step 5: n7's fanins are leaves a, d",
+      "narrative": "n7 = a &amp; d. Both fanins are cut leaves. Their boosted counts decrement but stay positive — no further recursion.",
+      "highlights": {
+        "node-a":  ["fanout-protected"],
+        "node-c":  ["fanout-protected"],
+        "node-d":  ["fanout-protected"],
+        "node-n6": ["cut-leaf"],
+        "node-f":  ["in-mffc"],
+        "node-n8": ["in-mffc"],
+        "node-n7": ["in-mffc"],
+        "edge-n8-f":  ["in-mffc"],
+        "edge-n7-n8": ["in-mffc"],
+        "edge-a-n7": ["active"],
+        "edge-d-n7": ["active"]
+      },
+      "panes": [
+        {
+          "type": "kv",
+          "title": "Deref state",
+          "entries": {
+            "count": "3",
+            "MFFC": "{ f, n8, n7 }",
+            "a.fanouts": "<span class=\"boost\">3 → 2</span>",
+            "d.fanouts": "<span class=\"boost\">3 → 2</span>"
+          }
+        }
+      ]
+    },
+    {
+      "title": "MFFC deref step 6: f.fanin1 = n9 → 1→0, recurse",
+      "narrative": "Back at f, deref the second fanin n9. Fanout 1 → 0 ⇒ recurse. count=4, mark n9. Its fanins c, d are cut leaves.",
+      "highlights": {
+        "node-a":  ["fanout-protected"],
+        "node-c":  ["fanout-protected"],
+        "node-d":  ["fanout-protected"],
+        "node-n6": ["cut-leaf"],
+        "node-f":  ["in-mffc"],
+        "node-n8": ["in-mffc"],
+        "node-n7": ["in-mffc"],
+        "node-n9": ["in-mffc"],
+        "edge-n8-f":  ["in-mffc"],
+        "edge-n9-f":  ["in-mffc"],
+        "edge-n7-n8": ["in-mffc"]
+      },
+      "panes": [
+        {
+          "type": "kv",
+          "title": "Deref state",
+          "entries": {
+            "count": "<span class=\"counter-bumped\">4</span>",
+            "MFFC": "{ f, n8, n7, n9 }",
+            "n9.fanouts": "<span class=\"counter-zeroed\">1 → 0</span>",
+            "c.fanouts": "<span class=\"boost\">2 → 1</span>",
+            "d.fanouts": "<span class=\"boost\">2 → 1</span>"
+          }
+        }
+      ]
+    },
+    {
+      "title": "MFFC complete: nNodesSaved = 4",
+      "narrative": "Recursion done. <strong>MFFC = { f, n8, n7, n9 }</strong>; size <strong>4</strong>. This matches the ABC trace's <code>Save = 4</code>.<br><br>(A re-reference pass walks the same path in reverse, restoring every fanout count. Then the boundary boost is stripped. The AIG is byte-identical to before, but the four MFFC nodes carry the current TravId.)",
+      "highlights": {
+        "node-n6": ["cut-leaf"],
+        "node-a":  ["cut-leaf"],
+        "node-c":  ["cut-leaf"],
+        "node-d":  ["cut-leaf"],
+        "node-f":  ["in-mffc"],
+        "node-n8": ["in-mffc"],
+        "node-n7": ["in-mffc"],
+        "node-n9": ["in-mffc"]
+      },
+      "panes": [
+        {
+          "type": "kv",
+          "title": "MFFC result",
+          "entries": {
+            "nNodesSaved": "<strong>4</strong>",
+            "TravId-tagged": "f, n8, n7, n9",
+            "Cut leaves (preserved)": "a, c, d, n6"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Look up library candidates for NPN class 12",
+      "narrative": "<code>Rwr_CutEvaluate</code> (<code>rwrEva.c:253</code>) iterates the precomputed subgraph list <code>p-&gt;vClasses[12]</code>. Each candidate is a <code>Dec_Graph_t</code> — a small algebraic DAG over 4 leaves implementing the canonical truth table for class 12.",
+      "highlights": {
+        "node-n6": ["cut-leaf"],
+        "node-a":  ["cut-leaf"],
+        "node-c":  ["cut-leaf"],
+        "node-d":  ["cut-leaf"]
+      },
+      "panes": [
+        {
+          "type": "text",
+          "title": "Candidate subgraphs (illustrative)",
+          "body": "Class 12 includes several DAGs. ABC's library is built once at startup by <code>Rwr_ManPrecompute</code>; for class 12 the cheapest implementations have <strong>3 internal ANDs</strong> over 4 leaves."
+        },
+        {
+          "type": "formula",
+          "body": "Candidate A:  m1 = ~b · ~d ;  m2 = a · ~m1 ;  m3 = c · d ;  result = ~(~m2 · ~m3)<br>Candidate B:  m1 = a · b ;  m2 = c · d ;  m3 = ~m1 · ~(a·d) ;  result = ~m3<br>... (more)"
+        },
+        {
+          "type": "text",
+          "body": "For each candidate, score with <code>Dec_GraphToNetworkCount</code>: how many AIG nodes would actually be added if we materialized this subgraph, given that strash hits and MFFC tags can let us skip nodes."
+        }
+      ]
+    },
+    {
+      "title": "Score candidates with Dec_GraphToNetworkCount",
+      "narrative": "<code>Dec_GraphToNetworkCount</code> walks each candidate's internal nodes; for each, it asks <code>Abc_AigAndLookup</code>: does this AND already exist? If yes <em>and</em> the existing node is NOT in our MFFC, count as reuse. Otherwise count as add.<br><br>For our cut, no candidate's structure pre-exists (the relevant ANDs would be inside the MFFC, hence about to be deleted), so all 3 internal ANDs of the chosen candidate are counted as adds.",
+      "highlights": {
+        "node-n6": ["cut-leaf"],
+        "node-a":  ["cut-leaf"],
+        "node-c":  ["cut-leaf"],
+        "node-d":  ["cut-leaf"],
+        "node-f":  ["in-mffc"],
+        "node-n8": ["in-mffc"],
+        "node-n7": ["in-mffc"],
+        "node-n9": ["in-mffc"]
+      },
+      "panes": [
+        {
+          "type": "kv",
+          "title": "Best candidate",
+          "entries": {
+            "Cone size":   "<strong>3</strong> internal ANDs",
+            "Reuse hits":  "0",
+            "Adds":        "<strong>3</strong> (= Add)",
+            "Save":        "4 (MFFC size)",
+            "Gain":        "<strong>4 − 3 = 1</strong>"
+          }
+        },
+        {
+          "type": "text",
+          "body": "Gain &gt; 0 ⇒ accept (with default <code>fUseZeros = 0</code>; the <code>-z</code> flag would also accept gain == 0)."
+        }
+      ]
+    },
+    {
+      "title": "Commit replacement: 5 ANDs → 4 ANDs",
+      "narrative": "<code>Dec_GraphUpdateNetwork</code> materializes the 3 new ANDs over leaves <code>{a, c, d, n6}</code> and redirects f's PO to the new top node. The old MFFC ({f, n8, n7, n9}) becomes dangling and is cleaned up by reference counting.<br><br>The pre-existing <code>n6 = a&amp;b</code> is untouched — that's exactly why it was kept as a cut leaf.",
+      "highlights": {
+        "node-n6": ["cut-leaf"],
+        "node-a":  ["cut-leaf"],
+        "node-c":  ["cut-leaf"],
+        "node-d":  ["cut-leaf"],
+        "node-f":  ["dimmed"],
+        "node-n8": ["dimmed"],
+        "node-n7": ["dimmed"],
+        "node-n9": ["dimmed"]
+      },
+      "panes": [
+        {
+          "type": "kv",
+          "title": "Final stats",
+          "entries": {
+            "ANDs (before)": "5",
+            "ANDs (after)":  "<strong>4</strong>",
+            "Level":         "3 (unchanged)",
+            "Gain":          "1"
+          }
+        },
+        {
+          "type": "text",
+          "body": "Run <code>write_blif</code> on the result and you'll see <code>m_or = ~b · ~d</code>, <code>m_and = a · ~m_or</code>, <code>m_cd = c · d</code>, <code>f = m_and + m_cd</code> &mdash; exactly the factoring <code>a(b+d) + cd = ab + ad + cd</code>."
+        }
+      ]
+    }
+  ]
+}

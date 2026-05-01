@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ABC synthesis — interactive walkthroughs</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <h1>ABC synthesis &mdash; interactive walkthroughs</h1>
+        <nav>
+            <label for="operator-select">Operator:</label>
+            <select id="operator-select">
+                <option value="rewrite">rewrite (on aoi3)</option>
+            </select>
+        </nav>
+    </header>
+    <main>
+        <section id="canvas-area">
+            <div id="step-header">
+                <button id="btn-prev" aria-label="Previous step">&#9664;</button>
+                <span id="step-indicator">Step 1 / 1</span>
+                <button id="btn-next" aria-label="Next step">&#9654;</button>
+                <span id="step-title"></span>
+            </div>
+            <div id="svg-container"></div>
+            <div id="legend">
+                <span class="legend-item"><span class="swatch cut-leaf"></span>cut leaf</span>
+                <span class="legend-item"><span class="swatch in-mffc"></span>in MFFC</span>
+                <span class="legend-item"><span class="swatch considering"></span>active</span>
+                <span class="legend-item"><span class="swatch replacement-new"></span>new (replacement)</span>
+                <span class="legend-item"><span class="swatch fanout-protected"></span>boundary-boosted</span>
+                <span class="legend-item"><span class="swatch dimmed"></span>dimmed</span>
+            </div>
+        </section>
+        <aside id="side-panel">
+            <div id="narrative"></div>
+            <div id="state-panes"></div>
+        </aside>
+    </main>
+    <footer>
+        <p>
+            Algorithmic walkthroughs for
+            <a href="https://github.com/cyberseihis/abc-synthesis-notes">cyberseihis/abc-synthesis-notes</a>.
+            Use &larr; / &rarr; to step.
+        </p>
+    </footer>
+    <script src="js/main.js"></script>
+</body>
+</html>

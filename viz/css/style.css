@@ -1,0 +1,268 @@
+/* Layout */
+* { box-sizing: border-box; }
+body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #fafafa;
+    color: #222;
+    line-height: 1.5;
+}
+header {
+    background: #2c3e50;
+    color: white;
+    padding: 0.75rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 3px solid #1a252f;
+}
+header h1 { margin: 0; font-size: 1.2rem; font-weight: 500; }
+header nav label { margin-right: 0.5rem; }
+header select {
+    padding: 0.3rem 0.6rem;
+    background: white;
+    color: #222;
+    border: none;
+    border-radius: 3px;
+    font-family: inherit;
+}
+main {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 1.5rem;
+    padding: 1.5rem;
+    min-height: calc(100vh - 130px);
+}
+footer {
+    background: #ecf0f1;
+    padding: 0.5rem 1.5rem;
+    font-size: 0.85rem;
+    color: #555;
+    border-top: 1px solid #ddd;
+}
+footer a { color: #2c3e50; }
+
+/* Canvas area */
+#canvas-area {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+}
+#step-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #eee;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+#step-header button {
+    background: #34495e;
+    color: white;
+    border: none;
+    padding: 0.4rem 0.9rem;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-family: inherit;
+}
+#step-header button:hover { background: #2c3e50; }
+#step-header button:disabled {
+    background: #bbb;
+    cursor: not-allowed;
+}
+#step-indicator {
+    font-family: monospace;
+    color: #555;
+    font-size: 0.9rem;
+    min-width: 90px;
+}
+#step-title {
+    font-weight: 600;
+    color: #2c3e50;
+    flex: 1;
+}
+#svg-container {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: auto;
+    min-height: 400px;
+}
+#svg-container svg {
+    max-width: 100%;
+    height: auto;
+}
+#legend {
+    margin-top: 1rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid #eee;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    font-size: 0.85rem;
+    color: #555;
+}
+.legend-item { display: flex; align-items: center; gap: 0.4rem; }
+.swatch {
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    border-radius: 3px;
+    border: 1.5px solid #888;
+}
+.swatch.cut-leaf       { background: #b3d8ff; border-color: #1a4d80; }
+.swatch.in-mffc        { background: #ffb3b3; border-color: #b04040; }
+.swatch.considering    { background: #fff2b3; border-color: #b08040; }
+.swatch.replacement-new{ background: #b3ffc4; border-color: #2a8b46; }
+.swatch.fanout-protected { background: #fff; border-color: #1a4d80; border-style: dashed; }
+.swatch.dimmed         { background: #eee; border-color: #ccc; }
+
+/* Side panel */
+#side-panel {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    padding: 1rem;
+    overflow-y: auto;
+}
+#narrative {
+    color: #333;
+    font-size: 0.95rem;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #eee;
+}
+#narrative:empty { display: none; }
+#narrative code {
+    background: #f5f5f5;
+    padding: 0 0.3em;
+    border-radius: 2px;
+    font-size: 0.9em;
+}
+.pane {
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #f0f0f0;
+}
+.pane:last-child { border-bottom: none; }
+.pane h3 {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #888;
+    margin: 0 0 0.5rem;
+    font-weight: 600;
+}
+.pane table {
+    width: 100%;
+    font-family: monospace;
+    font-size: 0.85rem;
+    border-collapse: collapse;
+}
+.pane table td {
+    padding: 0.15rem 0.5rem;
+    border-bottom: 1px dotted #eee;
+}
+.pane table td:first-child { color: #666; }
+.pane table tr.changed td {
+    background: #fff2b3;
+    transition: background 0.5s ease;
+}
+.pane ul {
+    margin: 0;
+    padding-left: 1.2rem;
+    font-family: monospace;
+    font-size: 0.85rem;
+}
+.pane ul li { margin-bottom: 0.2rem; }
+.pane ul.empty::before {
+    content: "(empty)";
+    color: #999;
+    font-style: italic;
+}
+.pane dl { margin: 0; font-family: monospace; font-size: 0.85rem; }
+.pane dt {
+    color: #666;
+    display: inline-block;
+    width: 7em;
+}
+.pane dd {
+    margin: 0;
+    display: inline;
+}
+.pane dd::after { content: "\A"; white-space: pre; }
+.pane .formula {
+    background: #f7f7f7;
+    padding: 0.3rem 0.5rem;
+    font-family: monospace;
+    border-left: 3px solid #2c3e50;
+    margin: 0.3rem 0;
+    font-size: 0.85rem;
+}
+
+/* SVG element states */
+#svg-container svg .node ellipse {
+    transition: fill 0.3s, stroke 0.3s, stroke-width 0.3s;
+}
+#svg-container svg .node text {
+    transition: fill 0.3s, font-weight 0.3s;
+}
+
+/* Highlight classes (apply to <g class="node"> wrappers via id) */
+[id^="node-"].cut-leaf ellipse,
+[id^="node-"].cut-leaf:not(:has(ellipse)) text {
+    fill: #b3d8ff;
+    stroke: #1a4d80;
+    stroke-width: 2.5px;
+}
+[id^="node-"].cut-leaf text { fill: #1a4d80; font-weight: 700; }
+
+[id^="node-"].in-mffc ellipse {
+    fill: #ffb3b3 !important;
+    stroke: #b04040;
+    stroke-width: 2.5px;
+}
+[id^="node-"].in-mffc text { fill: #5a1a1a; font-weight: 700; }
+
+[id^="node-"].considering ellipse {
+    fill: #fff2b3 !important;
+    stroke: #b08040;
+    stroke-width: 3px;
+}
+
+[id^="node-"].replacement-new ellipse {
+    fill: #b3ffc4 !important;
+    stroke: #2a8b46;
+    stroke-width: 2.5px;
+    stroke-dasharray: 4,2;
+}
+
+[id^="node-"].fanout-protected ellipse,
+[id^="node-"].fanout-protected:not(:has(ellipse)) text {
+    stroke: #1a4d80;
+    stroke-width: 2.5px;
+    stroke-dasharray: 3,2;
+}
+
+[id^="node-"].dimmed ellipse,
+[id^="node-"].dimmed text { opacity: 0.3; }
+[id^="edge-"].dimmed { opacity: 0.2; }
+[id^="edge-"].active path { stroke: #b08040 !important; stroke-width: 2.5px; }
+[id^="edge-"].in-mffc path { stroke: #b04040 !important; stroke-width: 2.2px; }
+
+/* Counter highlight on side pane */
+.counter-bumped { color: #2a8b46; font-weight: 700; }
+.counter-zeroed { color: #b04040; font-weight: 700; }
+.boost { color: #1a4d80; font-weight: 700; }
+
+/* Mobile */
+@media (max-width: 900px) {
+    main { grid-template-columns: 1fr; }
+    #side-panel { max-height: 50vh; }
+}
