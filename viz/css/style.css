@@ -86,15 +86,26 @@ footer a { color: #2c3e50; }
     color: #2c3e50;
     flex: 1;
 }
-#svg-container {
+#canvas-row {
+    flex: 1;
+    display: flex;
+    gap: 1rem;
+    min-height: 400px;
+    align-items: stretch;
+}
+#svg-container, #aux-container {
     flex: 1;
     display: flex;
     align-items: center;
     justify-content: center;
     overflow: auto;
-    min-height: 400px;
 }
-#svg-container svg {
+#aux-container[hidden] { display: none; }
+#aux-container {
+    border-left: 2px dashed #ddd;
+    padding-left: 1rem;
+}
+#svg-container svg, #aux-container svg {
     max-width: 100%;
     height: auto;
 }
@@ -215,53 +226,53 @@ footer a { color: #2c3e50; }
 }
 
 /* Highlight classes (apply to <g class="node"> wrappers via id) */
-[id^="node-"].cut-leaf ellipse,
-[id^="node-"].cut-leaf:not(:has(ellipse)) text {
+.node.cut-leaf ellipse,
+.node.cut-leaf:not(:has(ellipse)) text {
     fill: #b3d8ff;
     stroke: #1a4d80;
     stroke-width: 2.5px;
 }
-[id^="node-"].cut-leaf text { fill: #1a4d80; font-weight: 700; }
+.node.cut-leaf text { fill: #1a4d80; font-weight: 700; }
 
-[id^="node-"].in-mffc ellipse {
+.node.in-mffc ellipse {
     fill: #ffb3b3 !important;
     stroke: #b04040;
     stroke-width: 2.5px;
 }
-[id^="node-"].in-mffc text { fill: #5a1a1a; font-weight: 700; }
+.node.in-mffc text { fill: #5a1a1a; font-weight: 700; }
 
-[id^="node-"].considering ellipse {
+.node.considering ellipse {
     fill: #fff2b3 !important;
     stroke: #b08040;
     stroke-width: 3px;
 }
 
-[id^="node-"].replacement-new ellipse {
+.node.replacement-new ellipse {
     fill: #b3ffc4 !important;
     stroke: #2a8b46;
     stroke-width: 2.5px;
     stroke-dasharray: 4,2;
 }
 
-[id^="node-"].fanout-protected ellipse,
-[id^="node-"].fanout-protected:not(:has(ellipse)) text {
+.node.fanout-protected ellipse,
+.node.fanout-protected:not(:has(ellipse)) text {
     stroke: #1a4d80;
     stroke-width: 2.5px;
     stroke-dasharray: 3,2;
 }
 
-[id^="node-"].dimmed ellipse,
-[id^="node-"].dimmed text { opacity: 0.3; }
-[id^="edge-"].dimmed { opacity: 0.2; }
-[id^="edge-"].active path { stroke: #b08040 !important; stroke-width: 2.5px; }
-[id^="edge-"].in-mffc path { stroke: #b04040 !important; stroke-width: 2.2px; }
-[id^="edge-"].cut-leaf path { stroke: #1a4d80 !important; stroke-width: 2.2px; }
+.node.dimmed ellipse,
+.node.dimmed text { opacity: 0.3; }
+.edge.dimmed { opacity: 0.2; }
+.edge.active path { stroke: #b08040 !important; stroke-width: 2.5px; }
+.edge.in-mffc path { stroke: #b04040 !important; stroke-width: 2.2px; }
+.edge.cut-leaf path { stroke: #1a4d80 !important; stroke-width: 2.2px; }
 
 /* Not-yet-introduced */
-[id^="node-"].hidden, [id^="edge-"].hidden { opacity: 0.08; }
+.node.hidden, .edge.hidden { opacity: 0.08; }
 
 /* Just-introduced (one-shot glow) */
-[id^="node-"].fresh ellipse {
+.node.fresh ellipse {
     fill: #b3ffc4 !important;
     stroke: #2a8b46;
     stroke-width: 3px;
@@ -273,8 +284,35 @@ footer a { color: #2c3e50; }
 }
 
 /* Constants */
-[id^="node-"].const-true text { fill: #2a8b46; font-weight: 700; }
-[id^="node-"].const-false text { fill: #b04040; font-weight: 700; }
+.node.const-true text { fill: #2a8b46; font-weight: 700; }
+.node.const-false text { fill: #b04040; font-weight: 700; }
+
+/* Strash request verdict states (apply to candidate node + verdict text) */
+.node.verdict-miss ellipse {
+    fill: #b3ffc4 !important;
+    stroke: #2a8b46;
+    stroke-dasharray: none;
+}
+.node.verdict-miss text { fill: #1a4d22; font-weight: 700; }
+.node.verdict-hit ellipse {
+    fill: #b3d8ff !important;
+    stroke: #1a4d80;
+    stroke-dasharray: none;
+}
+.node.verdict-hit text { fill: #1a4d80; font-weight: 700; }
+.node.verdict-fold ellipse {
+    fill: #ffd6d6 !important;
+    stroke: #b04040;
+    stroke-dasharray: none;
+}
+.node.verdict-fold text { fill: #b04040; font-weight: 700; }
+.node.verdict-text text {
+    font-size: 13px !important;
+    font-weight: 600 !important;
+}
+.node.verdict-text.verdict-miss text { fill: #2a8b46; }
+.node.verdict-text.verdict-hit text  { fill: #1a4d80; }
+.node.verdict-text.verdict-fold text { fill: #b04040; }
 
 /* Counter highlight on side pane */
 .counter-bumped { color: #2a8b46; font-weight: 700; }

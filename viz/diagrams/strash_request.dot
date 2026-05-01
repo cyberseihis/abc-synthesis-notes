@@ -1,0 +1,30 @@
+// Aux SVG for strash: shows the AND request currently being processed.
+// Per-step text replacement updates aux-in0 / aux-in1 / aux-verdict labels.
+digraph strash_request {
+    rankdir = TB
+    bgcolor = "transparent"
+    label = "Hash-table query"
+    labelloc = "t"
+    fontname = "monospace"
+    fontsize = 14
+    nodesep = 0.4
+    ranksep = 0.55
+
+    node [fontname = "monospace", fontsize = 14, color = "#333333"]
+    edge [color = "#888888", penwidth = 1.4, style = dashed]
+
+    { rank = source
+      in0 [id="aux-in0", label="?", shape=circle, width=0.6, fixedsize=true, style=filled, fillcolor="#e0eaff", color="#1a4d80", penwidth=2]
+      in1 [id="aux-in1", label="?", shape=circle, width=0.6, fixedsize=true, style=filled, fillcolor="#e0eaff", color="#1a4d80", penwidth=2]
+    }
+
+    candidate [id="aux-candidate", label="AND?", shape=circle, width=0.75, fixedsize=true, style="filled,dashed", fillcolor="#fff6e6", color="#b08040", penwidth=2]
+
+    { rank = sink
+      verdict [id="aux-verdict", label="(awaiting request)", shape=plaintext, fontsize=13, fontcolor="#666666"]
+    }
+
+    in0 -> candidate [id="aux-edge-in0"]
+    in1 -> candidate [id="aux-edge-in1"]
+    candidate -> verdict [id="aux-edge-result"]
+}

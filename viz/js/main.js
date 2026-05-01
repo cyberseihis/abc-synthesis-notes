@@ -6,14 +6,17 @@
 
 const state = {
     op: null,        // current operator JSON
-    svg: null,       // SVG root element
+    svg: null,       // main SVG root element
+    auxSvg: null,    // optional aux SVG root element
+    auxOriginalText: null,  // map: id -> original textContent for restoring
     step: 0,         // current step index
 };
 
 const HIGHLIGHT_CLASSES = [
     'cut-leaf', 'in-mffc', 'considering', 'replacement-new',
     'fanout-protected', 'dimmed', 'active', 'hidden', 'fresh',
-    'const-true', 'const-false'
+    'const-true', 'const-false',
+    'verdict-miss', 'verdict-hit', 'verdict-fold', 'verdict-text'
 ];
 
 async function loadOperator(name) {
@@ -28,6 +31,32 @@ async function loadOperator(name) {
         });
         document.getElementById('svg-container').innerHTML = svgText;
         state.svg = document.querySelector('#svg-container svg');
+
+        // Optional aux SVG
+        const auxContainer = document.getElementById('aux-container');
+        if (op.auxCircuit) {
+            const auxText = await fetch(`diagrams/${op.auxCircuit}.svg`).then(r => {
+                if (!r.ok) throw new Error(`fetch ${op.auxCircuit}.svg: ${r.status}`);
+                return r.text();
+            });
+            auxContainer.innerHTML = auxText;
+            auxContainer.hidden = false;
+            state.auxSvg = auxContainer.querySelector('svg');
+            // Snapshot original text content of every <text> with an id, so we
+            // can restore on step change.
+            state.auxOriginalText = new Map();
+            state.auxSvg.querySelectorAll('text').forEach(t => {
+                // find ancestor <g> with id (graphviz puts ids on the group)
+                const g = t.closest('g[id]');
+                if (g) state.auxOriginalText.set(g.id, t.textContent);
+            });
+        } else {
+            auxContainer.innerHTML = '';
+            auxContainer.hidden = true;
+            state.auxSvg = null;
+            state.auxOriginalText = null;
+        }
+
         state.op = op;
         state.step = 0;
         render();
@@ -48,20 +77,48 @@ function render() {
     document.getElementById('btn-prev').disabled = state.step === 0;
     document.getElementById('btn-next').disabled = state.step === op.steps.length - 1;
 
-    // Clear all dynamic classes from SVG elements
-    state.svg.querySelectorAll('[id^="node-"], [id^="edge-"]').forEach(el => {
-        el.classList.remove(...HIGHLIGHT_CLASSES);
+    // Clear all dynamic classes from both SVGs
+    [state.svg, state.auxSvg].filter(Boolean).forEach(svg => {
+        svg.querySelectorAll('.node, .edge').forEach(el => {
+            el.classList.remove(...HIGHLIGHT_CLASSES);
+        });
     });
 
-    // Apply step's highlights
+    // Restore aux text content (so a step can have textReplace and the next
+    // step starts from a clean slate).
+    if (state.auxSvg && state.auxOriginalText) {
+        state.auxOriginalText.forEach((origText, gid) => {
+            const g = state.auxSvg.querySelector(`g[id="${gid}"]`);
+            if (g) {
+                const t = g.querySelector('text');
+                if (t) t.textContent = origText;
+            }
+        });
+    }
+
+    // Apply step's highlights — search both SVGs for the id
     for (const [id, cls] of Object.entries(step.highlights || {})) {
-        const el = state.svg.querySelector(`[id="${id}"]`);
+        const el = (state.svg && state.svg.querySelector(`[id="${id}"]`))
+            || (state.auxSvg && state.auxSvg.querySelector(`[id="${id}"]`));
         if (!el) {
             console.warn(`No SVG element with id="${id}"`);
             continue;
         }
         const classes = Array.isArray(cls) ? cls : [cls];
         el.classList.add(...classes);
+    }
+
+    // Apply per-step text replacement on aux SVG (e.g. update request labels)
+    if (step.textReplace && state.auxSvg) {
+        for (const [id, newText] of Object.entries(step.textReplace)) {
+            const g = state.auxSvg.querySelector(`g[id="${id}"]`);
+            if (!g) {
+                console.warn(`No aux SVG element with id="${id}"`);
+                continue;
+            }
+            const t = g.querySelector('text');
+            if (t) t.textContent = newText;
+        }
     }
 
     // Narrative

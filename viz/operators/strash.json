@@ -1,11 +1,12 @@
 {
   "operator": "strash",
   "circuit": "strash_demo",
+  "auxCircuit": "strash_request",
   "title": "strash — structural hashing of the AIG",
   "steps": [
     {
-      "title": "Empty AIG: just constants and PIs",
-      "narrative": "<code>strash</code> processes incoming AND requests in order. The strash table starts empty; only <code>const0/const1</code> and the PIs (<code>a</code>, <code>b</code>, <code>c</code>) exist. We will replay 5 AND-insertion requests; for each, <code>Abc_AigAnd</code> calls <code>Abc_AigAndLookup</code> first.",
+      "title": "Empty AIG; we'll replay 5 AND-insertion requests",
+      "narrative": "<code>strash</code> processes incoming AND requests in order. The aux panel on the right shows the <strong>current request</strong> &mdash; the (child0, child1) pair being looked up. The strash table starts empty; constants and PIs (a, b, c) exist. For each request, <code>Abc_AigAnd</code> calls <code>Abc_AigAndLookup</code> first.",
       "highlights": {
         "node-n1": ["hidden"],
         "node-n2": ["hidden"],
@@ -39,9 +40,17 @@
       ]
     },
     {
-      "title": "Request 1: AND(a, b) — miss, create n1",
-      "narrative": "<code>Abc_AigAndLookup(a, b)</code> orders args by id (a &lt; b), hashes <code>Key1 = HashKey2(a,b)</code>. The bin is empty — miss. <code>Abc_AigAndCreate</code> allocates a new node, n1, with fanin0=a, fanin1=b. The strash table records the binding.",
+      "title": "Request 1: AND(a, b) — miss → create n1",
+      "narrative": "<code>Abc_AigAndLookup(a, b)</code> orders args by id (a &lt; b), hashes <code>Key1 = HashKey2(a,b)</code>. The bin is empty — miss. <code>Abc_AigAndCreate</code> allocates n1 with fanin0=a, fanin1=b. The strash table records the binding.",
+      "textReplace": {
+        "aux-in0": "a",
+        "aux-in1": "b",
+        "aux-candidate": "n1",
+        "aux-verdict": "miss → CREATE"
+      },
       "highlights": {
+        "aux-candidate": ["verdict-miss"],
+        "aux-verdict":   ["verdict-text", "verdict-miss"],
         "node-n1": ["fresh"],
         "edge-a-n1": [],
         "edge-b-n1": [],
@@ -76,9 +85,17 @@
       ]
     },
     {
-      "title": "Request 2: AND(a, c) — miss, create n2",
+      "title": "Request 2: AND(a, c) — miss → create n2",
       "narrative": "Different key (<code>Key2 = HashKey2(a,c)</code>); empty bin → miss → create n2.",
+      "textReplace": {
+        "aux-in0": "a",
+        "aux-in1": "c",
+        "aux-candidate": "n2",
+        "aux-verdict": "miss → CREATE"
+      },
       "highlights": {
+        "aux-candidate": ["verdict-miss"],
+        "aux-verdict":   ["verdict-text", "verdict-miss"],
         "node-n2": ["fresh"],
         "edge-a-n2": [],
         "edge-c-n2": [],
@@ -111,9 +128,17 @@
       ]
     },
     {
-      "title": "Request 3: AND(a, b) again — HIT, return existing n1",
-      "narrative": "Key1 hits. <code>Abc_AigBinForEachEntry</code> walks the chain; the entry's (child0, child1) matches (a, b) exactly → return <strong>n1</strong>. No new node. This is the dedup that makes structural hashing essential.",
+      "title": "Request 3: AND(a, b) AGAIN — HIT, return n1",
+      "narrative": "Key1 hits. <code>Abc_AigBinForEachEntry</code> walks the chain; the entry's (child0, child1) matches (a, b) exactly → return <strong>n1</strong>. No new node. The aux panel highlights this is a HIT — the candidate dissolves and the request is redirected to the existing n1.",
+      "textReplace": {
+        "aux-in0": "a",
+        "aux-in1": "b",
+        "aux-candidate": "→ n1",
+        "aux-verdict": "HIT → return n1"
+      },
       "highlights": {
+        "aux-candidate": ["verdict-hit"],
+        "aux-verdict":   ["verdict-text", "verdict-hit"],
         "node-n1": ["considering"],
         "node-n3": ["hidden"],
         "node-PO": ["hidden"],
@@ -144,9 +169,17 @@
       ]
     },
     {
-      "title": "Request 4: AND(n1, ~n1) — trivial law, return const0",
-      "narrative": "<code>Abc_AigAndLookup(n1, ~n1)</code> spots the case <code>p == ~q</code> at <code>abcAig.c:413..414</code> and returns <code>~const1 = const0</code> directly — never even reaching the hash table.<br><br>The other trivial folds at <code>abcAig.c:411..426</code>: <code>p == q → p</code>, <code>p == const1 → q</code>, <code>p == ~const1 → 0</code>.",
+      "title": "Request 4: AND(n1, ~n1) — trivial-law fold to const0",
+      "narrative": "<code>Abc_AigAndLookup(n1, ~n1)</code> spots the case <code>p == ~q</code> at <code>abcAig.c:413..414</code> and returns <code>~const1 = const0</code> directly — never even reaching the hash table. The other folds at <code>abcAig.c:411..426</code>: <code>p == q → p</code>, <code>p == const1 → q</code>, <code>p == ~const1 → 0</code>.",
+      "textReplace": {
+        "aux-in0": "n1",
+        "aux-in1": "~n1",
+        "aux-candidate": "→ 0",
+        "aux-verdict": "FOLD → const0"
+      },
       "highlights": {
+        "aux-candidate": ["verdict-fold"],
+        "aux-verdict":   ["verdict-text", "verdict-fold"],
         "node-n1": ["considering"],
         "node-n3": ["hidden"],
         "node-PO": ["hidden"],
@@ -186,9 +219,17 @@
       ]
     },
     {
-      "title": "Request 5: AND(n1, n2) — miss, create n3",
-      "narrative": "Key3 = <code>HashKey2(n1, n2)</code>. Empty bin → miss → allocate n3 with fanin0=n1, fanin1=n2. n3 is the f-output. Strash table now has 3 entries; the AIG has 3 ANDs total — exactly the number that <em>survives</em> the 5 requests after dedup and constant-folding.",
+      "title": "Request 5: AND(n1, n2) — miss → create n3",
+      "narrative": "Key3 = <code>HashKey2(n1, n2)</code>. Empty bin → miss → allocate n3. The AIG now has 3 ANDs total — exactly the number that <em>survives</em> the 5 requests after dedup and constant-folding. <strong>5 requests, 3 nodes.</strong>",
+      "textReplace": {
+        "aux-in0": "n1",
+        "aux-in1": "n2",
+        "aux-candidate": "n3",
+        "aux-verdict": "miss → CREATE"
+      },
       "highlights": {
+        "aux-candidate": ["verdict-miss"],
+        "aux-verdict":   ["verdict-text", "verdict-miss"],
         "node-n3": ["fresh"],
         "edge-n1-n3": [],
         "edge-n2-n3": [],
@@ -217,7 +258,7 @@
         },
         {
           "type": "text",
-          "body": "<strong>Why this matters.</strong> Without strash, the AIG would have grown to 5 ANDs (one per request); with strash, it holds 3. Every later operator (rewrite/refactor/resub/&#8230;) relies on <code>Abc_AigAndLookup</code> the same way — for &quot;is this AND already here?&quot; queries when scoring potential replacements (&sect;0.7)."
+          "body": "Without strash, the AIG would hold 5 ANDs (one per request); strash collapsed it to 3. Every later operator (rewrite/refactor/resub) relies on <code>Abc_AigAndLookup</code> the same way — for &quot;is this AND already here?&quot; queries when scoring potential replacements (§Dec_Graph)."
         }
       ]
     }

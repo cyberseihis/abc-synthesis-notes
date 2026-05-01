@@ -1,0 +1,52 @@
+// Aux SVG for decgraph: a candidate Dec_Graph_t over leaves {a, c, d, n6}.
+// Three internal ANDs m1, m2, m3 implementing the truth function for class 12.
+//
+//   a    c    d    n6
+//   |\   |    |\   |
+//   | \  |    | \  |
+//   m1   m2   |   |   m1 = a & d
+//    \   |   /   /    m2 = c & d
+//     \  |  /  /      m3 = OR(m1, m2, n6)
+//      \\__//
+//       m3
+//        |
+//       OUT
+digraph decgraph_candidate {
+    rankdir = TB
+    bgcolor = "transparent"
+    label = "Candidate Dec_Graph"
+    labelloc = "t"
+    fontname = "monospace"
+    fontsize = 14
+    nodesep = 0.4
+    ranksep = 0.5
+
+    node [fontname = "monospace", fontsize = 14, color = "#333333"]
+    edge [color = "#333333", penwidth = 1.4]
+
+    { rank = source
+      a  [id="aux-node-a",  label="a",  shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
+      c  [id="aux-node-c",  label="c",  shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
+      d  [id="aux-node-d",  label="d",  shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
+      n6 [id="aux-node-n6", label="n6", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
+    }
+
+    m1 [id="aux-node-m1", label="m1", shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
+    m2 [id="aux-node-m2", label="m2", shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
+    m3 [id="aux-node-m3", label="m3", shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
+
+    { rank = sink
+      OUT [id="aux-node-OUT", label="f'", shape=plaintext, fontsize=14, fontcolor="#806000"]
+    }
+
+    a -> m1 [id="aux-edge-a-m1"]
+    d -> m1 [id="aux-edge-d-m1"]
+    c -> m2 [id="aux-edge-c-m2"]
+    d -> m2 [id="aux-edge-d-m2"]
+
+    m1 -> m3 [id="aux-edge-m1-m3"]
+    m2 -> m3 [id="aux-edge-m2-m3"]
+    n6 -> m3 [id="aux-edge-n6-m3"]
+
+    m3 -> OUT [id="aux-edge-m3-OUT"]
+}
