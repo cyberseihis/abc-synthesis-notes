@@ -6,33 +6,41 @@
 // from MFFC even though it's in t's cone — that's the "shared internal
 // node escapes the MFFC" lesson.
 //
-// p, q are cut leaves at internal ANDs with fanout 1; their boost is
-// what stops deref from walking past them into a, b, c, d — that's the
-// "boundary trick protects cut leaves" lesson.
+// p, q, w, z are cut leaves at internal ANDs with fanout 1; their boost
+// is what stops deref from walking past them into a, b, c, d, w1, w2,
+// z1, z2 — that's the "boundary trick protects cut leaves" lesson.
 //
-// MFFC of t with cut {p, q, e, h} = {t, m}. Two of six ANDs.
-// n survives via sharing; p, q survive via boost; e, h, y, g, PO_g
+// MFFC of t with cut {p, q, w, z, e, h} = {t, m, u, v}. Four of nine ANDs.
+// n survives via sharing; p, q, w, z survive via boost; e, h, y, g, PO_g
 // are never touched.
 digraph mffc_demo {
     rankdir = TB
     ranksep = 0.55
-    nodesep = 0.4
+    nodesep = 0.35
     bgcolor = "transparent"
     node [fontname = "monospace", fontsize = 14, color = "#333333"]
     edge [color = "#333333", penwidth = 1.4]
 
     { rank = source
-      a [id="node-a", label="a", xlabel="[1]", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
-      b [id="node-b", label="b", xlabel="[1]", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
-      c [id="node-c", label="c", xlabel="[1]", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
-      d [id="node-d", label="d", xlabel="[1]", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
-      e [id="node-e", label="e", xlabel="[1]", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
-      h [id="node-h", label="h", xlabel="[1]", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
-      y [id="node-y", label="y", xlabel="[1]", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
+      a  [id="node-a",  label="a",  xlabel="[1]", shape=plaintext, fontsize=16, fontcolor="#1a4d80"]
+      b  [id="node-b",  label="b",  xlabel="[1]", shape=plaintext, fontsize=16, fontcolor="#1a4d80"]
+      c  [id="node-c",  label="c",  xlabel="[1]", shape=plaintext, fontsize=16, fontcolor="#1a4d80"]
+      d  [id="node-d",  label="d",  xlabel="[1]", shape=plaintext, fontsize=16, fontcolor="#1a4d80"]
+      w1 [id="node-w1", label="w1", xlabel="[1]", shape=plaintext, fontsize=16, fontcolor="#1a4d80"]
+      w2 [id="node-w2", label="w2", xlabel="[1]", shape=plaintext, fontsize=16, fontcolor="#1a4d80"]
+      z1 [id="node-z1", label="z1", xlabel="[1]", shape=plaintext, fontsize=16, fontcolor="#1a4d80"]
+      z2 [id="node-z2", label="z2", xlabel="[1]", shape=plaintext, fontsize=16, fontcolor="#1a4d80"]
+      e  [id="node-e",  label="e",  xlabel="[1]", shape=plaintext, fontsize=16, fontcolor="#1a4d80"]
+      h  [id="node-h",  label="h",  xlabel="[1]", shape=plaintext, fontsize=16, fontcolor="#1a4d80"]
+      y  [id="node-y",  label="y",  xlabel="[1]", shape=plaintext, fontsize=16, fontcolor="#1a4d80"]
     }
 
     p [id="node-p", label="p", xlabel="[1]", shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
     q [id="node-q", label="q", xlabel="[1]", shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
+    w [id="node-w", label="w", xlabel="[1]", shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
+    z [id="node-z", label="z", xlabel="[1]", shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
+    u [id="node-u", label="u", xlabel="[1]", shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
+    v [id="node-v", label="v", xlabel="[1]", shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
     m [id="node-m", label="m", xlabel="[1]", shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
     n [id="node-n", label="n", xlabel="[2]", shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
     t [id="node-t", label="t", xlabel="[1]", shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
@@ -43,18 +51,26 @@ digraph mffc_demo {
       POg [id="node-POg", label="PO_g", shape=plaintext, fontsize=13, fontcolor="#806000"]
     }
 
-    a -> p [id="edge-a-p"]
-    b -> p [id="edge-b-p"]
-    c -> q [id="edge-c-q"]
-    d -> q [id="edge-d-q"]
-    p -> m [id="edge-p-m"]
-    q -> m [id="edge-q-m"]
-    e -> n [id="edge-e-n"]
-    h -> n [id="edge-h-n"]
-    m -> t [id="edge-m-t"]
-    n -> t [id="edge-n-t"]
-    n -> g [id="edge-n-g"]
-    y -> g [id="edge-y-g"]
-    t -> POt [id="edge-t-POt"]
-    g -> POg [id="edge-g-POg"]
+    a  -> p [id="edge-a-p"]
+    b  -> p [id="edge-b-p"]
+    c  -> q [id="edge-c-q"]
+    d  -> q [id="edge-d-q"]
+    w1 -> w [id="edge-w1-w"]
+    w2 -> w [id="edge-w2-w"]
+    z1 -> z [id="edge-z1-z"]
+    z2 -> z [id="edge-z2-z"]
+    p  -> u [id="edge-p-u"]
+    w  -> u [id="edge-w-u"]
+    q  -> v [id="edge-q-v"]
+    z  -> v [id="edge-z-v"]
+    u  -> m [id="edge-u-m"]
+    v  -> m [id="edge-v-m"]
+    e  -> n [id="edge-e-n"]
+    h  -> n [id="edge-h-n"]
+    m  -> t [id="edge-m-t"]
+    n  -> t [id="edge-n-t"]
+    n  -> g [id="edge-n-g"]
+    y  -> g [id="edge-y-g"]
+    t  -> POt [id="edge-t-POt"]
+    g  -> POg [id="edge-g-POg"]
 }

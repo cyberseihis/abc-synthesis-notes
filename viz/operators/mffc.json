@@ -5,7 +5,7 @@
   "steps": [
     {
       "title": "Two outputs (t, g); n is shared between them",
-      "narrative": "An MFFC w.r.t. a cut is the set of internal ANDs that would die if the target were replaced — but only counting nodes <em>above</em> the cut whose only consumer (transitively) is the target.<br><br>This AIG has two outputs: <strong>t</strong> (target) and <strong>g</strong>. <strong>n is consumed by both</strong> (look at n's <code>[2]</code>). So even though n is in t's cone, n is <em>not</em> private to t — it must survive any replacement of t. The MFFC walk needs to detect this and reject n.<br><br>Cut for t: <code>{p, q, e, h}</code>. p, q are internal ANDs (fanout 1 into the cone); e, h are PIs (fanout 1 into the cone).",
+      "narrative": "An MFFC w.r.t. a cut is the set of internal ANDs that would die if the target were replaced — only counting nodes <em>above</em> the cut whose only consumer (transitively) is the target.<br><br>This AIG has two outputs: <strong>t</strong> (target) and <strong>g</strong>. <strong>n is consumed by both</strong> (look at n's <code>[2]</code>). So even though n is in t's cone, n is <em>not</em> private to t — it must survive any replacement of t. The walk needs to detect this and reject n.<br><br>Cut for t: <code>{p, q, w, z, e, h}</code>. p, q, w, z are internal ANDs (fanout 1 into the cone); e, h are PIs (fanout 1 into the cone).",
       "highlights": {
         "node-t": ["considering"]
       },
@@ -14,27 +14,30 @@
           "type": "kv",
           "title": "Circuit",
           "entries": {
-            "p": "a · b   <em>(cut leaf — fanout [1])</em>",
-            "q": "c · d   <em>(cut leaf — fanout [1])</em>",
-            "m": "p · q   <em>(fanout [1] — only feeds t)</em>",
-            "n": "e · h   <em>(fanout <strong>[2]</strong> — feeds t AND g)</em>",
-            "t": "m · n   <em>(target)</em>",
-            "g": "n · y   <em>(other output, USES n)</em>"
+            "p, q, w, z": "internal ANDs at the cut, each fanout [1]",
+            "u":          "p · w   <em>(fanout [1] — only feeds m)</em>",
+            "v":          "q · z   <em>(fanout [1] — only feeds m)</em>",
+            "m":          "u · v   <em>(fanout [1] — only feeds t)</em>",
+            "n":          "e · h   <em>(fanout <strong>[2]</strong> — feeds t AND g)</em>",
+            "t":          "m · n   <em>(target)</em>",
+            "g":          "n · y   <em>(other output, USES n)</em>"
           }
         },
         {
           "type": "text",
           "title": "Expected MFFC",
-          "body": "<code>{ t, m }</code>. n is rejected because its fanout count won't reach zero. p, q are protected by the boundary boost. e, h, y, g, PO_g are never touched."
+          "body": "<code>{ t, m, u, v }</code> — 4 of 9 internal ANDs. n is rejected (sharing). p, q, w, z are protected by the boundary boost. e, h, y, g, PO_g are never touched."
         }
       ]
     },
     {
       "title": "Fanout counters and the two protections",
-      "narrative": "Each AND carries a live fanout count (the <code>[N]</code> xlabels). The walk dereferences <code>t</code> top-down, decrementing each visited node's count by 1. <strong>If a count reaches zero</strong> the node has no remaining consumer outside <code>t</code>'s cone → mark it and recurse into its fanins. Otherwise stop and don't recurse.<br><br>Two failure modes a naive walk has to handle:<br><br><strong>(a) Cut leaves <code>p, q</code> have fanout 1.</strong> They feed only into <code>t</code>'s cone. Decrement → 0 → the walk would recurse past them into <code>a, b, c, d</code>, which live below the cut. <em>Fix:</em> a <strong>+1 boost</strong> on every cut leaf before the walk (undone after).<br><br><strong>(b) Shared in-cone node <code>n</code> has fanout 2</strong> — it feeds both <code>t</code> and the unrelated output <code>g</code>. Decrement leaves it at 1, not zero, and the walk stops there <em>by itself</em>. <em>No fix needed</em>: sharing is natural protection.",
+      "narrative": "Each AND carries a live fanout count (the <code>[N]</code> xlabels). The walk dereferences <code>t</code> top-down, decrementing each visited node's count by 1. <strong>If a count reaches zero</strong> the node has no remaining consumer outside <code>t</code>'s cone → mark it and recurse into its fanins. Otherwise stop.<br><br>Two failure modes a naive walk has to handle:<br><br><strong>(a) Cut leaves <code>p, q, w, z</code> have fanout 1.</strong> They feed only into <code>t</code>'s cone. Decrement → 0 → the walk would recurse past them into <code>a, b, c, d, w1, w2, z1, z2</code>, which live below the cut. <em>Fix:</em> <strong>+1 boost</strong> on every cut leaf (undone after).<br><br><strong>(b) Shared in-cone node <code>n</code> has fanout 2</strong> — it feeds both <code>t</code> and the unrelated output <code>g</code>. Decrement leaves it at 1, not zero, and the walk stops there <em>by itself</em>. <em>No fix needed</em>: sharing is natural protection.",
       "highlights": {
         "node-p": ["cut-leaf"],
         "node-q": ["cut-leaf"],
+        "node-w": ["cut-leaf"],
+        "node-z": ["cut-leaf"],
         "node-e": ["cut-leaf"],
         "node-h": ["cut-leaf"],
         "node-n": ["survives"],
@@ -46,26 +49,29 @@
           "title": "How each non-MFFC node escapes the walk",
           "header": ["node", "fanout", "decrement → 0?", "protected by"],
           "rows": [
-            ["p", "1", "yes — would walk into a, b", "<strong>boost</strong>"],
-            ["q", "1", "yes — would walk into c, d", "<strong>boost</strong>"],
-            ["e, h", "1", "PIs — never added regardless", "boost (redundant)"],
-            ["n", "2", "no — g still consumes it", "<strong>sharing</strong>"]
+            ["p, q, w, z", "1", "yes — would walk past the cut", "<strong>boost</strong>"],
+            ["e, h",       "1", "PIs — never added regardless",  "boost (redundant)"],
+            ["n",          "2", "no — g still consumes it",      "<strong>sharing</strong>"]
           ]
         }
       ]
     },
     {
       "title": "Apply boundary boost: +1 on every cut leaf",
-      "narrative": "<code>abcRewrite.c:138..148</code> brackets the deref with a <code>+1/-1</code> on each cut-leaf's fanout count. Boost only matters for cut leaves with fanout 1; for cut leaves that already have multiple consumers it's redundant (but harmless).",
+      "narrative": "<code>abcRewrite.c:138..148</code> brackets the deref with a <code>+1/-1</code> on each cut-leaf's fanout count. Boost only matters for cut leaves with fanout 1; for cut leaves that already have multiple consumers it's redundant (but harmless). Watch the six xlabels jump from <code>[1]</code> to <code>[2]</code>:",
       "textReplace": {
         "node-p": "p\n[2]",
         "node-q": "q\n[2]",
+        "node-w": "w\n[2]",
+        "node-z": "z\n[2]",
         "node-e": "e\n[2]",
         "node-h": "h\n[2]"
       },
       "highlights": {
         "node-p": ["fanout-protected"],
         "node-q": ["fanout-protected"],
+        "node-w": ["fanout-protected"],
+        "node-z": ["fanout-protected"],
         "node-e": ["fanout-protected"],
         "node-h": ["fanout-protected"],
         "node-t": ["considering"]
@@ -75,10 +81,7 @@
           "type": "kv",
           "title": "Boosted leaves",
           "entries": {
-            "p.fanouts": "1 → <span class=\"boost\">2</span>",
-            "q.fanouts": "1 → <span class=\"boost\">2</span>",
-            "e.fanouts": "1 → <span class=\"boost\">2</span>",
-            "h.fanouts": "1 → <span class=\"boost\">2</span>"
+            "p, q, w, z, e, h": "1 → <span class=\"boost\">2</span>"
           }
         }
       ]
@@ -89,6 +92,8 @@
       "textReplace": {
         "node-p": "p\n[2]",
         "node-q": "q\n[2]",
+        "node-w": "w\n[2]",
+        "node-z": "z\n[2]",
         "node-e": "e\n[2]",
         "node-h": "h\n[2]",
         "node-t": "t\n[0]"
@@ -96,6 +101,8 @@
       "highlights": {
         "node-p": ["fanout-protected"],
         "node-q": ["fanout-protected"],
+        "node-w": ["fanout-protected"],
+        "node-z": ["fanout-protected"],
         "node-e": ["fanout-protected"],
         "node-h": ["fanout-protected"],
         "node-t": ["in-mffc"]
@@ -112,11 +119,13 @@
       ]
     },
     {
-      "title": "Deref m (t.fanin0): 1 → 0 → recurse, count = 2",
-      "narrative": "Decrement m.fanouts: 1 → 0 → recurse, mark m.",
+      "title": "Deref m: 1 → 0 → recurse, count = 2",
+      "narrative": "Decrement m.fanouts: 1 → 0 → recurse, mark m. Walk continues into m's fanins u and v.",
       "textReplace": {
         "node-p": "p\n[2]",
         "node-q": "q\n[2]",
+        "node-w": "w\n[2]",
+        "node-z": "z\n[2]",
         "node-e": "e\n[2]",
         "node-h": "h\n[2]",
         "node-t": "t\n[0]",
@@ -125,6 +134,8 @@
       "highlights": {
         "node-p": ["fanout-protected"],
         "node-q": ["fanout-protected"],
+        "node-w": ["fanout-protected"],
+        "node-z": ["fanout-protected"],
         "node-e": ["fanout-protected"],
         "node-h": ["fanout-protected"],
         "node-t": ["in-mffc"],
@@ -144,65 +155,90 @@
       ]
     },
     {
-      "title": "Boost saves p (m.fanin0): 2 → 1, NOT zero — STOP",
-      "narrative": "p is a cut leaf. Boosted count: 2. Decrement → 1. <strong>Not zero</strong> → recursion STOPS. p is <em>not</em> added to the MFFC.<br><br>Without the boost, p would have gone 1 → 0 here and we'd have walked into a, b — the wrong outcome.",
+      "title": "Deref u (m's left fanin): 1 → 0 → recurse, count = 3; boost stops at p, w",
+      "narrative": "u.fanouts: 1 → 0 → recurse, mark u. count = 3.<br><br>Now walk into u's fanins p and w. <strong>Both are cut leaves at boosted count 2:</strong><br><code>deref(p)</code>: 2 → 1, NOT zero → STOP. p stays out.<br><code>deref(w)</code>: 2 → 1, NOT zero → STOP. w stays out.<br><br>Without the boost, p and w would have hit zero here and we'd have walked into a, b, w1, w2 — the wrong outcome.",
       "textReplace": {
         "node-p": "p\n[1]",
         "node-q": "q\n[2]",
+        "node-w": "w\n[1]",
+        "node-z": "z\n[2]",
         "node-e": "e\n[2]",
         "node-h": "h\n[2]",
         "node-t": "t\n[0]",
-        "node-m": "m\n[0]"
+        "node-m": "m\n[0]",
+        "node-u": "u\n[0]"
       },
       "highlights": {
         "node-p": ["fanout-protected"],
         "node-q": ["fanout-protected"],
+        "node-w": ["fanout-protected"],
+        "node-z": ["fanout-protected"],
         "node-e": ["fanout-protected"],
         "node-h": ["fanout-protected"],
         "node-t": ["in-mffc"],
         "node-m": ["in-mffc"],
+        "node-u": ["in-mffc"],
         "edge-m-t": ["in-mffc"],
-        "edge-p-m": ["active"]
+        "edge-u-m": ["in-mffc"],
+        "edge-p-u": ["active"],
+        "edge-w-u": ["active"]
       },
       "panes": [
         {
           "type": "kv",
-          "title": "Cut-leaf protection",
+          "title": "Deref state",
           "entries": {
-            "p.fanouts":      "<span class=\"boost\">2 → 1</span>",
-            "Reaches zero?":  "<strong>no</strong> (boost held)",
-            "p in MFFC?":     "<strong>no</strong>"
+            "count":     "<span class=\"counter-bumped\">3</span>",
+            "MFFC":      "{ t, m, u }",
+            "u.fanouts": "<span class=\"counter-zeroed\">1 → 0</span>",
+            "p.fanouts": "<span class=\"boost\">2 → 1</span> (boost held)",
+            "w.fanouts": "<span class=\"boost\">2 → 1</span> (boost held)"
           }
         }
       ]
     },
     {
-      "title": "Same for q (m.fanin1): 2 → 1, STOP",
-      "narrative": "q is the other cut leaf reached from m. Same outcome.",
+      "title": "Deref v (m's right fanin): 1 → 0 → recurse, count = 4; boost stops at q, z",
+      "narrative": "v.fanouts: 1 → 0 → recurse, mark v. count = 4. Walk into q and z; same boost protection — both 2 → 1, recursion stops.",
       "textReplace": {
         "node-p": "p\n[1]",
         "node-q": "q\n[1]",
+        "node-w": "w\n[1]",
+        "node-z": "z\n[1]",
         "node-e": "e\n[2]",
         "node-h": "h\n[2]",
         "node-t": "t\n[0]",
-        "node-m": "m\n[0]"
+        "node-m": "m\n[0]",
+        "node-u": "u\n[0]",
+        "node-v": "v\n[0]"
       },
       "highlights": {
         "node-p": ["fanout-protected"],
         "node-q": ["fanout-protected"],
+        "node-w": ["fanout-protected"],
+        "node-z": ["fanout-protected"],
         "node-e": ["fanout-protected"],
         "node-h": ["fanout-protected"],
         "node-t": ["in-mffc"],
         "node-m": ["in-mffc"],
+        "node-u": ["in-mffc"],
+        "node-v": ["in-mffc"],
         "edge-m-t": ["in-mffc"],
-        "edge-q-m": ["active"]
+        "edge-u-m": ["in-mffc"],
+        "edge-v-m": ["in-mffc"],
+        "edge-q-v": ["active"],
+        "edge-z-v": ["active"]
       },
       "panes": [
         {
           "type": "kv",
-          "title": "Cut-leaf protection",
+          "title": "Deref state",
           "entries": {
-            "q.fanouts": "<span class=\"boost\">2 → 1</span>"
+            "count":     "<span class=\"counter-bumped\">4</span>",
+            "MFFC":      "{ t, m, u, v }",
+            "v.fanouts": "<span class=\"counter-zeroed\">1 → 0</span>",
+            "q.fanouts": "<span class=\"boost\">2 → 1</span> (boost held)",
+            "z.fanouts": "<span class=\"boost\">2 → 1</span> (boost held)"
           }
         }
       ]
@@ -213,21 +249,31 @@
       "textReplace": {
         "node-p": "p\n[1]",
         "node-q": "q\n[1]",
+        "node-w": "w\n[1]",
+        "node-z": "z\n[1]",
         "node-e": "e\n[2]",
         "node-h": "h\n[2]",
         "node-t": "t\n[0]",
         "node-m": "m\n[0]",
+        "node-u": "u\n[0]",
+        "node-v": "v\n[0]",
         "node-n": "n\n[1]"
       },
       "highlights": {
         "node-p": ["fanout-protected"],
         "node-q": ["fanout-protected"],
+        "node-w": ["fanout-protected"],
+        "node-z": ["fanout-protected"],
         "node-e": ["fanout-protected"],
         "node-h": ["fanout-protected"],
         "node-t": ["in-mffc"],
         "node-m": ["in-mffc"],
+        "node-u": ["in-mffc"],
+        "node-v": ["in-mffc"],
         "node-n": ["survives"],
         "edge-m-t": ["in-mffc"],
+        "edge-u-m": ["in-mffc"],
+        "edge-v-m": ["in-mffc"],
         "edge-n-t": ["active"]
       },
       "panes": [
@@ -235,36 +281,44 @@
           "type": "kv",
           "title": "Sharing protection",
           "entries": {
-            "n.fanouts":      "<span class=\"survives-color\">2 → 1</span>",
-            "Reaches zero?":  "<strong>no</strong> (still consumed by g)",
-            "n in MFFC?":     "<strong>no</strong> &mdash; survives via sharing"
+            "n.fanouts":     "<span class=\"survives-color\">2 → 1</span>",
+            "Reaches zero?": "<strong>no</strong> (still consumed by g)",
+            "n in MFFC?":    "<strong>no</strong> &mdash; survives via sharing"
           }
         },
         {
           "type": "text",
-          "body": "Boost vs. sharing — both stop deref recursion. Boost is artificial protection ABC adds for cut leaves; sharing is real Boolean-network protection that exists naturally. Both yield the same effect: count doesn't reach zero, no recursion, node not in MFFC."
+          "body": "Boost vs. sharing — both stop deref recursion. Boost is artificial protection ABC adds for cut leaves; sharing is real Boolean-network protection. Both yield the same effect: count doesn't reach zero, no recursion, node not in MFFC."
         }
       ]
     },
     {
-      "title": "Result: MFFC = {t, m} — 2 of 6 internal ANDs",
-      "narrative": "Recursion done. count = 2. The 2 red nodes are exactly the ANDs private to t. The 4 cut leaves (blue) survive via boost. <strong>n survives via sharing</strong> — its fanout to g protected it without any artificial boost. g, y, PO_g are entirely untouched.<br><br>The MFFC is <strong>2 out of 6</strong> ANDs, not the whole AIG. That's the point — it's a strict subset, distinguishing &quot;owned by t&quot; from &quot;in t's cone&quot;.",
+      "title": "Result: MFFC = {t, m, u, v} — 4 of 9 internal ANDs",
+      "narrative": "Recursion done. count = 4. The 4 red nodes are exactly the ANDs private to t. The 6 cut leaves (blue, dashed) survive via boost. <strong>n survives via sharing</strong> — its fanout to g protected it without any artificial boost. g, y, PO_g and everything below the cut is entirely untouched.",
       "textReplace": {
         "node-p": "p\n[1]",
         "node-q": "q\n[1]",
+        "node-w": "w\n[1]",
+        "node-z": "z\n[1]",
         "node-e": "e\n[2]",
         "node-h": "h\n[2]",
         "node-t": "t\n[0]",
         "node-m": "m\n[0]",
+        "node-u": "u\n[0]",
+        "node-v": "v\n[0]",
         "node-n": "n\n[1]"
       },
       "highlights": {
         "node-p": ["cut-leaf"],
         "node-q": ["cut-leaf"],
+        "node-w": ["cut-leaf"],
+        "node-z": ["cut-leaf"],
         "node-e": ["cut-leaf"],
         "node-h": ["cut-leaf"],
         "node-t": ["in-mffc"],
         "node-m": ["in-mffc"],
+        "node-u": ["in-mffc"],
+        "node-v": ["in-mffc"],
         "node-n": ["survives"]
       },
       "panes": [
@@ -272,11 +326,11 @@
           "type": "kv",
           "title": "Result",
           "entries": {
-            "nNodesSaved":     "<strong>2</strong>",
-            "MFFC (red)":      "t, m",
-            "Survived (green)":"n &mdash; via sharing with g",
-            "Cut leaves (blue)":"p, q, e, h &mdash; via boost",
-            "Untouched (gray)":"y, g, PO_g, plus a, b, c, d below the cut"
+            "nNodesSaved":      "<strong>4</strong>",
+            "MFFC (red)":       "t, m, u, v",
+            "Survived (green)": "n &mdash; via sharing with g",
+            "Cut leaves (blue)":"p, q, w, z, e, h &mdash; via boost",
+            "Untouched (gray)": "y, g, PO_g, plus everything below the cut"
           }
         },
         {

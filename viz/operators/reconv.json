@@ -1,230 +1,292 @@
 {
   "operator": "reconv",
   "circuit": "reconv_demo",
-  "title": "Reconvergence-driven cut — preferring shared internal nodes",
+  "title": "Reconvergence-driven cut — priority changes the final cut",
   "steps": [
     {
       "title": "What this primitive picks at each step",
-      "narrative": "<code>Abc_NodeGetLeafCostOne</code> (<code>abcReconv.c:126</code>) returns the <strong>number of brand-new leaves</strong> that would be added if the given leaf were popped and replaced by its two fanins:<br><br><code>cost(leaf) = (¬fanin0.in_cone_or_leaves) + (¬fanin1.in_cone_or_leaves)</code><br><br>So <strong>cost 0</strong> = both fanins already in the cut → expansion shrinks |L| by 1. <strong>Cost 1</strong> = one fanin shared → |L| unchanged. <strong>Cost 2</strong> = neither shared → |L| grows. PIs return 999 (cannot expand).<br><br><code>Abc_NodeBuildCutLevelOne_int</code> picks the leaf with the <strong>lowest cost</strong>, breaking ties by deepest level. That's the &quot;prefer reconvergent&quot; bias: a leaf whose fanins are already present in the cone is reconvergent, and gets a strictly lower cost than one whose fanins are fresh.",
+      "narrative": "<code>Abc_NodeGetLeafCostOne</code> (<code>abcReconv.c:126</code>) returns the <strong>number of brand-new leaves</strong> added by popping a leaf and replacing it with its two fanins:<br><br><code>cost(leaf) = (¬fanin0.in_cone_or_leaves) + (¬fanin1.in_cone_or_leaves)</code><br><br><strong>Cost 0</strong> shrinks |L| by 1, <strong>cost 1</strong> keeps |L|, <strong>cost 2</strong> grows |L| by 1. PIs return 999.<br><br><code>Abc_NodeBuildCutLevelOne_int</code> picks the leaf with <strong>lowest cost</strong>, ties by <strong>deepest level</strong>, and stops once <code>|L| + cost − 1 &gt; nNodeSizeMax</code>. That priority is the &quot;prefer reconvergent&quot; bias.<br><br><strong>This walkthrough demonstrates that the priority changes the final cut</strong> — not just the order of expansion. With <code>nNodeSizeMax = 4</code>, cost-based and naive level-based pickers end up with different leaf sets and different cone sizes.",
       "highlights": {
-        "node-n4": ["considering"]
+        "node-T": ["considering"]
       },
       "panes": [
         {
           "type": "kv",
           "title": "Circuit",
           "entries": {
-            "Function": "<code>n4 = (n1 ∧ c) ∧ (n1 ∧ d)</code>",
-            "n1":       "<code>a ∧ b</code> &mdash; <strong>shared</strong> by n2 and n3",
-            "Target":   "n4 — find a reconv-driven cut at n4"
+            "T":   "X · Y &mdash; target",
+            "X":   "u · v",
+            "Y":   "a · b &mdash; <strong>shares <code>a</code> with u</strong>",
+            "u":   "a · c",
+            "v":   "d · e",
+            "Cap": "<code>nNodeSizeMax = 4</code>"
           }
-        },
-        {
-          "type": "text",
-          "body": "Watch what happens at iter 2: once n2 has been absorbed into the cone, n1 is in the leaves &mdash; and that makes n3's cost drop to 1, while every other expandable candidate still costs 2."
         }
       ]
     },
     {
-      "title": "Initial state: L = {n2, n3}, cone = {n4}",
-      "narrative": "Seed the leaf set with n4's two fanins. <code>fMarkB</code> is set on every node currently in the cone or on a leaf — that's the predicate the cost function reads to test &quot;already in&quot;.",
+      "title": "Initial: L = {X, Y}, cone = {T}",
+      "narrative": "Seed the leaf set with T's two fanins. <code>fMarkB</code> is set on every node currently in the cone or on a leaf — that's the predicate the cost function reads to test &quot;already in&quot;.",
       "highlights": {
-        "node-n4": ["in-mffc"],
-        "node-n2": ["cut-leaf"],
-        "node-n3": ["cut-leaf"],
-        "edge-n2-n4": ["in-mffc"],
-        "edge-n3-n4": ["in-mffc"]
+        "node-T": ["in-mffc"],
+        "node-X": ["cut-leaf"],
+        "node-Y": ["cut-leaf"],
+        "edge-X-T": ["in-mffc"],
+        "edge-Y-T": ["in-mffc"]
       },
       "panes": [
         {
           "type": "kv",
           "title": "Cone & leaves",
           "entries": {
-            "Cone":   "{ n4 }",
-            "Leaves": "{ n2, n3 }",
-            "fMarkB = 1 on": "n4, n2, n3"
+            "Cone":   "{ T }",
+            "Leaves": "{ X, Y }",
+            "fMarkB": "T, X, Y",
+            "|L|":    "2"
           }
         },
         {
           "type": "table",
           "title": "Cost table (iter 1)",
-          "header": ["leaf",  "fanin0",            "fanin1",          "cost"],
+          "header": ["leaf",  "fanin0",            "fanin1",          "cost", "level"],
           "rows": [
-            ["n2", "n1 (¬marked → 1)", "c (¬marked → 1)", "<span style='color:#b08040;font-weight:700'>2</span>"],
-            ["n3", "n1 (¬marked → 1)", "d (¬marked → 1)", "<span style='color:#b08040;font-weight:700'>2</span>"]
+            ["X", "u (¬marked → 1)", "v (¬marked → 1)", "<span style='color:#b08040;font-weight:700'>2</span>", "2"],
+            ["Y", "a (¬marked → 1)", "b (¬marked → 1)", "<span style='color:#b08040;font-weight:700'>2</span>", "1"]
           ]
         },
         {
           "type": "text",
-          "body": "Both candidates cost 2 (no shared fanins yet). Tie. <code>abcReconv.c:333</code> breaks ties by Level (deeper wins); n2 and n3 are at the same level — pick by iteration order. Say n2."
+          "body": "Tie at cost 2. Tie-break by <strong>deepest level</strong>: X level 2 > Y level 1 → <strong>pick X</strong>."
         }
       ]
     },
     {
-      "title": "Iter 1: pop n2, push its fanins (n1 and c)",
-      "narrative": "Pop n2 from the leaves; absorb it into the cone. Push n2's fanins as new leaves: n1 and c. Set <code>fMarkB = 1</code> on both. <strong>|L| went 2 → 3 (cost 2 = 2 new leaves – 1 popped + 1 each = +1).</strong>",
+      "title": "Iter 1: pop X, push u, v",
+      "narrative": "Pop X from the leaves; absorb it into the cone. Push X's fanins as new leaves: u and v. <code>fMarkB</code> on both. <strong>|L|: 2 → 3</strong> (cost 2 = 2 pushed − 1 popped + 1 boundary).",
       "highlights": {
-        "node-n4": ["in-mffc"],
-        "node-n2": ["in-mffc"],
-        "edge-n2-n4": ["in-mffc"],
-        "edge-n3-n4": ["in-mffc"],
-        "edge-n1-n2": ["in-mffc"],
-        "edge-c-n2":  ["in-mffc"],
-        "node-n1": ["cut-leaf"],
-        "node-c":  ["cut-leaf"],
-        "node-n3": ["cut-leaf"]
+        "node-T": ["in-mffc"],
+        "node-X": ["in-mffc"],
+        "edge-X-T": ["in-mffc"],
+        "edge-Y-T": ["in-mffc"],
+        "edge-u-X": ["in-mffc"],
+        "edge-v-X": ["in-mffc"],
+        "node-u": ["cut-leaf"],
+        "node-v": ["cut-leaf"],
+        "node-Y": ["cut-leaf"]
       },
       "panes": [
         {
           "type": "kv",
           "title": "Cone & leaves",
           "entries": {
-            "Cone":   "{ n4, n2 }",
-            "Leaves": "{ n1, c, n3 }",
-            "Newly marked": "n1, c"
+            "Cone":   "{ T, X }",
+            "Leaves": "{ u, v, Y }",
+            "Newly marked": "u, v",
+            "|L|":    "3"
           }
         }
       ]
     },
     {
-      "title": "Iter 2: cost re-evaluation — reconvergence at n3!",
-      "narrative": "Recompute every leaf's cost. <strong>n3's fanin n1 is now marked</strong> (it was added as a leaf in iter 1). So n3's cost drops to 1, beating every other candidate.<br><br>This is the reconvergence preference, made visible: among three leaves, one of them <em>already shares structure with the cone</em> and gets a strictly lower cost.",
+      "title": "Iter 2: still no reconvergence — pick u by tie-break",
+      "narrative": "All three leaves cost 2 — none of them have fanins in L yet. Tie-break by deepest level: u, v, Y are all at level 1. Further tie broken by id; say <strong>u</strong> wins.",
       "highlights": {
-        "node-n4": ["in-mffc"],
-        "node-n2": ["in-mffc"],
-        "edge-n2-n4": ["in-mffc"],
-        "edge-n3-n4": ["in-mffc"],
-        "edge-n1-n2": ["in-mffc"],
-        "edge-c-n2":  ["in-mffc"],
-        "node-n1": ["cut-leaf"],
-        "node-c":  ["cut-leaf"],
-        "node-n3": ["considering"],
-        "edge-n1-n3": ["active"]
+        "node-T": ["in-mffc"],
+        "node-X": ["in-mffc"],
+        "edge-X-T": ["in-mffc"],
+        "edge-Y-T": ["in-mffc"],
+        "edge-u-X": ["in-mffc"],
+        "edge-v-X": ["in-mffc"],
+        "node-u": ["considering"],
+        "node-v": ["cut-leaf"],
+        "node-Y": ["cut-leaf"]
       },
       "panes": [
         {
           "type": "table",
           "title": "Cost table (iter 2)",
-          "header": ["leaf", "fanin0",                "fanin1",                "cost"],
+          "header": ["leaf", "fanin0",            "fanin1",          "cost"],
           "rows": [
-            ["n1", "a (¬marked → 1)",       "b (¬marked → 1)",       "<span style='color:#b08040;font-weight:700'>2</span>"],
-            ["c",  "(PI)",                   "&mdash;",                "<span style='color:#b04040;font-weight:700'>999</span>"],
-            ["n3", "<span style='color:#2a8b46;font-weight:700'>n1 (marked → 0)</span>", "d (¬marked → 1)", "<span style='color:#2a8b46;font-weight:700'>1</span> &larr; reconvergence"]
+            ["u", "a (¬marked → 1)", "c (¬marked → 1)", "<span style='color:#b08040;font-weight:700'>2</span>"],
+            ["v", "d (¬marked → 1)", "e (¬marked → 1)", "<span style='color:#b08040;font-weight:700'>2</span>"],
+            ["Y", "a (¬marked → 1)", "b (¬marked → 1)", "<span style='color:#b08040;font-weight:700'>2</span>"]
           ]
-        },
-        {
-          "type": "kv",
-          "title": "Decision",
-          "entries": {
-            "Best":   "<strong>n3</strong> (cost 1)",
-            "Why":    "n1 is shared with the cone — only d is a fresh leaf"
-          }
         }
       ]
     },
     {
-      "title": "Iter 2 expand: pop n3, push only d (n1 is already a leaf)",
-      "narrative": "Pop n3 from leaves. Of n3's fanins, n1 is already in <code>fMarkB</code> — the push-only-if-not-marked check at <code>abcReconv.c:357..362</code> skips it. Only d gets added.<br><br><strong>|L| stays at 3.</strong> Without reconvergence (had we expanded n1 instead at cost 2), |L| would have grown to 4.",
+      "title": "Iter 2 expand: pop u, push a, c — now <code>a</code> is marked",
+      "narrative": "Pop u, push fanins a and c. <strong>|L| = 4 = cap</strong>. Critically, <strong>a is now in the leaf set</strong> — that exposes a reconvergence at Y, which has a as one of its fanins.",
       "highlights": {
-        "node-n4": ["in-mffc"],
-        "node-n2": ["in-mffc"],
-        "node-n3": ["in-mffc"],
-        "edge-n2-n4": ["in-mffc"],
-        "edge-n3-n4": ["in-mffc"],
-        "edge-n1-n2": ["in-mffc"],
-        "edge-c-n2":  ["in-mffc"],
-        "edge-n1-n3": ["in-mffc"],
-        "edge-d-n3":  ["in-mffc"],
-        "node-n1": ["cut-leaf"],
-        "node-c":  ["cut-leaf"],
-        "node-d":  ["cut-leaf"]
+        "node-T": ["in-mffc"],
+        "node-X": ["in-mffc"],
+        "node-u": ["in-mffc"],
+        "edge-X-T": ["in-mffc"],
+        "edge-Y-T": ["in-mffc"],
+        "edge-u-X": ["in-mffc"],
+        "edge-v-X": ["in-mffc"],
+        "edge-a-u": ["in-mffc"],
+        "edge-c-u": ["in-mffc"],
+        "node-v": ["cut-leaf"],
+        "node-Y": ["cut-leaf"],
+        "node-a": ["cut-leaf"],
+        "node-c": ["cut-leaf"]
       },
       "panes": [
         {
           "type": "kv",
           "title": "Cone & leaves",
           "entries": {
-            "Cone":   "{ n4, n2, n3 }",
-            "Leaves": "{ n1, c, d } &mdash; |L| unchanged",
-            "Newly marked": "d"
+            "Cone":   "{ T, X, u }",
+            "Leaves": "{ v, Y, a, c }",
+            "Newly marked": "a, c",
+            "|L|":    "4 (= cap)"
           }
-        },
-        {
-          "type": "text",
-          "body": "Counterfactual: if we had expanded n1 at iter 2 instead (cost 2), L would have become {a, b, c, n3} — same size 4 — and we'd still need another iteration to absorb n3. The reconvergence path saves one round of cone growth."
         }
       ]
     },
     {
-      "title": "Iter 3: only n1 is expandable",
-      "narrative": "Of the three leaves, c and d are PIs (cost 999). Only n1 can expand. Cost 2 → expand. Push fanins a and b.",
+      "title": "Iter 3 cost re-eval — reconvergence at Y!",
+      "narrative": "<strong>Y's fanin a is now marked.</strong> So Y's cost drops to <strong>1</strong>, beating every other expandable candidate.<br><br>This is the moment the priority earns its keep. Two leaves sit at the same level (v and Y, both level 1) but with different costs. Cap-budget allows the cost-1 expansion (4 + 1 − 1 = 4 ≤ 4) but <em>not</em> the cost-2 expansion (4 + 2 − 1 = 5 &gt; 4).",
       "highlights": {
-        "node-n4": ["in-mffc"],
-        "node-n2": ["in-mffc"],
-        "node-n3": ["in-mffc"],
-        "node-n1": ["in-mffc"],
-        "edge-n2-n4": ["in-mffc"],
-        "edge-n3-n4": ["in-mffc"],
-        "edge-n1-n2": ["in-mffc"],
-        "edge-c-n2":  ["in-mffc"],
-        "edge-n1-n3": ["in-mffc"],
-        "edge-d-n3":  ["in-mffc"],
-        "edge-a-n1":  ["in-mffc"],
-        "edge-b-n1":  ["in-mffc"],
-        "node-a":  ["cut-leaf"],
-        "node-b":  ["cut-leaf"],
-        "node-c":  ["cut-leaf"],
-        "node-d":  ["cut-leaf"]
+        "node-T": ["in-mffc"],
+        "node-X": ["in-mffc"],
+        "node-u": ["in-mffc"],
+        "edge-X-T": ["in-mffc"],
+        "edge-Y-T": ["in-mffc"],
+        "edge-u-X": ["in-mffc"],
+        "edge-v-X": ["in-mffc"],
+        "edge-a-u": ["in-mffc"],
+        "edge-c-u": ["in-mffc"],
+        "node-v": ["cut-leaf"],
+        "node-Y": ["considering"],
+        "node-a": ["cut-leaf"],
+        "node-c": ["cut-leaf"],
+        "edge-a-Y": ["active"]
       },
       "panes": [
         {
           "type": "table",
           "title": "Cost table (iter 3)",
-          "header": ["leaf", "cost", "verdict"],
+          "header": ["leaf", "fanin0", "fanin1", "cost", "feasible at cap=4?"],
           "rows": [
-            ["n1", "<span style='color:#b08040;font-weight:700'>2</span>", "expand"],
-            ["c",  "<span style='color:#b04040;font-weight:700'>999</span>", "PI"],
-            ["d",  "<span style='color:#b04040;font-weight:700'>999</span>", "PI"]
+            ["v", "d (¬marked → 1)", "e (¬marked → 1)", "<span style='color:#b04040;font-weight:700'>2</span>", "<span style='color:#b04040'>no — 4+2−1=5 &gt; 4</span>"],
+            ["Y", "<span style='color:#2a8b46;font-weight:700'>a (marked → 0)</span>", "b (¬marked → 1)", "<span style='color:#2a8b46;font-weight:700'>1</span> &larr; reconv", "<span style='color:#2a8b46'>yes — 4+1−1=4 ≤ 4</span>"],
+            ["a, c", "(PIs)", "&mdash;", "999", "&mdash;"]
           ]
         },
         {
           "type": "kv",
-          "title": "After expand",
+          "title": "Cost-based decision",
           "entries": {
-            "Cone":   "{ n4, n2, n3, n1 }",
-            "Leaves": "{ a, b, c, d } — all PIs",
-            "Stop":   "no expandable leaf"
+            "Best":   "<strong>Y</strong> (cost 1)",
+            "Why":    "a is shared with the cone — only b is a fresh leaf"
+          }
+        },
+        {
+          "type": "text",
+          "title": "Naive level-based — what would happen?",
+          "body": "Without the cost preference, tie-break by level alone among non-PI leaves picks between v (level 1) and Y (level 1) — say <strong>v</strong> by id. cost(v) = 2 → cap-budget exceeds → <strong>STOP</strong>. Final leaves would be <code>{a, c, v, Y}</code>, cone = <code>{T, X, u}</code>. <strong>Y stays as a leaf rather than being absorbed.</strong>"
+        }
+      ]
+    },
+    {
+      "title": "Iter 3 expand: pop Y, push only b (a already marked)",
+      "narrative": "Pop Y. Of Y's fanins, a is already in <code>fMarkB</code> — the push-only-if-not-marked check at <code>abcReconv.c:357..362</code> skips it. Only b gets added.<br><br><strong>|L| stays at 4.</strong> Y has been absorbed into the cone — the priority's payoff.",
+      "highlights": {
+        "node-T": ["in-mffc"],
+        "node-X": ["in-mffc"],
+        "node-u": ["in-mffc"],
+        "node-Y": ["in-mffc"],
+        "edge-X-T": ["in-mffc"],
+        "edge-Y-T": ["in-mffc"],
+        "edge-u-X": ["in-mffc"],
+        "edge-v-X": ["in-mffc"],
+        "edge-a-u": ["in-mffc"],
+        "edge-c-u": ["in-mffc"],
+        "edge-a-Y": ["in-mffc"],
+        "edge-b-Y": ["in-mffc"],
+        "node-v": ["cut-leaf"],
+        "node-a": ["cut-leaf"],
+        "node-b": ["cut-leaf"],
+        "node-c": ["cut-leaf"]
+      },
+      "panes": [
+        {
+          "type": "kv",
+          "title": "Cone & leaves",
+          "entries": {
+            "Cone":   "{ T, X, u, Y }",
+            "Leaves": "{ v, a, c, b }",
+            "Newly marked": "b",
+            "|L|":    "4 (unchanged)"
           }
         }
       ]
     },
     {
-      "title": "Final cut",
-      "narrative": "Refactor and resub now operate on this single cut: leaves <code>{a, b, c, d}</code>, cone <code>{n4, n2, n3, n1}</code>. The reconvergence-driven growth picked an order that avoided unnecessary leaf-set growth — saving |L| relative to a naïve top-down DFS that would expand the lowest-id leaf first regardless of cost.",
+      "title": "Iter 4: only v is expandable, cost 2 — STOP",
+      "narrative": "PIs (a, b, c) cost 999. Only v can expand, but cost 2 + |L| − 1 = 5 &gt; cap = 4. <strong>STOP</strong>.",
       "highlights": {
-        "node-n4": ["in-mffc"],
-        "node-n2": ["in-mffc"],
-        "node-n3": ["in-mffc"],
-        "node-n1": ["in-mffc"],
-        "node-a":  ["cut-leaf"],
-        "node-b":  ["cut-leaf"],
-        "node-c":  ["cut-leaf"],
-        "node-d":  ["cut-leaf"]
+        "node-T": ["in-mffc"],
+        "node-X": ["in-mffc"],
+        "node-u": ["in-mffc"],
+        "node-Y": ["in-mffc"],
+        "edge-X-T": ["in-mffc"],
+        "edge-Y-T": ["in-mffc"],
+        "edge-u-X": ["in-mffc"],
+        "edge-v-X": ["in-mffc"],
+        "edge-a-u": ["in-mffc"],
+        "edge-c-u": ["in-mffc"],
+        "edge-a-Y": ["in-mffc"],
+        "edge-b-Y": ["in-mffc"],
+        "node-v": ["cut-leaf"],
+        "node-a": ["cut-leaf"],
+        "node-b": ["cut-leaf"],
+        "node-c": ["cut-leaf"]
       },
       "panes": [
         {
-          "type": "kv",
-          "title": "Output",
-          "entries": {
-            "Leaves":      "{ a, b, c, d }",
-            "Cone":        "{ n4, n2, n3, n1 }",
-            "|L|":         "4 ≤ nNodeSizeMax"
-          }
+          "type": "table",
+          "title": "Cost table (iter 4)",
+          "header": ["leaf", "cost", "verdict"],
+          "rows": [
+            ["v", "<span style='color:#b04040;font-weight:700'>2</span>", "would push |L| to 5 &gt; cap"],
+            ["a, b, c", "<span style='color:#b04040;font-weight:700'>999</span>", "PIs"]
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Final cut — and how it compares to the no-priority path",
+      "narrative": "The cost-based walk lands at leaves <code>{a, b, c, v}</code>, cone <code>{T, X, u, Y}</code> (4 internal nodes). Compare to the level-based walk, which would have stopped one iteration earlier because v (cost 2) exceeded the cap before Y could be reached.<br><br>Refactor and resub now operate on the cost-based cut. The priority bought one extra cone node (Y) and a smaller-on-the-circuit leaf footprint at the same |L|.",
+      "highlights": {
+        "node-T": ["in-mffc"],
+        "node-X": ["in-mffc"],
+        "node-u": ["in-mffc"],
+        "node-Y": ["in-mffc"],
+        "node-v": ["cut-leaf"],
+        "node-a": ["cut-leaf"],
+        "node-b": ["cut-leaf"],
+        "node-c": ["cut-leaf"]
+      },
+      "panes": [
+        {
+          "type": "table",
+          "title": "Priority vs no-priority — final cuts diverge",
+          "header": ["", "cost-based (priority)", "level-based (naive)"],
+          "rows": [
+            ["Cone",        "<strong>{ T, X, u, Y }</strong>", "{ T, X, u }"],
+            ["|cone|",      "<strong>4</strong>",              "3"],
+            ["Leaves",      "{ a, b, c, v }",                  "{ a, c, v, <strong>Y</strong> }"],
+            ["|L|",         "4",                                "4"],
+            ["Stops at",    "iter 4 (no feasible expansion)",  "iter 3 (cap exceeded)"]
+          ]
         },
         {
           "type": "text",
-          "title": "Where reconvergence really pays off",
-          "body": "On bigger circuits (resub default <code>nCutMax = 8</code>), the reconvergence preference is what keeps the cut from blowing past the leaf cap. A non-reconvergent expansion order on a moderately wide cone would hit |L| = 8 and bail before reaching meaningful internal divisors; reconv-driven order keeps |L| in check and lets the algorithm finish."
+          "title": "Why this matters",
+          "body": "Refactor sees <strong>different cones</strong> in the two paths — different sets of cone nodes mean different Boolean functions to refactor and different MFFCs to compute. Cost-based gets to refactor a 4-node cone implementing <code>(u·v) · (a·b)</code>; level-based only gets the 3-node <code>u·v</code> cone with Y still external. On bigger circuits the priority unlocks meaningfully larger reconv cones for downstream synthesis."
         }
       ]
     }

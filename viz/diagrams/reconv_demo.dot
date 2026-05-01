@@ -1,5 +1,16 @@
-// Circuit designed to expose reconvergence in Abc_NodeGetLeafCostOne.
-// n1 is shared between n2 and n3 → after expanding n2, n3's cost drops to 1.
+// Reconvergence-driven cut at target T, with cap nNodeSizeMax = 4.
+//
+// The PRIORITY (lowest leaf-cost first, breaking ties by deepest level)
+// changes the FINAL cut, not just the expansion order:
+//
+//   With priority    : leaves = {a, b, c, v}, cone = {T, X, u, Y}   (4 cone nodes)
+//   Without priority : leaves = {a, c, v, Y}, cone = {T, X, u}      (3 cone nodes)
+//
+// At the decisive iteration, leaves include Y (cost 1 via reconvergence
+// on `a`) and v (cost 2). Cap-budget allows the cost-1 expansion of Y
+// but not the cost-2 expansion of v. Cost-based picks Y → absorb. A
+// naive level-based picker would grab v at the same level as Y, blow
+// the cap, and stop.
 digraph reconv_demo {
     rankdir = TB
     ranksep = 0.7
@@ -13,24 +24,28 @@ digraph reconv_demo {
       b [id="node-b", label="b", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
       c [id="node-c", label="c", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
       d [id="node-d", label="d", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
+      e [id="node-e", label="e", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
     }
 
-    n1 [id="node-n1", label="n1", shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
-    n2 [id="node-n2", label="n2", shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
-    n3 [id="node-n3", label="n3", shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
-    n4 [id="node-n4", label="n4", shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
+    u [id="node-u", label="u", shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
+    v [id="node-v", label="v", shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
+    Y [id="node-Y", label="Y", shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
+    X [id="node-X", label="X", shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
+    T [id="node-T", label="T", shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
 
     { rank = sink
       PO [id="node-PO", label="f", shape=plaintext, fontsize=14, fontcolor="#806000"]
     }
 
-    a -> n1 [id="edge-a-n1"]
-    b -> n1 [id="edge-b-n1"]
-    n1 -> n2 [id="edge-n1-n2"]
-    c -> n2  [id="edge-c-n2"]
-    n1 -> n3 [id="edge-n1-n3"]
-    d -> n3  [id="edge-d-n3"]
-    n2 -> n4 [id="edge-n2-n4"]
-    n3 -> n4 [id="edge-n3-n4"]
-    n4 -> PO [id="edge-n4-PO"]
+    a -> u [id="edge-a-u"]
+    c -> u [id="edge-c-u"]
+    d -> v [id="edge-d-v"]
+    e -> v [id="edge-e-v"]
+    a -> Y [id="edge-a-Y"]
+    b -> Y [id="edge-b-Y"]
+    u -> X [id="edge-u-X"]
+    v -> X [id="edge-v-X"]
+    X -> T [id="edge-X-T"]
+    Y -> T [id="edge-Y-T"]
+    T -> PO [id="edge-T-PO"]
 }
