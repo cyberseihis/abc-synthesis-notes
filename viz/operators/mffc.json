@@ -87,16 +87,15 @@
       ]
     },
     {
-      "title": "Deref t → count = 1, mark t",
-      "narrative": "<code>deref(t)</code>: count = 1, label t with current TravId. Walk into fanins m and n.",
+      "title": "Mark t (count = 1); start walking into fanins",
+      "narrative": "<code>Abc_NodeRefDeref(t, 0, 1)</code> begins. The function marks t with the current TravId (count = 1, MFFC = {t}) and then <strong>decrements the fanin counts of t</strong> (m and n). Note: <strong>t's own fanout count is never touched</strong> — PO_t still consumes it, so t.fanouts stays at <code>[1]</code> throughout.",
       "textReplace": {
         "node-p": "p\n[2]",
         "node-q": "q\n[2]",
         "node-w": "w\n[2]",
         "node-z": "z\n[2]",
         "node-e": "e\n[2]",
-        "node-h": "h\n[2]",
-        "node-t": "t\n[0]"
+        "node-h": "h\n[2]"
       },
       "highlights": {
         "node-p": ["fanout-protected"],
@@ -119,8 +118,8 @@
       ]
     },
     {
-      "title": "Deref m: 1 → 0 → recurse, count = 2",
-      "narrative": "Decrement m.fanouts: 1 → 0 → recurse, mark m. Walk continues into m's fanins u and v.",
+      "title": "Decrement m: 1 → 0 → recurse, mark m (count = 2)",
+      "narrative": "<code>--m.fanouts: 1 → 0</code>. Hit zero → recurse into m: mark m, then decrement m's fanins (u and v).",
       "textReplace": {
         "node-p": "p\n[2]",
         "node-q": "q\n[2]",
@@ -128,7 +127,6 @@
         "node-z": "z\n[2]",
         "node-e": "e\n[2]",
         "node-h": "h\n[2]",
-        "node-t": "t\n[0]",
         "node-m": "m\n[0]"
       },
       "highlights": {
@@ -155,8 +153,8 @@
       ]
     },
     {
-      "title": "Deref u (m's left fanin): 1 → 0 → recurse, count = 3; boost stops at p, w",
-      "narrative": "u.fanouts: 1 → 0 → recurse, mark u. count = 3.<br><br>Now walk into u's fanins p and w. <strong>Both are cut leaves at boosted count 2:</strong><br><code>deref(p)</code>: 2 → 1, NOT zero → STOP. p stays out.<br><code>deref(w)</code>: 2 → 1, NOT zero → STOP. w stays out.<br><br>Without the boost, p and w would have hit zero here and we'd have walked into a, b, w1, w2 — the wrong outcome.",
+      "title": "Decrement u: 1 → 0 → recurse; boost stops at p, w (count = 3)",
+      "narrative": "<code>--u.fanouts: 1 → 0</code> → recurse, mark u. Then decrement u's fanins:<br><code>--p.fanouts: 2 → 1</code>. NOT zero → STOP, no recurse.<br><code>--w.fanouts: 2 → 1</code>. NOT zero → STOP.<br><br>Without the boost, p and w would have hit zero here and we'd have walked past the cut into a, b, w1, w2.",
       "textReplace": {
         "node-p": "p\n[1]",
         "node-q": "q\n[2]",
@@ -164,7 +162,6 @@
         "node-z": "z\n[2]",
         "node-e": "e\n[2]",
         "node-h": "h\n[2]",
-        "node-t": "t\n[0]",
         "node-m": "m\n[0]",
         "node-u": "u\n[0]"
       },
@@ -198,8 +195,8 @@
       ]
     },
     {
-      "title": "Deref v (m's right fanin): 1 → 0 → recurse, count = 4; boost stops at q, z",
-      "narrative": "v.fanouts: 1 → 0 → recurse, mark v. count = 4. Walk into q and z; same boost protection — both 2 → 1, recursion stops.",
+      "title": "Decrement v: 1 → 0 → recurse; boost stops at q, z (count = 4)",
+      "narrative": "<code>--v.fanouts: 1 → 0</code> → recurse, mark v. Decrement v's fanins q and z; same boost protection — both 2 → 1, recursion stops.",
       "textReplace": {
         "node-p": "p\n[1]",
         "node-q": "q\n[1]",
@@ -207,7 +204,6 @@
         "node-z": "z\n[1]",
         "node-e": "e\n[2]",
         "node-h": "h\n[2]",
-        "node-t": "t\n[0]",
         "node-m": "m\n[0]",
         "node-u": "u\n[0]",
         "node-v": "v\n[0]"
@@ -245,7 +241,7 @@
     },
     {
       "title": "Sharing rejects n: 2 → 1, NOT zero — n NOT in MFFC",
-      "narrative": "Back at t, deref the second fanin <strong>n</strong>. n's fanout count is <code>2</code> (it feeds t AND g). Decrement → 1. <strong>Not zero</strong> → recursion STOPS, n is not added to the MFFC.<br><br>This is a different rejection mechanism from the boost: n is excluded because <em>it has a real external consumer</em> (g). The deref leaves n alive, exactly as it should — any replacement of t will reuse n's output via the existing edge.<br><br>Note: e, h were never decremented — the recursion didn't enter n.",
+      "narrative": "Back at t's deref, the second fanin is <strong>n</strong>. <code>--n.fanouts: 2 → 1</code>. <strong>Not zero</strong> → recursion STOPS, n is not added to the MFFC.<br><br>This is a different rejection mechanism from the boost: n is excluded because <em>it has a real external consumer</em> (g). The deref leaves n alive, exactly as it should — any replacement of t will reuse n's output via the existing edge.<br><br>Note: e, h were never decremented — the recursion didn't enter n.",
       "textReplace": {
         "node-p": "p\n[1]",
         "node-q": "q\n[1]",
@@ -253,7 +249,6 @@
         "node-z": "z\n[1]",
         "node-e": "e\n[2]",
         "node-h": "h\n[2]",
-        "node-t": "t\n[0]",
         "node-m": "m\n[0]",
         "node-u": "u\n[0]",
         "node-v": "v\n[0]",
@@ -302,7 +297,6 @@
         "node-z": "z\n[1]",
         "node-e": "e\n[2]",
         "node-h": "h\n[2]",
-        "node-t": "t\n[0]",
         "node-m": "m\n[0]",
         "node-u": "u\n[0]",
         "node-v": "v\n[0]",
