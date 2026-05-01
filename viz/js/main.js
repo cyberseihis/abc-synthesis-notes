@@ -112,7 +112,11 @@ function renderTable(div, pane) {
         t.appendChild(thead);
     }
     const tbody = document.createElement('tbody');
-    for (const row of pane.rows) {
+    for (let row of pane.rows) {
+        // Tolerate single-element wrapping: [{ _cells:[...], _cls:"..." }]
+        if (Array.isArray(row) && row.length === 1 && row[0] && typeof row[0] === 'object' && !Array.isArray(row[0])) {
+            row = row[0];
+        }
         const tr = document.createElement('tr');
         if (row._cls) tr.className = row._cls;
         const cells = row._cells || row;
