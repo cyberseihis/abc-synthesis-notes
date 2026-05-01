@@ -20,13 +20,17 @@ const HIGHLIGHT_CLASSES = [
     'survives'
 ];
 
+// Bust HTTP caching — fetch with no-cache so stale operator JSON / SVGs
+// don't survive past a deploy. Pages servers honour the request header.
+const FETCH_OPTS = { cache: 'no-cache' };
+
 async function loadOperator(name) {
     try {
-        const op = await fetch(`operators/${name}.json`).then(r => {
+        const op = await fetch(`operators/${name}.json`, FETCH_OPTS).then(r => {
             if (!r.ok) throw new Error(`fetch ${name}.json: ${r.status}`);
             return r.json();
         });
-        const svgText = await fetch(`diagrams/${op.circuit}.svg`).then(r => {
+        const svgText = await fetch(`diagrams/${op.circuit}.svg`, FETCH_OPTS).then(r => {
             if (!r.ok) throw new Error(`fetch ${op.circuit}.svg: ${r.status}`);
             return r.text();
         });
@@ -36,7 +40,7 @@ async function loadOperator(name) {
         // Optional aux SVG
         const auxContainer = document.getElementById('aux-container');
         if (op.auxCircuit) {
-            const auxText = await fetch(`diagrams/${op.auxCircuit}.svg`).then(r => {
+            const auxText = await fetch(`diagrams/${op.auxCircuit}.svg`, FETCH_OPTS).then(r => {
                 if (!r.ok) throw new Error(`fetch ${op.auxCircuit}.svg: ${r.status}`);
                 return r.text();
             });
