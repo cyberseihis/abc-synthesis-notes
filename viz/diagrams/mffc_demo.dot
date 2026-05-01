@@ -1,45 +1,47 @@
-// Circuit designed so MFFC(f) is a strict subset of internal ANDs.
-// n1 has fanout 2 (f and g), so it survives the deref of f → not in MFFC.
-// Other internal ANDs (n2, n3, n4) are private to f → in MFFC.
+// Circuit for the MFFC walkthrough.
+// Target node t. Cut for t is {p, q, e, h} — two internal ANDs (p, q)
+// and two PIs (e, h). The boost on cut leaves is what stops the deref
+// from walking past p and q into a, b, c, d.
+//
+// Every node carries an xlabel "[N]" where N is its initial fanout count.
+// Per-step textReplace updates each node's "name\n[count]" to animate
+// the counters as deref/ref decrements them.
 digraph mffc_demo {
     rankdir = TB
-    ranksep = 0.55
-    nodesep = 0.45
+    ranksep = 0.7
+    nodesep = 0.55
     bgcolor = "transparent"
     node [fontname = "monospace", fontsize = 14, color = "#333333"]
     edge [color = "#333333", penwidth = 1.4]
 
     { rank = source
-      a [id="node-a", label="a", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
-      b [id="node-b", label="b", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
-      c [id="node-c", label="c", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
-      d [id="node-d", label="d", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
+      a [id="node-a", label="a", xlabel="[1]", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
+      b [id="node-b", label="b", xlabel="[1]", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
+      c [id="node-c", label="c", xlabel="[1]", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
+      d [id="node-d", label="d", xlabel="[1]", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
+      e [id="node-e", label="e", xlabel="[1]", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
+      h [id="node-h", label="h", xlabel="[1]", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
     }
 
-    n1 [id="node-n1", label="n1", shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
-    n2 [id="node-n2", label="n2", shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
-    n3 [id="node-n3", label="n3", shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
-    n4 [id="node-n4", label="n4", shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
-    f  [id="node-f",  label="f",  shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
-    g  [id="node-g",  label="g",  shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
+    p [id="node-p", label="p", xlabel="[1]", shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
+    q [id="node-q", label="q", xlabel="[1]", shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
+    m [id="node-m", label="m", xlabel="[1]", shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
+    n [id="node-n", label="n", xlabel="[1]", shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
+    t [id="node-t", label="t", xlabel="[1]", shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
 
     { rank = sink
-      POf [id="node-POf", label="PO_f", shape=plaintext, fontsize=13, fontcolor="#806000"]
-      POg [id="node-POg", label="PO_g", shape=plaintext, fontsize=13, fontcolor="#806000"]
+      PO [id="node-PO", label="PO", shape=plaintext, fontsize=13, fontcolor="#806000"]
     }
 
-    a -> n1 [id="edge-a-n1"]
-    b -> n1 [id="edge-b-n1"]
-    a -> n2 [id="edge-a-n2"]
-    c -> n2 [id="edge-c-n2"]
-    b -> n3 [id="edge-b-n3"]
-    c -> n3 [id="edge-c-n3"]
-    n2 -> n4 [id="edge-n2-n4"]
-    n3 -> n4 [id="edge-n3-n4"]
-    n1 -> f  [id="edge-n1-f"]
-    n4 -> f  [id="edge-n4-f"]
-    n1 -> g  [id="edge-n1-g"]
-    d  -> g  [id="edge-d-g"]
-    f  -> POf [id="edge-f-POf"]
-    g  -> POg [id="edge-g-POg"]
+    a -> p [id="edge-a-p"]
+    b -> p [id="edge-b-p"]
+    c -> q [id="edge-c-q"]
+    d -> q [id="edge-d-q"]
+    p -> m [id="edge-p-m"]
+    q -> m [id="edge-q-m"]
+    e -> n [id="edge-e-n"]
+    h -> n [id="edge-h-n"]
+    m -> t [id="edge-m-t"]
+    n -> t [id="edge-n-t"]
+    t -> PO [id="edge-t-PO"]
 }

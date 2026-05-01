@@ -296,6 +296,20 @@ footer a { color: #2c3e50; }
 .node.survives text { fill: #1a4d22; font-weight: 700; }
 .edge.survives path { stroke: #2a8b46 !important; stroke-width: 2px; }
 
+/* xlabel-style fanout-count text on a node:
+   GraphViz emits the xlabel as the SECOND <text> child of the node group.
+   Style it small + muted by default; per-state classes recolor it. */
+.node text:nth-of-type(2) {
+    font-size: 11px;
+    font-weight: 700;
+    fill: #888;
+}
+.node.cut-leaf text:nth-of-type(2) { fill: #1a4d80; }
+.node.fanout-protected text:nth-of-type(2) { fill: #1a4d80; font-weight: 800; }
+.node.in-mffc text:nth-of-type(2) { fill: #b04040; }
+.node.survives text:nth-of-type(2) { fill: #2a8b46; }
+.node.considering text:nth-of-type(2) { fill: #b08040; }
+
 /* Strash request verdict states (apply to candidate node + verdict text) */
 .node.verdict-miss ellipse {
     fill: #b3ffc4 !important;

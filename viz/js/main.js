@@ -8,7 +8,7 @@ const state = {
     op: null,        // current operator JSON
     svg: null,       // main SVG root element
     auxSvg: null,    // optional aux SVG root element
-    auxOriginalText: null,  // map: id -> original textContent for restoring
+    originalText: null,  // map: gid -> array of <text> contents (for restore)
     step: 0,         // current step index
 };
 
@@ -43,20 +43,24 @@ async function loadOperator(name) {
             auxContainer.innerHTML = auxText;
             auxContainer.hidden = false;
             state.auxSvg = auxContainer.querySelector('svg');
-            // Snapshot original text content of every <text> with an id, so we
-            // can restore on step change.
-            state.auxOriginalText = new Map();
-            state.auxSvg.querySelectorAll('text').forEach(t => {
-                // find ancestor <g> with id (graphviz puts ids on the group)
-                const g = t.closest('g[id]');
-                if (g) state.auxOriginalText.set(g.id, t.textContent);
-            });
         } else {
             auxContainer.innerHTML = '';
             auxContainer.hidden = true;
             state.auxSvg = null;
-            state.auxOriginalText = null;
         }
+
+        // Snapshot original <text> content for every group with an id, in
+        // both SVGs. Multi-line labels yield multiple <text> children — we
+        // store them as an array in order.
+        state.originalText = new Map();
+        [state.svg, state.auxSvg].filter(Boolean).forEach(svg => {
+            svg.querySelectorAll('g[id]').forEach(g => {
+                const texts = Array.from(g.querySelectorAll('text'));
+                if (texts.length) {
+                    state.originalText.set(g.id, texts.map(t => t.textContent));
+                }
+            });
+        });
 
         state.op = op;
         state.step = 0;
@@ -85,15 +89,16 @@ function render() {
         });
     });
 
-    // Restore aux text content (so a step can have textReplace and the next
-    // step starts from a clean slate).
-    if (state.auxSvg && state.auxOriginalText) {
-        state.auxOriginalText.forEach((origText, gid) => {
-            const g = state.auxSvg.querySelector(`g[id="${gid}"]`);
-            if (g) {
-                const t = g.querySelector('text');
-                if (t) t.textContent = origText;
-            }
+    // Restore text content from originals (both SVGs, multi-text-aware).
+    if (state.originalText) {
+        state.originalText.forEach((origLines, gid) => {
+            const g = (state.svg && state.svg.querySelector(`g[id="${gid}"]`))
+                || (state.auxSvg && state.auxSvg.querySelector(`g[id="${gid}"]`));
+            if (!g) return;
+            const textEls = g.querySelectorAll('text');
+            textEls.forEach((t, i) => {
+                if (i < origLines.length) t.textContent = origLines[i];
+            });
         });
     }
 
@@ -109,16 +114,23 @@ function render() {
         el.classList.add(...classes);
     }
 
-    // Apply per-step text replacement on aux SVG (e.g. update request labels)
-    if (step.textReplace && state.auxSvg) {
+    // Per-step text replacement (works on both main and aux SVGs).
+    // Multi-line replacement: split value on \n and assign to each <text>
+    // element in document order. Useful for nodes with both label and
+    // xlabel (where xlabel becomes the second <text>).
+    if (step.textReplace) {
         for (const [id, newText] of Object.entries(step.textReplace)) {
-            const g = state.auxSvg.querySelector(`g[id="${id}"]`);
+            const g = (state.svg && state.svg.querySelector(`g[id="${id}"]`))
+                || (state.auxSvg && state.auxSvg.querySelector(`g[id="${id}"]`));
             if (!g) {
-                console.warn(`No aux SVG element with id="${id}"`);
+                console.warn(`No SVG element with id="${id}"`);
                 continue;
             }
-            const t = g.querySelector('text');
-            if (t) t.textContent = newText;
+            const lines = String(newText).split('\n');
+            const textEls = g.querySelectorAll('text');
+            textEls.forEach((t, i) => {
+                if (i < lines.length) t.textContent = lines[i];
+            });
         }
     }
 
