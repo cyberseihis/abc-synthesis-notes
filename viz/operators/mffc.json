@@ -1,46 +1,55 @@
 {
   "operator": "mffc",
-  "circuit": "aoi3",
+  "circuit": "mffc_demo",
   "title": "MFFC — the &quot;private cone&quot; of a node",
   "steps": [
     {
-      "title": "Goal: how many ANDs would die if we deleted f?",
-      "narrative": "An MFFC (Maximum Fanout-Free Cone) of a node n is the set of internal AIG ANDs whose only consumer &mdash; directly or transitively &mdash; is n. They exist solely to feed n; remove n and they become unreachable.<br><br>This is the upper bound on the gain a replacement can deliver: rewrite/refactor/resub will compute it for every candidate cut.",
+      "title": "Goal: which ANDs are private to f?",
+      "narrative": "An MFFC (Maximum Fanout-Free Cone) of a node n is the set of internal AIG ANDs whose <em>only</em> consumer (directly or transitively) is n. They exist solely to feed n; remove n and they become unreachable.<br><br>This circuit has <strong>two outputs</strong>, f and g. Crucially, <code>n1 = a&amp;b</code> is shared between them — it feeds both f and g. So n1 is <em>not</em> private to f, even though f's cone includes it. The other internal ANDs (n2, n3, n4) only feed f, so they are.",
       "highlights": {
         "node-f": ["considering"]
       },
       "panes": [
         {
+          "type": "kv",
+          "title": "Circuit",
+          "entries": {
+            "n1": "a · b   <em>(used by f and g)</em>",
+            "n2": "a · c",
+            "n3": "b · c",
+            "n4": "n2 · n3",
+            "f":  "n1 · n4   <em>(target)</em>",
+            "g":  "n1 · d   <em>(other output)</em>"
+          }
+        },
+        {
           "type": "table",
           "title": "Initial fanout counts",
           "header": ["node", "fanouts", "count"],
           "rows": [
-            ["a",  "n6, n7",   "2"],
-            ["b",  "n6",       "1"],
-            ["c",  "n9",       "1"],
-            ["d",  "n7, n9",   "2"],
-            ["n6", "n8",       "1"],
-            ["n7", "n8",       "1"],
-            ["n8", "f",        "1"],
-            ["n9", "f",        "1"],
-            ["f",  "PO",       "1"]
+            ["a",  "n1, n2",   "2"],
+            ["b",  "n1, n3",   "2"],
+            ["c",  "n2, n3",   "2"],
+            ["d",  "g",        "1"],
+            [{"_cells": ["n1", "<strong>f, g</strong>", "<strong>2</strong>"], "_cls": "changed"}],
+            ["n2", "n4",       "1"],
+            ["n3", "n4",       "1"],
+            ["n4", "f",        "1"],
+            ["f",  "PO_f",     "1"],
+            ["g",  "PO_g",     "1"]
           ]
-        },
-        {
-          "type": "text",
-          "title": "Algorithm",
-          "body": "<code>Abc_NodeMffcLabelAig(f)</code> runs a <strong>deref + re-ref</strong> pair (<code>abcRefs.c:100</code>). The deref pass decrements each fanin's count; whenever a count hits 0 the recursion enters that fanin and the node joins the MFFC. The re-ref pass restores all the counters."
         }
       ]
     },
     {
       "title": "Boundary boost on cut leaves {a, b, c, d}",
-      "narrative": "Operators MFFC <em>w.r.t. a cut</em>: stop the cone at the cut's leaves rather than running back to PIs. The trick is to <strong>+1</strong> each leaf's fanout count beforehand; their counts then can't drop to zero during the deref, so the recursion bottoms out at the cut.",
+      "narrative": "MFFC w.r.t. the PI-support cut: <strong>+1</strong> each PI's fanout count so deref recursion stops at the cut.",
       "highlights": {
         "node-a": ["fanout-protected"],
         "node-b": ["fanout-protected"],
         "node-c": ["fanout-protected"],
-        "node-d": ["fanout-protected"]
+        "node-d": ["fanout-protected"],
+        "node-f": ["considering"]
       },
       "panes": [
         {
@@ -49,21 +58,21 @@
           "header": ["node", "before", "after"],
           "rows": [
             [{"_cells": ["a", "2", "<span class=\"boost\">3</span>"], "_cls": "changed"}],
-            [{"_cells": ["b", "1", "<span class=\"boost\">2</span>"], "_cls": "changed"}],
-            [{"_cells": ["c", "1", "<span class=\"boost\">2</span>"], "_cls": "changed"}],
-            [{"_cells": ["d", "2", "<span class=\"boost\">3</span>"], "_cls": "changed"}],
-            ["n6", "1", "1"],
-            ["n7", "1", "1"],
-            ["n8", "1", "1"],
-            ["n9", "1", "1"],
+            [{"_cells": ["b", "2", "<span class=\"boost\">3</span>"], "_cls": "changed"}],
+            [{"_cells": ["c", "2", "<span class=\"boost\">3</span>"], "_cls": "changed"}],
+            [{"_cells": ["d", "1", "<span class=\"boost\">2</span>"], "_cls": "changed"}],
+            ["n1", "2", "2"],
+            ["n2", "1", "1"],
+            ["n3", "1", "1"],
+            ["n4", "1", "1"],
             ["f",  "1", "1"]
           ]
         }
       ]
     },
     {
-      "title": "Deref f → counter = 1, mark f",
-      "narrative": "<code>deref(f)</code>: count = 1, label f with the current TravId. Then walk into f's two fanins.",
+      "title": "Deref f → count = 1, mark f",
+      "narrative": "<code>deref(f)</code>: count = 1, label f with the current TravId. Then walk into f's two fanins (n1 and n4).",
       "highlights": {
         "node-a": ["fanout-protected"],
         "node-b": ["fanout-protected"],
@@ -83,44 +92,75 @@
       ]
     },
     {
-      "title": "Deref n8 (1 → 0) → recurse",
-      "narrative": "f.fanin0 = n8. Decrement n8.fanouts: 1 → 0. Zero ⇒ recurse into n8.",
+      "title": "Deref n1 (f's fanin0): 2 → 1, NOT zero — n1 survives",
+      "narrative": "f.fanin0 = n1. Decrement n1's fanout count: 2 → 1. <strong>NOT zero</strong> — n1 still has another consumer (g). The recursion <em>does not</em> enter n1, and n1 is <strong>not added to the MFFC</strong>. This is the moment that distinguishes MFFC from &quot;everything in the cone&quot;.",
       "highlights": {
         "node-a": ["fanout-protected"],
         "node-b": ["fanout-protected"],
         "node-c": ["fanout-protected"],
         "node-d": ["fanout-protected"],
-        "node-f":  ["in-mffc"],
-        "node-n8": ["in-mffc"],
-        "edge-n8-f": ["in-mffc"]
+        "node-f": ["in-mffc"],
+        "node-n1": ["survives"],
+        "edge-n1-f": ["active"]
       },
       "panes": [
         {
           "type": "kv",
           "title": "Deref state",
           "entries": {
-            "count": "<span class=\"counter-bumped\">2</span>",
-            "MFFC": "{ f, n8 }",
-            "n8.fanouts": "<span class=\"counter-zeroed\">1 → 0</span>"
+            "count":      "1",
+            "MFFC":       "{ f }",
+            "n1.fanouts": "<span class=\"boost\">2 → 1</span>  (still &gt; 0)",
+            "Verdict":    "<strong>n1 stays alive</strong> — has external fanout to g"
           }
+        },
+        {
+          "type": "text",
+          "body": "Visually, n1 is now outlined green to mark it as &quot;considered, not absorbed&quot; — its outgoing edge to g (not shown highlighted) keeps its count above zero."
         }
       ]
     },
     {
-      "title": "Inside deref(n8): fanin n6 → 0, recurse; n6's fanins are leaves",
-      "narrative": "n8.fanin0 = n6 → fanout 1 → 0 → recurse. Inside <code>deref(n6)</code>: n6's fanins are <code>a</code> and <code>b</code>, both cut leaves. Decrement their boosted counts (3→2 for a, 2→1 for b); both still &gt; 0 → no recursion past the cut.",
+      "title": "Deref n4 (f's fanin1): 1 → 0 → recurse",
+      "narrative": "f.fanin1 = n4. Decrement: 1 → 0 → recurse into n4. n4's only consumer was f, so it joins the MFFC.",
       "highlights": {
         "node-a": ["fanout-protected"],
         "node-b": ["fanout-protected"],
         "node-c": ["fanout-protected"],
         "node-d": ["fanout-protected"],
         "node-f":  ["in-mffc"],
-        "node-n8": ["in-mffc"],
-        "node-n6": ["in-mffc"],
-        "edge-n8-f":  ["in-mffc"],
-        "edge-n6-n8": ["in-mffc"],
-        "edge-a-n6":  ["active"],
-        "edge-b-n6":  ["active"]
+        "node-n1": ["survives"],
+        "node-n4": ["in-mffc"],
+        "edge-n4-f": ["in-mffc"]
+      },
+      "panes": [
+        {
+          "type": "kv",
+          "title": "Deref state",
+          "entries": {
+            "count":      "<span class=\"counter-bumped\">2</span>",
+            "MFFC":       "{ f, n4 }",
+            "n4.fanouts": "<span class=\"counter-zeroed\">1 → 0</span>"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Inside deref(n4): n2 → 0, recurse; n2's fanins are leaves",
+      "narrative": "n4.fanin0 = n2 → 1 → 0 → recurse. n2's fanins are <code>a</code> and <code>c</code>, both cut leaves. They decrement (3→2 each) but stay positive — no recursion past the cut.",
+      "highlights": {
+        "node-a": ["fanout-protected"],
+        "node-b": ["fanout-protected"],
+        "node-c": ["fanout-protected"],
+        "node-d": ["fanout-protected"],
+        "node-f":  ["in-mffc"],
+        "node-n1": ["survives"],
+        "node-n4": ["in-mffc"],
+        "node-n2": ["in-mffc"],
+        "edge-n4-f": ["in-mffc"],
+        "edge-n2-n4": ["in-mffc"],
+        "edge-a-n2": ["active"],
+        "edge-c-n2": ["active"]
       },
       "panes": [
         {
@@ -128,31 +168,32 @@
           "title": "Deref state",
           "entries": {
             "count":      "<span class=\"counter-bumped\">3</span>",
-            "MFFC":       "{ f, n8, n6 }",
-            "n6.fanouts": "<span class=\"counter-zeroed\">1 → 0</span>",
+            "MFFC":       "{ f, n4, n2 }",
+            "n2.fanouts": "<span class=\"counter-zeroed\">1 → 0</span>",
             "a.fanouts":  "<span class=\"boost\">3 → 2</span>",
-            "b.fanouts":  "<span class=\"boost\">2 → 1</span>"
+            "c.fanouts":  "<span class=\"boost\">3 → 2</span>"
           }
         }
       ]
     },
     {
-      "title": "Back to deref(n8): fanin n7 → 0, recurse; n7's fanins are leaves",
-      "narrative": "n8.fanin1 = n7 → fanout 1 → 0 → recurse. n7's fanins are <code>a</code> and <code>d</code>, both cut leaves. Decrement (a: 2→1; d: 3→2); still &gt; 0.",
+      "title": "Inside deref(n4): n3 → 0, recurse; cut leaves decrement",
+      "narrative": "n4.fanin1 = n3 → 1 → 0 → recurse. n3's fanins are <code>b</code>, <code>c</code>, both cut leaves.",
       "highlights": {
         "node-a": ["fanout-protected"],
         "node-b": ["fanout-protected"],
         "node-c": ["fanout-protected"],
         "node-d": ["fanout-protected"],
         "node-f":  ["in-mffc"],
-        "node-n8": ["in-mffc"],
-        "node-n6": ["in-mffc"],
-        "node-n7": ["in-mffc"],
-        "edge-n8-f":  ["in-mffc"],
-        "edge-n6-n8": ["in-mffc"],
-        "edge-n7-n8": ["in-mffc"],
-        "edge-a-n7":  ["active"],
-        "edge-d-n7":  ["active"]
+        "node-n1": ["survives"],
+        "node-n4": ["in-mffc"],
+        "node-n2": ["in-mffc"],
+        "node-n3": ["in-mffc"],
+        "edge-n4-f": ["in-mffc"],
+        "edge-n2-n4": ["in-mffc"],
+        "edge-n3-n4": ["in-mffc"],
+        "edge-b-n3": ["active"],
+        "edge-c-n3": ["active"]
       },
       "panes": [
         {
@@ -160,76 +201,43 @@
           "title": "Deref state",
           "entries": {
             "count":      "<span class=\"counter-bumped\">4</span>",
-            "MFFC":       "{ f, n8, n6, n7 }",
-            "n7.fanouts": "<span class=\"counter-zeroed\">1 → 0</span>",
-            "a.fanouts":  "<span class=\"boost\">2 → 1</span>",
-            "d.fanouts":  "<span class=\"boost\">3 → 2</span>"
+            "MFFC":       "{ f, n4, n2, n3 }",
+            "n3.fanouts": "<span class=\"counter-zeroed\">1 → 0</span>",
+            "b.fanouts":  "<span class=\"boost\">3 → 2</span>",
+            "c.fanouts":  "<span class=\"boost\">2 → 1</span>"
           }
         }
       ]
     },
     {
-      "title": "Back to deref(f): fanin n9 → 0, recurse; n9's fanins are leaves",
-      "narrative": "f.fanin1 = n9 → fanout 1 → 0 → recurse. n9's fanins are <code>c</code>, <code>d</code> (cut leaves). Decrement; still &gt; 0.",
-      "highlights": {
-        "node-a": ["fanout-protected"],
-        "node-b": ["fanout-protected"],
-        "node-c": ["fanout-protected"],
-        "node-d": ["fanout-protected"],
-        "node-f":  ["in-mffc"],
-        "node-n8": ["in-mffc"],
-        "node-n6": ["in-mffc"],
-        "node-n7": ["in-mffc"],
-        "node-n9": ["in-mffc"],
-        "edge-n8-f":  ["in-mffc"],
-        "edge-n9-f":  ["in-mffc"],
-        "edge-n6-n8": ["in-mffc"],
-        "edge-n7-n8": ["in-mffc"],
-        "edge-c-n9":  ["active"],
-        "edge-d-n9":  ["active"]
-      },
-      "panes": [
-        {
-          "type": "kv",
-          "title": "Deref state",
-          "entries": {
-            "count":      "<span class=\"counter-bumped\">5</span>",
-            "MFFC":       "{ f, n8, n6, n7, n9 }",
-            "n9.fanouts": "<span class=\"counter-zeroed\">1 → 0</span>",
-            "c.fanouts":  "<span class=\"boost\">2 → 1</span>",
-            "d.fanouts":  "<span class=\"boost\">2 → 1</span>"
-          }
-        }
-      ]
-    },
-    {
-      "title": "Result: nNodesSaved = 5",
-      "narrative": "<code>Abc_NodeRefDeref</code> returns 5; <code>Abc_NodeMffcLabelAig</code> then runs the <em>re-reference</em> pass along the same path to put every fanout count back to its original value, asserting both passes agree.<br><br>The five MFFC nodes carry the current TravId, which lets <code>Abc_NodeIsTravIdCurrent(node)</code> answer &quot;is this node in the MFFC?&quot; in O(1) for downstream code such as <code>Dec_GraphToNetworkCount</code>.",
+      "title": "Result: MFFC = {f, n4, n2, n3}, nNodesSaved = 4",
+      "narrative": "Recursion done. The MFFC is the four red nodes — exactly the ANDs that exist solely to compute f. <strong>n1 is green</strong> (survived: shared with g) and the entire g-subnetwork is untouched.<br><br>If a replacement for f were committed, those four red nodes would be deleted; n1 and g would stay. That's why <code>nNodesSaved = 4</code> (not the entire AIG size).",
       "highlights": {
         "node-a": ["cut-leaf"],
         "node-b": ["cut-leaf"],
         "node-c": ["cut-leaf"],
         "node-d": ["cut-leaf"],
         "node-f":  ["in-mffc"],
-        "node-n8": ["in-mffc"],
-        "node-n6": ["in-mffc"],
-        "node-n7": ["in-mffc"],
-        "node-n9": ["in-mffc"]
+        "node-n4": ["in-mffc"],
+        "node-n2": ["in-mffc"],
+        "node-n3": ["in-mffc"],
+        "node-n1": ["survives"]
       },
       "panes": [
         {
           "type": "kv",
           "title": "Result",
           "entries": {
-            "nNodesSaved":         "<strong>5</strong>",
-            "TravId-tagged nodes": "f, n8, n6, n7, n9",
-            "Cut leaves preserved":"a, b, c, d"
+            "nNodesSaved":   "<strong>4</strong>",
+            "TravId-tagged": "f, n4, n2, n3 (red)",
+            "Survived":      "n1 (green) — fanout to g protected it",
+            "Untouched":     "g, d, PO_g — outside f's cone"
           }
         },
         {
           "type": "text",
-          "title": "Different cut → different MFFC",
-          "body": "If the cut were instead <code>{a, c, d, n6}</code> (rewrite picks this in the §3 trace), n6's boundary boost would <em>protect</em> it during deref. n6 stays alive, so the MFFC shrinks to 4 nodes (and <code>nNodesSaved = 4</code> as the rewrite trace reports)."
+          "title": "Re-reference pass",
+          "body": "<code>Abc_NodeMffcLabelAig</code> follows up with a re-ref pass that walks the same red path in reverse, restoring every fanout count. Then the boundary boost on a, b, c, d is stripped. The AIG is byte-identical to its original state — only the red nodes carry the current TravId, which downstream code (<code>Dec_GraphToNetworkCount</code>, §decgraph) uses to test &quot;is this node about to die?&quot; in O(1)."
         }
       ]
     }

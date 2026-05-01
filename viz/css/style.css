@@ -287,6 +287,15 @@ footer a { color: #2c3e50; }
 .node.const-true text { fill: #2a8b46; font-weight: 700; }
 .node.const-false text { fill: #b04040; font-weight: 700; }
 
+/* Survives the MFFC walk (still has live external fanouts) */
+.node.survives ellipse {
+    fill: #fff !important;
+    stroke: #2a8b46;
+    stroke-width: 2.5px;
+}
+.node.survives text { fill: #1a4d22; font-weight: 700; }
+.edge.survives path { stroke: #2a8b46 !important; stroke-width: 2px; }
+
 /* Strash request verdict states (apply to candidate node + verdict text) */
 .node.verdict-miss ellipse {
     fill: #b3ffc4 !important;

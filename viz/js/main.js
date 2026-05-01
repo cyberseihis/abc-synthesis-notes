@@ -16,7 +16,8 @@ const HIGHLIGHT_CLASSES = [
     'cut-leaf', 'in-mffc', 'considering', 'replacement-new',
     'fanout-protected', 'dimmed', 'active', 'hidden', 'fresh',
     'const-true', 'const-false',
-    'verdict-miss', 'verdict-hit', 'verdict-fold', 'verdict-text'
+    'verdict-miss', 'verdict-hit', 'verdict-fold', 'verdict-text',
+    'survives'
 ];
 
 async function loadOperator(name) {
