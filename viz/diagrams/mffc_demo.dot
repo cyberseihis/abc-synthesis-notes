@@ -1,15 +1,18 @@
 // Circuit for the MFFC walkthrough.
 //
-// Two outputs: t (target) and g (separate). They share PI a but have
-// disjoint internal cones. So the AIG has visible structure outside
-// t's MFFC, namely g and its PI y.
+// Two outputs: t (target) and g. They SHARE the internal AND node n
+// (n = e & h is consumed by both t and g). So during deref of t, when
+// we reach n, its fanout count goes 2 → 1 (not zero) and n is REJECTED
+// from MFFC even though it's in t's cone — that's the "shared internal
+// node escapes the MFFC" lesson.
 //
-// Cut for t: {p, q, e, h} — two internal ANDs (p, q) and two PIs.
-// Cut leaves all have fanout 1 INTO t's cone, so the boost is what
-// stops deref from walking past them.
+// p, q are cut leaves at internal ANDs with fanout 1; their boost is
+// what stops deref from walking past them into a, b, c, d — that's the
+// "boundary trick protects cut leaves" lesson.
 //
-// Initial fanouts per node are baked into xlabels [N]; per-step
-// textReplace updates them as deref decrements.
+// MFFC of t with cut {p, q, e, h} = {t, m}. Two of six ANDs.
+// n survives via sharing; p, q survive via boost; e, h, y, g, PO_g
+// are never touched.
 digraph mffc_demo {
     rankdir = TB
     ranksep = 0.55
@@ -19,7 +22,7 @@ digraph mffc_demo {
     edge [color = "#333333", penwidth = 1.4]
 
     { rank = source
-      a [id="node-a", label="a", xlabel="[2]", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
+      a [id="node-a", label="a", xlabel="[1]", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
       b [id="node-b", label="b", xlabel="[1]", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
       c [id="node-c", label="c", xlabel="[1]", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
       d [id="node-d", label="d", xlabel="[1]", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
@@ -31,7 +34,7 @@ digraph mffc_demo {
     p [id="node-p", label="p", xlabel="[1]", shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
     q [id="node-q", label="q", xlabel="[1]", shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
     m [id="node-m", label="m", xlabel="[1]", shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
-    n [id="node-n", label="n", xlabel="[1]", shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
+    n [id="node-n", label="n", xlabel="[2]", shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
     t [id="node-t", label="t", xlabel="[1]", shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
     g [id="node-g", label="g", xlabel="[1]", shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
 
@@ -50,7 +53,7 @@ digraph mffc_demo {
     h -> n [id="edge-h-n"]
     m -> t [id="edge-m-t"]
     n -> t [id="edge-n-t"]
-    a -> g [id="edge-a-g"]
+    n -> g [id="edge-n-g"]
     y -> g [id="edge-y-g"]
     t -> POt [id="edge-t-POt"]
     g -> POg [id="edge-g-POg"]
