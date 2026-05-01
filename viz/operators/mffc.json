@@ -30,28 +30,27 @@
       ]
     },
     {
-      "title": "Counterfactual: WITHOUT the boost",
-      "narrative": "deref(t) → deref(m) — m's fanout is 1, recurses fully. <span style='color:#b04040'>deref(p)</span> → a, b are PIs; p added wrongly. <span style='color:#b04040'>deref(q)</span> → c, d; q added wrongly.<br>Then deref(n): 2 → 1, NOT zero — <em>n is correctly excluded</em> (sharing detection works WITHOUT the boost; sharing is a stronger protection than boost). But p, q are wrongly absorbed.<br><br>Result: count = 4; <strong>MFFC = {t, m, p, q}</strong>. n correctly out, but p, q wrongly in.",
+      "title": "Fanout counters and the two protections",
+      "narrative": "Each AND carries a live fanout count (the <code>[N]</code> xlabels). The walk dereferences <code>t</code> top-down, decrementing each visited node's count by 1. <strong>If a count reaches zero</strong> the node has no remaining consumer outside <code>t</code>'s cone → mark it and recurse into its fanins. Otherwise stop and don't recurse.<br><br>Two failure modes a naive walk has to handle:<br><br><strong>(a) Cut leaves <code>p, q</code> have fanout 1.</strong> They feed only into <code>t</code>'s cone. Decrement → 0 → the walk would recurse past them into <code>a, b, c, d</code>, which live below the cut. <em>Fix:</em> a <strong>+1 boost</strong> on every cut leaf before the walk (undone after).<br><br><strong>(b) Shared in-cone node <code>n</code> has fanout 2</strong> — it feeds both <code>t</code> and the unrelated output <code>g</code>. Decrement leaves it at 1, not zero, and the walk stops there <em>by itself</em>. <em>No fix needed</em>: sharing is natural protection.",
       "highlights": {
-        "node-t": ["in-mffc"],
-        "node-m": ["in-mffc"],
-        "node-p": ["in-mffc"],
-        "node-q": ["in-mffc"],
+        "node-p": ["cut-leaf"],
+        "node-q": ["cut-leaf"],
+        "node-e": ["cut-leaf"],
+        "node-h": ["cut-leaf"],
         "node-n": ["survives"],
-        "edge-m-t": ["in-mffc"],
-        "edge-p-m": ["in-mffc"],
-        "edge-q-m": ["in-mffc"]
+        "node-t": ["considering"]
       },
       "panes": [
         {
-          "type": "kv",
-          "title": "Without boost (BUG for p, q)",
-          "entries": {
-            "count":            "<span class=\"counter-zeroed\">4</span>",
-            "MFFC":             "{ t, m, p, q }",
-            "p, q":             "wrongly absorbed (cut leaves should survive)",
-            "n (already OK)":   "rejected via fanout-2 sharing — boost not needed for n"
-          }
+          "type": "table",
+          "title": "How each non-MFFC node escapes the walk",
+          "header": ["node", "fanout", "decrement → 0?", "protected by"],
+          "rows": [
+            ["p", "1", "yes — would walk into a, b", "<strong>boost</strong>"],
+            ["q", "1", "yes — would walk into c, d", "<strong>boost</strong>"],
+            ["e, h", "1", "PIs — never added regardless", "boost (redundant)"],
+            ["n", "2", "no — g still consumes it", "<strong>sharing</strong>"]
+          ]
         }
       ]
     },
