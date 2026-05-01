@@ -1,0 +1,36 @@
+// Circuit designed to expose reconvergence in Abc_NodeGetLeafCostOne.
+// n1 is shared between n2 and n3 → after expanding n2, n3's cost drops to 1.
+digraph reconv_demo {
+    rankdir = TB
+    ranksep = 0.7
+    nodesep = 0.45
+    bgcolor = "transparent"
+    node [fontname = "monospace", fontsize = 14, color = "#333333"]
+    edge [color = "#333333", penwidth = 1.4]
+
+    { rank = source
+      a [id="node-a", label="a", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
+      b [id="node-b", label="b", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
+      c [id="node-c", label="c", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
+      d [id="node-d", label="d", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
+    }
+
+    n1 [id="node-n1", label="n1", shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
+    n2 [id="node-n2", label="n2", shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
+    n3 [id="node-n3", label="n3", shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
+    n4 [id="node-n4", label="n4", shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
+
+    { rank = sink
+      PO [id="node-PO", label="f", shape=plaintext, fontsize=14, fontcolor="#806000"]
+    }
+
+    a -> n1 [id="edge-a-n1"]
+    b -> n1 [id="edge-b-n1"]
+    n1 -> n2 [id="edge-n1-n2"]
+    c -> n2  [id="edge-c-n2"]
+    n1 -> n3 [id="edge-n1-n3"]
+    d -> n3  [id="edge-d-n3"]
+    n2 -> n4 [id="edge-n2-n4"]
+    n3 -> n4 [id="edge-n3-n4"]
+    n4 -> PO [id="edge-n4-PO"]
+}
