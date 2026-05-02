@@ -1,0 +1,37 @@
+// Cut B replacement: 3-AND AIG implementing f-AND over {a,c,d,n6}.
+// TT = 0x001F (canonical for NPN class 12, no phase/perm needed).
+//
+//   m1 = ¬a · ¬c            (= ¬(a+c))
+//   m2 = d · ¬m1             (= d·(a+c))
+//   f  = ¬n6 · ¬m2           (= ¬(n6 + d·(a+c)))
+digraph rewrite_replace_B {
+    rankdir = TB
+    ranksep = 0.5
+    nodesep = 0.3
+    bgcolor = "transparent"
+    label = "Cut B replacement (3 ANDs) — class 12 canonical"
+    labelloc = "t"
+    fontname = "monospace"
+    fontsize = 13
+
+    node [fontname = "monospace", fontsize = 13, color = "#333333"]
+    edge [color = "#333333", penwidth = 1.4]
+
+    { rank = source
+      a  [id="auxB-node-a",  label="a",  shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
+      c  [id="auxB-node-c",  label="c",  shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
+      d  [id="auxB-node-d",  label="d",  shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
+      n6 [id="auxB-node-n6", label="n6", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
+    }
+
+    m1 [id="auxB-node-m1", label="m1", shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
+    m2 [id="auxB-node-m2", label="m2", shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
+    f  [id="auxB-node-f",  label="f",  shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
+
+    a -> m1 [id="auxB-edge-a-m1", style=dashed]
+    c -> m1 [id="auxB-edge-c-m1", style=dashed]
+    d -> m2 [id="auxB-edge-d-m2"]
+    m1 -> m2 [id="auxB-edge-m1-m2", style=dashed]
+    n6 -> f [id="auxB-edge-n6-f", style=dashed]
+    m2 -> f [id="auxB-edge-m2-f", style=dashed]
+}

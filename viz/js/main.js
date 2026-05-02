@@ -38,34 +38,40 @@ async function loadOperator(name) {
         document.getElementById('svg-container').innerHTML = svgText;
         state.svg = document.querySelector('#svg-container svg');
 
-        // Optional aux SVG
-        const auxContainer = document.getElementById('aux-container');
-        if (op.auxCircuit) {
-            const auxText = await fetch(`diagrams/${op.auxCircuit}.svg`, FETCH_OPTS).then(r => {
-                if (!r.ok) throw new Error(`fetch ${op.auxCircuit}.svg: ${r.status}`);
+        // Pre-fetch every aux SVG referenced by the operator (op-level default
+        // and any per-step override). Cached as raw text so render() can swap
+        // synchronously.
+        const auxNames = new Set();
+        if (op.auxCircuit) auxNames.add(op.auxCircuit);
+        for (const s of op.steps || []) {
+            if (s.auxCircuit) auxNames.add(s.auxCircuit);
+        }
+        state.auxSvgCache = new Map();
+        for (const auxName of auxNames) {
+            const auxText = await fetch(`diagrams/${auxName}.svg`, FETCH_OPTS).then(r => {
+                if (!r.ok) throw new Error(`fetch ${auxName}.svg: ${r.status}`);
                 return r.text();
             });
-            auxContainer.innerHTML = auxText;
-            auxContainer.hidden = false;
-            state.auxSvg = auxContainer.querySelector('svg');
-        } else {
-            auxContainer.innerHTML = '';
-            auxContainer.hidden = true;
-            state.auxSvg = null;
+            state.auxSvgCache.set(auxName, auxText);
         }
 
-        // Snapshot original <text> content for every group with an id, in
-        // both SVGs. Multi-line labels yield multiple <text> children — we
-        // store them as an array in order.
+        // Snapshot original <text> content for every group with an id in main.
+        // Aux SVGs are snapshotted on demand when first installed (see render).
         state.originalText = new Map();
-        [state.svg, state.auxSvg].filter(Boolean).forEach(svg => {
-            svg.querySelectorAll('g[id]').forEach(g => {
+        if (state.svg) {
+            state.svg.querySelectorAll('g[id]').forEach(g => {
                 const texts = Array.from(g.querySelectorAll('text'));
                 if (texts.length) {
                     state.originalText.set(g.id, texts.map(t => t.textContent));
                 }
             });
-        });
+        }
+        state.auxTextSnapshots = new Map();  // auxName -> Map(gid -> [origLines])
+
+        // Force aux install on first render.
+        document.getElementById('aux-container').innerHTML = '';
+        state.auxSvg = null;
+        state.currentAuxName = null;
 
         state.op = op;
         state.step = 0;
@@ -73,6 +79,33 @@ async function loadOperator(name) {
     } catch (e) {
         document.getElementById('svg-container').textContent = `Error: ${e.message}`;
         console.error(e);
+    }
+}
+
+// Install (or hide) the aux SVG for the current step. Synchronous because
+// every aux is pre-fetched at operator load.
+function setAux(auxName) {
+    const auxContainer = document.getElementById('aux-container');
+    if (auxName === state.currentAuxName) return;
+    state.currentAuxName = auxName;
+    if (!auxName) {
+        auxContainer.innerHTML = '';
+        auxContainer.hidden = true;
+        state.auxSvg = null;
+        return;
+    }
+    auxContainer.innerHTML = state.auxSvgCache.get(auxName) || '';
+    auxContainer.hidden = false;
+    state.auxSvg = auxContainer.querySelector('svg');
+    // Snapshot text for restore. Cache so that re-installing an aux later
+    // (in another step) restores the same originals even if it had textReplace.
+    if (state.auxSvg && !state.auxTextSnapshots.has(auxName)) {
+        const snap = new Map();
+        state.auxSvg.querySelectorAll('g[id]').forEach(g => {
+            const texts = Array.from(g.querySelectorAll('text'));
+            if (texts.length) snap.set(g.id, texts.map(t => t.textContent));
+        });
+        state.auxTextSnapshots.set(auxName, snap);
     }
 }
 
@@ -87,6 +120,13 @@ function render() {
     document.getElementById('btn-prev').disabled = state.step === 0;
     document.getElementById('btn-next').disabled = state.step === op.steps.length - 1;
 
+    // Install the aux for this step (per-step override > op-level default > none).
+    // step.auxCircuit === null explicitly hides aux even if op-level is set.
+    const auxName = step.auxCircuit !== undefined
+        ? step.auxCircuit
+        : (op.auxCircuit || null);
+    setAux(auxName);
+
     // Clear all dynamic classes from both SVGs
     [state.svg, state.auxSvg].filter(Boolean).forEach(svg => {
         svg.querySelectorAll('.node, .edge').forEach(el => {
@@ -94,17 +134,21 @@ function render() {
         });
     });
 
-    // Restore text content from originals (both SVGs, multi-text-aware).
-    if (state.originalText) {
-        state.originalText.forEach((origLines, gid) => {
-            const g = (state.svg && state.svg.querySelector(`g[id="${gid}"]`))
-                || (state.auxSvg && state.auxSvg.querySelector(`g[id="${gid}"]`));
+    // Restore text content from originals (main + currently-installed aux).
+    const restoreFrom = (svg, snapshot) => {
+        if (!svg || !snapshot) return;
+        snapshot.forEach((origLines, gid) => {
+            const g = svg.querySelector(`g[id="${gid}"]`);
             if (!g) return;
             const textEls = g.querySelectorAll('text');
             textEls.forEach((t, i) => {
                 if (i < origLines.length) t.textContent = origLines[i];
             });
         });
+    };
+    restoreFrom(state.svg, state.originalText);
+    if (state.auxSvg && state.currentAuxName) {
+        restoreFrom(state.auxSvg, state.auxTextSnapshots.get(state.currentAuxName));
     }
 
     // Apply step's highlights — search both SVGs for the id

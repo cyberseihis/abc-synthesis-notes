@@ -1,0 +1,40 @@
+// Cut A replacement: 4-AND AIG implementing f-AND = ¬(ab+ad+cd) over {a,b,c,d}.
+//
+//   m1 = ¬b · ¬d            (= ¬(b+d))
+//   m2 = a · ¬m1             (= a·(b+d))
+//   m3 = c · d
+//   f  = ¬m2 · ¬m3           (= ¬(ab+ad+cd))
+digraph rewrite_replace_A {
+    rankdir = TB
+    ranksep = 0.5
+    nodesep = 0.3
+    bgcolor = "transparent"
+    label = "Cut A replacement (4 ANDs)"
+    labelloc = "t"
+    fontname = "monospace"
+    fontsize = 13
+
+    node [fontname = "monospace", fontsize = 13, color = "#333333"]
+    edge [color = "#333333", penwidth = 1.4]
+
+    { rank = source
+      a [id="auxA-node-a", label="a", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
+      b [id="auxA-node-b", label="b", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
+      c [id="auxA-node-c", label="c", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
+      d [id="auxA-node-d", label="d", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
+    }
+
+    m1 [id="auxA-node-m1", label="m1", shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
+    m2 [id="auxA-node-m2", label="m2", shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
+    m3 [id="auxA-node-m3", label="m3", shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
+    f  [id="auxA-node-f",  label="f",  shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
+
+    b -> m1 [id="auxA-edge-b-m1", style=dashed]
+    d -> m1 [id="auxA-edge-d-m1", style=dashed]
+    a -> m2 [id="auxA-edge-a-m2"]
+    m1 -> m2 [id="auxA-edge-m1-m2", style=dashed]
+    c -> m3 [id="auxA-edge-c-m3"]
+    d -> m3 [id="auxA-edge-d-m3"]
+    m2 -> f [id="auxA-edge-m2-f", style=dashed]
+    m3 -> f [id="auxA-edge-m3-f", style=dashed]
+}

@@ -5,6 +5,7 @@
   "steps": [
     {
       "title": "Strashed AIG: 5 ANDs implementing f = ab + ad + cd",
+      "auxCircuit": null,
       "narrative": "<code>Abc_NtkRewrite</code> visits every internal AND in topological order and asks: <em>can a precomputed library subgraph replace this cone with fewer ANDs?</em> We follow the AND at <strong>f</strong>, where the trace's gain happens. (The other four ANDs are also tried and reported as no-gain.)<br><br>Dashed edges = inverter on the wire. The PO edge from f is dashed, so PO outputs <code>¬f-AND = ¬(n8·¬n9) = (n6+n7)+n9 = ab+ad+cd</code>.",
       "highlights": {
         "node-f": ["considering"]
@@ -18,6 +19,7 @@
     },
     {
       "title": "Three cuts at f survive the fanout-1 filter",
+      "auxCircuit": null,
       "narrative": "Cut enumeration produces five 4-leaf cuts at f. The fanout-1 filter (<code>rwrEva.c:122..129</code>) drops cuts where more than 2 leaves have fanout 1 — those leaves are <em>captive</em> to the cone and offer no shared structure to reuse. <strong>Three</strong> survive; we'll evaluate each in turn.",
       "highlights": {},
       "panes": [
@@ -36,7 +38,8 @@
     },
     {
       "title": "Cut A — {a, b, c, d}",
-      "narrative": "All four PIs as leaves. The cone covers <em>everything</em> internal: <strong>MFFC = {f, n8, n7, n9, n6} = 5 ANDs</strong>. The cut's truth table is the original output function <code>ab+ad+cd</code>, and the cheapest known AIG for this class needs <strong>4</strong> ANDs (factoring <code>a(b+d) + cd</code>).",
+      "auxCircuit": "rewrite_replace_A",
+      "narrative": "All four PIs as leaves. The cone covers <em>everything</em> internal: <strong>MFFC = {f, n8, n7, n9, n6} = 5 ANDs</strong>. The cut's truth table is the original output function <code>ab+ad+cd</code>.<br><br>Cheapest known AIG for this class: <strong>4</strong> ANDs (right pane), factoring as <code>a·(b+d) + c·d</code>.",
       "highlights": {
         "node-a":  ["cut-leaf"],
         "node-b":  ["cut-leaf"],
@@ -46,7 +49,15 @@
         "node-n7": ["in-mffc"],
         "node-n8": ["in-mffc"],
         "node-n9": ["in-mffc"],
-        "node-f":  ["in-mffc"]
+        "node-f":  ["in-mffc"],
+        "auxA-node-a": ["cut-leaf"],
+        "auxA-node-b": ["cut-leaf"],
+        "auxA-node-c": ["cut-leaf"],
+        "auxA-node-d": ["cut-leaf"],
+        "auxA-node-m1": ["replacement-new"],
+        "auxA-node-m2": ["replacement-new"],
+        "auxA-node-m3": ["replacement-new"],
+        "auxA-node-f":  ["replacement-new"]
       },
       "panes": [
         { "type": "kv", "title": "Cut & function",
@@ -55,8 +66,6 @@
             "TT":     "<code>0x0577</code>",
             "f-AND":  "<code>¬(ab+ad+cd)</code>"
           } },
-        { "type": "formula", "title": "Replacement (4 ANDs)",
-          "body": "m1 = ¬b · ¬d &nbsp;&nbsp;<em>(both fanins dashed; m1 = ¬(b+d))</em><br>m2 = a · ¬m1 &nbsp;&nbsp;<em>(= a·(b+d))</em><br>m3 = c · d<br>f &nbsp;= ¬m2 · ¬m3 &nbsp;&nbsp;<em>(= ¬(ab+ad+cd))</em>" },
         { "type": "kv", "title": "Score",
           "entries": {
             "MFFC (Save)":  "5",
@@ -67,7 +76,8 @@
     },
     {
       "title": "Cut B — {a, c, d, n6}",
-      "narrative": "<strong>n6</strong> (= a·b) is treated as a leaf even though it's an internal AND — the boundary boost (<code>abcRewrite.c:138..148</code>) protects it during the MFFC walk, so its sub-cone (the <code>a·b</code> AND) is left intact. <strong>MFFC = {f, n8, n7, n9} = 4 ANDs</strong>.<br><br>TT = <code>0x001F</code> = NPN class <strong>12</strong> directly (no phase / perm needed). The canonical for class 12 is 3 ANDs — see the <em>NPN canonization</em> walkthrough.",
+      "auxCircuit": "rewrite_replace_B",
+      "narrative": "<strong>n6</strong> (= a·b) is treated as a leaf even though it's an internal AND — the boundary boost (<code>abcRewrite.c:138..148</code>) protects it during the MFFC walk, so its sub-cone (the <code>a·b</code> AND) is left intact. <strong>MFFC = {f, n8, n7, n9} = 4 ANDs</strong>.<br><br>TT = <code>0x001F</code> = NPN class <strong>12</strong> directly (no phase / perm needed). The canonical for class 12 is <strong>3</strong> ANDs (right pane) — see the <em>NPN canonization</em> walkthrough.",
       "highlights": {
         "node-a":  ["cut-leaf"],
         "node-c":  ["cut-leaf"],
@@ -76,7 +86,14 @@
         "node-n7": ["in-mffc"],
         "node-n8": ["in-mffc"],
         "node-n9": ["in-mffc"],
-        "node-f":  ["in-mffc"]
+        "node-f":  ["in-mffc"],
+        "auxB-node-a":  ["cut-leaf"],
+        "auxB-node-c":  ["cut-leaf"],
+        "auxB-node-d":  ["cut-leaf"],
+        "auxB-node-n6": ["cut-leaf"],
+        "auxB-node-m1": ["replacement-new"],
+        "auxB-node-m2": ["replacement-new"],
+        "auxB-node-f":  ["replacement-new"]
       },
       "panes": [
         { "type": "kv", "title": "Cut & function",
@@ -85,8 +102,6 @@
             "TT":     "<code>0x001F</code> &mdash; canonical for class 12",
             "f-AND":  "<code>¬n6 · ¬(d·(a+c))</code>"
           } },
-        { "type": "formula", "title": "Replacement (3 ANDs)",
-          "body": "m1 = ¬a · ¬c &nbsp;&nbsp;<em>(= ¬(a+c))</em><br>m2 = d · ¬m1 &nbsp;&nbsp;<em>(= d·(a+c))</em><br>f &nbsp;= ¬n6 · ¬m2" },
         { "type": "kv", "title": "Score",
           "entries": {
             "MFFC (Save)":  "4",
@@ -97,7 +112,8 @@
     },
     {
       "title": "Cut C — {a, d, n6, n9}",
-      "narrative": "Two internal ANDs are absorbed as leaves: <strong>n6</strong> (= a·b) and <strong>n9</strong> (= c·d). The MFFC shrinks to just <strong>{f, n8, n7} = 3 ANDs</strong>. TT = <code>0x0007</code>, which already needs <strong>3</strong> ANDs to express (<code>¬(n6 + a·d + n9)</code>).",
+      "auxCircuit": "rewrite_replace_C",
+      "narrative": "Two internal ANDs are absorbed as leaves: <strong>n6</strong> (= a·b) and <strong>n9</strong> (= c·d). The MFFC shrinks to just <strong>{f, n8, n7} = 3 ANDs</strong>.<br><br>TT = <code>0x0007</code> = <code>¬(n6 + a·d + n9)</code>; cheapest implementation also <strong>3</strong> ANDs (right pane).",
       "highlights": {
         "node-a":  ["cut-leaf"],
         "node-d":  ["cut-leaf"],
@@ -107,7 +123,14 @@
         "node-n8": ["in-mffc"],
         "node-f":  ["in-mffc"],
         "node-b":  ["dimmed"],
-        "node-c":  ["dimmed"]
+        "node-c":  ["dimmed"],
+        "auxC-node-a":  ["cut-leaf"],
+        "auxC-node-d":  ["cut-leaf"],
+        "auxC-node-n6": ["cut-leaf"],
+        "auxC-node-n9": ["cut-leaf"],
+        "auxC-node-m1": ["replacement-new"],
+        "auxC-node-m2": ["replacement-new"],
+        "auxC-node-f":  ["replacement-new"]
       },
       "panes": [
         { "type": "kv", "title": "Cut & function",
@@ -116,8 +139,6 @@
             "TT":     "<code>0x0007</code>",
             "f-AND":  "<code>¬n6 · ¬(a·d) · ¬n9</code>"
           } },
-        { "type": "formula", "title": "Replacement (3 ANDs)",
-          "body": "m1 = a · d<br>m2 = ¬n6 · ¬m1 &nbsp;&nbsp;<em>(= ¬(n6 + a·d))</em><br>f &nbsp;= m2 · ¬n9" },
         { "type": "kv", "title": "Score",
           "entries": {
             "MFFC (Save)":  "3",
@@ -128,12 +149,24 @@
     },
     {
       "title": "Compare gains; pick the best",
-      "narrative": "<code>Rwr_NodeRewrite</code> tracks the best (cut, library-subgraph) pair across all surviving cuts using strict-better comparison. In the cut chain produced bottom-up, Cut C is visited first (gain 0, no improvement), then Cut B sets the running best at gain 1, then Cut A also yields gain 1 — not <em>strictly</em> better, so B holds.",
+      "auxCircuit": "rewrite_replace_B",
+      "narrative": "<code>Rwr_NodeRewrite</code> tracks the best (cut, library-subgraph) pair across all surviving cuts using strict-better comparison. In the cut chain produced bottom-up, Cut C is visited first (gain 0, no improvement), then Cut B sets the running best at gain 1, then Cut A also yields gain 1 — not <em>strictly</em> better, so B holds.<br><br>The right pane shows the winning subgraph that will be slotted in.",
       "highlights": {
         "node-a":  ["cut-leaf"],
         "node-c":  ["cut-leaf"],
         "node-d":  ["cut-leaf"],
-        "node-n6": ["cut-leaf", "fanout-protected"]
+        "node-n6": ["cut-leaf", "fanout-protected"],
+        "node-n7": ["in-mffc"],
+        "node-n8": ["in-mffc"],
+        "node-n9": ["in-mffc"],
+        "node-f":  ["in-mffc"],
+        "auxB-node-a":  ["cut-leaf"],
+        "auxB-node-c":  ["cut-leaf"],
+        "auxB-node-d":  ["cut-leaf"],
+        "auxB-node-n6": ["cut-leaf"],
+        "auxB-node-m1": ["replacement-new"],
+        "auxB-node-m2": ["replacement-new"],
+        "auxB-node-f":  ["replacement-new"]
       },
       "panes": [
         { "type": "table", "title": "Cut comparison",
@@ -149,7 +182,8 @@
     },
     {
       "title": "Commit Cut B's replacement: 5 ANDs → 4 ANDs",
-      "narrative": "<code>Dec_GraphUpdateNetwork</code> materializes the 3 new ANDs over leaves <code>{a, c, d, n6}</code> and redirects the f-AND fanout (the PO) to the new top node. The 4 old MFFC nodes ({f, n8, n7, n9}) become dangling and are reclaimed by reference counting. n6 = a·b is kept — that's exactly why it was treated as a leaf.",
+      "auxCircuit": "rewrite_replace_B",
+      "narrative": "<code>Dec_GraphUpdateNetwork</code> materializes the 3 new ANDs from the right-pane subgraph over leaves <code>{a, c, d, n6}</code> and redirects the f-AND fanout (the PO) to its top node. The 4 old MFFC nodes ({f, n8, n7, n9}) become dangling and are reclaimed by reference counting. n6 = a·b is kept — that's exactly why it was treated as a leaf.",
       "highlights": {
         "node-a":  ["cut-leaf"],
         "node-c":  ["cut-leaf"],
@@ -158,7 +192,14 @@
         "node-f":  ["dimmed"],
         "node-n7": ["dimmed"],
         "node-n8": ["dimmed"],
-        "node-n9": ["dimmed"]
+        "node-n9": ["dimmed"],
+        "auxB-node-a":  ["cut-leaf"],
+        "auxB-node-c":  ["cut-leaf"],
+        "auxB-node-d":  ["cut-leaf"],
+        "auxB-node-n6": ["cut-leaf"],
+        "auxB-node-m1": ["replacement-new", "fresh"],
+        "auxB-node-m2": ["replacement-new", "fresh"],
+        "auxB-node-f":  ["replacement-new", "fresh"]
       },
       "panes": [
         { "type": "kv", "title": "Final stats",

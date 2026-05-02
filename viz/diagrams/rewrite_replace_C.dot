@@ -1,0 +1,39 @@
+// Cut C replacement: 3-AND AIG implementing f-AND over {a,d,n6,n9}.
+// TT = 0x0007.
+//
+//   m1 = a · d
+//   m2 = ¬n6 · ¬m1           (= ¬(n6 + a·d))
+//   f  = m2 · ¬n9             (= ¬(n6 + a·d + n9))
+//
+// Same node count as the MFFC ⇒ gain 0 ⇒ rejected.
+digraph rewrite_replace_C {
+    rankdir = TB
+    ranksep = 0.5
+    nodesep = 0.3
+    bgcolor = "transparent"
+    label = "Cut C replacement (3 ANDs)"
+    labelloc = "t"
+    fontname = "monospace"
+    fontsize = 13
+
+    node [fontname = "monospace", fontsize = 13, color = "#333333"]
+    edge [color = "#333333", penwidth = 1.4]
+
+    { rank = source
+      a  [id="auxC-node-a",  label="a",  shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
+      d  [id="auxC-node-d",  label="d",  shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
+      n6 [id="auxC-node-n6", label="n6", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
+      n9 [id="auxC-node-n9", label="n9", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
+    }
+
+    m1 [id="auxC-node-m1", label="m1", shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
+    m2 [id="auxC-node-m2", label="m2", shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
+    f  [id="auxC-node-f",  label="f",  shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
+
+    a -> m1 [id="auxC-edge-a-m1"]
+    d -> m1 [id="auxC-edge-d-m1"]
+    n6 -> m2 [id="auxC-edge-n6-m2", style=dashed]
+    m1 -> m2 [id="auxC-edge-m1-m2", style=dashed]
+    m2 -> f [id="auxC-edge-m2-f"]
+    n9 -> f [id="auxC-edge-n9-f", style=dashed]
+}
