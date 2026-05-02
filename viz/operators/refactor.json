@@ -1,0 +1,164 @@
+{
+  "operator": "refactor",
+  "circuit": "refactor_chain",
+  "title": "refactor on refactor_win.blif",
+  "steps": [
+    {
+      "title": "AIG: f = a·(b+c+d+e), 7 ANDs, depth 4",
+      "auxCircuit": null,
+      "narrative": "Source: <code>refactor_win.blif</code> writes <code>f</code> the literal way: four product terms <code>ab, ac, ad, ae</code> ORed together as a left-leaning chain <code>t1 = ab+ac</code>, <code>t2 = t1+ad</code>, <code>f = t2+ae</code>. After strash, that's 7 ANDs at depth 4. Dashed edges are negated (the OR encoding uses ¬(¬x · ¬y)).<br><br>Rewrite would miss the algebraic factoring here — the cone has 5 inputs, more than rewrite's 4-cut limit. <strong>refactor</strong> uses a larger reconvergence-driven cut and rebuilds the local function from its truth table.",
+      "highlights": {
+        "node-f": ["considering"]
+      },
+      "panes": [
+        { "type": "kv", "title": "Stats",
+          "entries": { "ANDs": "7", "Depth": "4", "PIs/POs": "5 / 1" } },
+        { "type": "text", "title": "Per-node pipeline",
+          "body": "<ol style=\"margin:0;padding-left:1.1rem\"><li>reconvergence cut — up to 10 leaves (<code>nNodeSizeMax</code>)</li><li>truth-table simulate the cone</li><li><code>Kit_TruthToGraph</code>: ISOP → algebraic factoring → <code>Dec_Graph_t</code></li><li>score with <code>Dec_GraphToNetworkCount</code>; commit if gain &gt; 0</li></ol>" }
+      ]
+    },
+    {
+      "title": "Reconvergence-driven cut at f → leaves {a, b, c, d, e}",
+      "auxCircuit": null,
+      "narrative": "<code>Abc_NodeFindCut(pManCut, f, 0)</code> grows leaves greedily from f, biased toward leaves whose addition increases reconvergence with already-present nodes. With <code>nNodeSizeMax = 10</code> there's room for all five PIs, so the cut reaches the inputs.<br><br>Cone interior: {ab, ac, ad, ae, t1, t2, f} — 7 internal ANDs. Since this is the only fanout chain to the PO and no internal node has external fanouts, the entire cone is the MFFC.",
+      "highlights": {
+        "node-a": ["cut-leaf"],
+        "node-b": ["cut-leaf"],
+        "node-c": ["cut-leaf"],
+        "node-d": ["cut-leaf"],
+        "node-e": ["cut-leaf"],
+        "node-ab": ["in-mffc"],
+        "node-ac": ["in-mffc"],
+        "node-ad": ["in-mffc"],
+        "node-ae": ["in-mffc"],
+        "node-t1": ["in-mffc"],
+        "node-t2": ["in-mffc"],
+        "node-f":  ["in-mffc"]
+      },
+      "panes": [
+        { "type": "kv", "title": "Cut & cone",
+          "entries": {
+            "Leaves":  "5 — {a, b, c, d, e}",
+            "Cone":    "7 ANDs (everything internal)",
+            "MFFC":    "<strong>7</strong>"
+          } }
+      ]
+    },
+    {
+      "title": "Compute the cone's truth table",
+      "auxCircuit": null,
+      "narrative": "<code>Abc_NodeConeTruth</code> seeds the leaves with the standard 5-input simulation patterns and walks the cone in topological order, ANDing word-by-word. With ≤6 inputs, one 64-bit word suffices: 32 patterns laid out as bits 0..31 (LSB = pattern 0).<br><br>The result is f's truth table: 32 bits with a 1 wherever a=1 AND any of b,c,d,e is 1.",
+      "highlights": {
+        "node-a": ["cut-leaf"],
+        "node-b": ["cut-leaf"],
+        "node-c": ["cut-leaf"],
+        "node-d": ["cut-leaf"],
+        "node-e": ["cut-leaf"],
+        "node-f":  ["considering"]
+      },
+      "panes": [
+        { "type": "kv", "title": "Function at f",
+          "entries": {
+            "Support":  "{a, b, c, d, e}",
+            "Function": "<code>a·(b+c+d+e)</code>",
+            "Minterms": "15 of 32 (a=1 AND any of b,c,d,e)"
+          } }
+      ]
+    },
+    {
+      "title": "Kit_TruthToGraph — ISOP, then algebraic factor",
+      "auxCircuit": null,
+      "narrative": "First an ISOP (irredundant sum-of-products) is extracted from the truth table; for f it's the four single-cube products <code>{ab, ac, ad, ae}</code>. Then algebraic factoring runs common-cube extraction: every cube contains literal <code>a</code>, so <code>a</code> divides out cleanly, leaving the kernel <code>(b+c+d+e)</code>.<br><br>The resulting <code>Dec_Graph_t</code> has 4 internal nodes — one for each product/OR step in the factored expression. Same algorithm SIS used.",
+      "highlights": {
+        "node-a": ["cut-leaf"],
+        "node-b": ["cut-leaf"],
+        "node-c": ["cut-leaf"],
+        "node-d": ["cut-leaf"],
+        "node-e": ["cut-leaf"]
+      },
+      "panes": [
+        { "type": "formula", "title": "ISOP",
+          "body": "f &nbsp;=&nbsp; ab &nbsp;+&nbsp; ac &nbsp;+&nbsp; ad &nbsp;+&nbsp; ae" },
+        { "type": "formula", "title": "Factored",
+          "body": "f &nbsp;=&nbsp; <strong>a · (b + c + d + e)</strong>" },
+        { "type": "text",
+          "body": "<code>FF</code> in the trace = the factored-form node count returned by <code>Dec_GraphNodeNum</code>." }
+      ]
+    },
+    {
+      "title": "Materialize as AIG — Dec_GraphToNetworkCount",
+      "auxCircuit": "refactor_replace",
+      "narrative": "The Dec_Graph is bottom-up walked through <code>Abc_AigAndLookup</code>: each AND is structurally hashed; an existing match counts as 0, a new AND counts as 1. The 4-input OR is materialized as a balanced binary AND-tree of negated inputs (right pane).<br><br>None of <code>(¬b·¬c)</code>, <code>(¬d·¬e)</code>, <code>(¬b·¬c · ¬d·¬e)</code>, or <code>(a · ¬that)</code> exists yet → all 4 ANDs are new. <code>nNodesAdded = 4</code>, <code>Save = 7</code>, gain = <strong>3</strong>.",
+      "highlights": {
+        "node-a": ["cut-leaf"],
+        "node-b": ["cut-leaf"],
+        "node-c": ["cut-leaf"],
+        "node-d": ["cut-leaf"],
+        "node-e": ["cut-leaf"],
+        "node-ab": ["in-mffc"],
+        "node-ac": ["in-mffc"],
+        "node-ad": ["in-mffc"],
+        "node-ae": ["in-mffc"],
+        "node-t1": ["in-mffc"],
+        "node-t2": ["in-mffc"],
+        "node-f":  ["in-mffc"],
+        "aux-node-a": ["cut-leaf"],
+        "aux-node-b": ["cut-leaf"],
+        "aux-node-c": ["cut-leaf"],
+        "aux-node-d": ["cut-leaf"],
+        "aux-node-e": ["cut-leaf"],
+        "aux-node-p1": ["replacement-new"],
+        "aux-node-p2": ["replacement-new"],
+        "aux-node-p3": ["replacement-new"],
+        "aux-node-f":  ["replacement-new"]
+      },
+      "panes": [
+        { "type": "kv", "title": "Score",
+          "entries": {
+            "MFFC (Save)":  "7",
+            "Replacement":  "4",
+            "Reuse hits":   "0",
+            "Gain":         "<strong>7 − 4 = 3</strong>"
+          } }
+      ]
+    },
+    {
+      "title": "Commit — 7 ANDs → 4 ANDs, depth 4 → 3",
+      "auxCircuit": "refactor_replace",
+      "narrative": "<code>Dec_GraphUpdateNetwork</code> instantiates the 4 new ANDs and redirects f's PO to the new top node. The 7 old MFFC ANDs become dangling and are reclaimed.<br><br>The actual ABC trace shows three smaller moves rather than one big one — refactor visits each internal AND in topological order, so it accepts gain=1 at <code>t1</code> first, then gain=1 at <code>t2</code> on the updated graph, then gain=1 at <code>f</code>. Cumulative outcome is identical: 7 → 4 ANDs, depth 4 → 3.",
+      "highlights": {
+        "node-a": ["cut-leaf"],
+        "node-b": ["cut-leaf"],
+        "node-c": ["cut-leaf"],
+        "node-d": ["cut-leaf"],
+        "node-e": ["cut-leaf"],
+        "node-ab": ["dimmed"],
+        "node-ac": ["dimmed"],
+        "node-ad": ["dimmed"],
+        "node-ae": ["dimmed"],
+        "node-t1": ["dimmed"],
+        "node-t2": ["dimmed"],
+        "node-f":  ["dimmed"],
+        "aux-node-a": ["cut-leaf"],
+        "aux-node-b": ["cut-leaf"],
+        "aux-node-c": ["cut-leaf"],
+        "aux-node-d": ["cut-leaf"],
+        "aux-node-e": ["cut-leaf"],
+        "aux-node-p1": ["replacement-new", "fresh"],
+        "aux-node-p2": ["replacement-new", "fresh"],
+        "aux-node-p3": ["replacement-new", "fresh"],
+        "aux-node-f":  ["replacement-new", "fresh"]
+      },
+      "panes": [
+        { "type": "kv", "title": "Final stats",
+          "entries": {
+            "ANDs (before)": "7",
+            "ANDs (after)":  "<strong>4</strong>",
+            "Depth (before)": "4",
+            "Depth (after)":  "<strong>3</strong>",
+            "Gain":          "<strong>3</strong>"
+          } }
+      ]
+    }
+  ]
+}

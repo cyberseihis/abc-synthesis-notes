@@ -1,0 +1,48 @@
+// AIG of resub_win.blif:
+//   n5 = ¬a · ¬b           (= ¬(a+b))
+//   n6 = n5 · ¬c           (= ¬(a+b)·¬c)
+//   f  = ¬n5 · ¬n6         (= (a+b)·((a+b)+c) = a+b)
+//   g  = n5 · d
+// 4 ANDs, two POs (f, g). n5 has fanout 3 ⇒ stays alive when f's MFFC is
+// computed (only n6 joins f in the MFFC). Resub spots f ≡ ¬n5 by sim.
+digraph resub_demo {
+    rankdir = TB
+    ranksep = 0.5
+    nodesep = 0.4
+    bgcolor = "transparent"
+    label = "Source AIG: 4 ANDs, two POs (f = a+b, g = ¬(a+b)·d)"
+    labelloc = "t"
+    fontname = "monospace"
+    fontsize = 13
+
+    node [fontname = "monospace", fontsize = 13, color = "#333333"]
+    edge [color = "#333333", penwidth = 1.4]
+
+    { rank = source
+      a [id="node-a", label="a", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
+      b [id="node-b", label="b", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
+      c [id="node-c", label="c", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
+      d [id="node-d", label="d", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
+    }
+
+    n5 [id="node-n5", label="n5", shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
+    n6 [id="node-n6", label="n6", shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
+    f  [id="node-f",  label="f",  shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
+    g  [id="node-g",  label="g",  shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
+
+    { rank = sink
+      POf [id="node-POf", label="PO_f", shape=plaintext, fontsize=14, fontcolor="#806000"]
+      POg [id="node-POg", label="PO_g", shape=plaintext, fontsize=14, fontcolor="#806000"]
+    }
+
+    a -> n5 [id="edge-a-n5", style=dashed]
+    b -> n5 [id="edge-b-n5", style=dashed]
+    n5 -> n6 [id="edge-n5-n6"]
+    c  -> n6 [id="edge-c-n6", style=dashed]
+    n5 -> f  [id="edge-n5-f", style=dashed]
+    n6 -> f  [id="edge-n6-f", style=dashed]
+    n5 -> g  [id="edge-n5-g"]
+    d  -> g  [id="edge-d-g"]
+    f  -> POf [id="edge-f-POf"]
+    g  -> POg [id="edge-g-POg"]
+}

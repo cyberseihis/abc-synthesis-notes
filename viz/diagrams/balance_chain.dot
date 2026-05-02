@@ -1,0 +1,43 @@
+// Right-leaning AND chain from chain.blif:
+//   f = ((((a & b) & c) & d) & e)
+// 4 ANDs, depth 4. Supergate collection sees all 5 PIs as leaves.
+digraph balance_chain {
+    rankdir = TB
+    ranksep = 0.55
+    nodesep = 0.35
+    bgcolor = "transparent"
+    label = "Right-leaning AND chain (depth 4)"
+    labelloc = "t"
+    fontname = "monospace"
+    fontsize = 13
+
+    node [fontname = "monospace", fontsize = 14, color = "#333333"]
+    edge [color = "#333333", penwidth = 1.4]
+
+    { rank = source
+      a [id="node-a", label="a", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
+      b [id="node-b", label="b", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
+      c [id="node-c", label="c", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
+      d [id="node-d", label="d", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
+      e [id="node-e", label="e", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
+    }
+
+    n1 [id="node-n1", label="n1", shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
+    n2 [id="node-n2", label="n2", shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
+    n3 [id="node-n3", label="n3", shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
+    f  [id="node-f",  label="f",  shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
+
+    { rank = sink
+      PO [id="node-PO", label="PO", shape=plaintext, fontsize=14, fontcolor="#806000"]
+    }
+
+    a -> n1 [id="edge-a-n1"]
+    b -> n1 [id="edge-b-n1"]
+    n1 -> n2 [id="edge-n1-n2"]
+    c  -> n2 [id="edge-c-n2"]
+    n2 -> n3 [id="edge-n2-n3"]
+    d  -> n3 [id="edge-d-n3"]
+    n3 -> f  [id="edge-n3-f"]
+    e  -> f  [id="edge-e-f"]
+    f  -> PO [id="edge-f-PO"]
+}

@@ -1,0 +1,31 @@
+// Resub replacement for f: just n5 (= ¬a·¬b), referenced through the
+// inverter on the PO edge so the user-visible signal is f = ¬n5 = a+b.
+// This is a Divs0 hit — no new ANDs, just a wire redirect.
+digraph resub_replace {
+    rankdir = TB
+    ranksep = 0.5
+    nodesep = 0.4
+    bgcolor = "transparent"
+    label = "Divs0 replacement: f → ¬n5"
+    labelloc = "t"
+    fontname = "monospace"
+    fontsize = 13
+
+    node [fontname = "monospace", fontsize = 13, color = "#333333"]
+    edge [color = "#333333", penwidth = 1.4]
+
+    { rank = source
+      a [id="aux-node-a", label="a", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
+      b [id="aux-node-b", label="b", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
+    }
+
+    n5 [id="aux-node-n5", label="n5", shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
+
+    { rank = sink
+      POf [id="aux-node-POf", label="PO_f", shape=plaintext, fontsize=14, fontcolor="#806000"]
+    }
+
+    a -> n5 [id="aux-edge-a-n5", style=dashed]
+    b -> n5 [id="aux-edge-b-n5", style=dashed]
+    n5 -> POf [id="aux-edge-n5-POf", style=dashed]
+}

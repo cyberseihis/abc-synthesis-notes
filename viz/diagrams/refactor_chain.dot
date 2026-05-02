@@ -1,0 +1,56 @@
+// AIG of refactor_win.blif (post-strash):
+//   ab = a·b   ac = a·c   ad = a·d   ae = a·e
+//   t1 = ¬ab · ¬ac          (signal = ab+ac)
+//   t2 = t1  · ¬ad           (signal = ab+ac+ad)
+//   f  = t2  · ¬ae           (signal = ab+ac+ad+ae = a·(b+c+d+e))
+// 7 ANDs, depth 4. PO inverts f's stored value to deliver the OR.
+digraph refactor_chain {
+    rankdir = TB
+    ranksep = 0.5
+    nodesep = 0.3
+    bgcolor = "transparent"
+    label = "AIG of f = a·(b+c+d+e), 7 ANDs, depth 4"
+    labelloc = "t"
+    fontname = "monospace"
+    fontsize = 13
+
+    node [fontname = "monospace", fontsize = 13, color = "#333333"]
+    edge [color = "#333333", penwidth = 1.4]
+
+    { rank = source
+      a [id="node-a", label="a", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
+      b [id="node-b", label="b", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
+      c [id="node-c", label="c", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
+      d [id="node-d", label="d", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
+      e [id="node-e", label="e", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
+    }
+
+    ab [id="node-ab", label="ab", shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
+    ac [id="node-ac", label="ac", shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
+    ad [id="node-ad", label="ad", shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
+    ae [id="node-ae", label="ae", shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
+    t1 [id="node-t1", label="t1", shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
+    t2 [id="node-t2", label="t2", shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
+    f  [id="node-f",  label="f",  shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
+
+    { rank = sink
+      PO [id="node-PO", label="PO", shape=plaintext, fontsize=14, fontcolor="#806000"]
+    }
+
+    a -> ab [id="edge-a-ab"]
+    b -> ab [id="edge-b-ab"]
+    a -> ac [id="edge-a-ac"]
+    c -> ac [id="edge-c-ac"]
+    a -> ad [id="edge-a-ad"]
+    d -> ad [id="edge-d-ad"]
+    a -> ae [id="edge-a-ae"]
+    e -> ae [id="edge-e-ae"]
+
+    ab -> t1 [id="edge-ab-t1", style=dashed]
+    ac -> t1 [id="edge-ac-t1", style=dashed]
+    t1 -> t2 [id="edge-t1-t2"]
+    ad -> t2 [id="edge-ad-t2", style=dashed]
+    t2 -> f  [id="edge-t2-f"]
+    ae -> f  [id="edge-ae-f",  style=dashed]
+    f  -> PO [id="edge-f-PO",  style=dashed]
+}

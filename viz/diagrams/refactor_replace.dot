@@ -1,0 +1,42 @@
+// Refactored replacement for f = a·(b+c+d+e), 4 ANDs, depth 3.
+// Algebraic factoring extracts 'a', then materializes the 4-input OR
+// as a balanced AND-tree of negations:
+//   p1 = ¬b · ¬c     (= ¬(b+c))
+//   p2 = ¬d · ¬e     (= ¬(d+e))
+//   p3 = p1 · p2     (= ¬(b+c+d+e))
+//   f  = a · ¬p3     (= a·(b+c+d+e))
+digraph refactor_replace {
+    rankdir = TB
+    ranksep = 0.5
+    nodesep = 0.3
+    bgcolor = "transparent"
+    label = "Refactored replacement (4 ANDs, depth 3)"
+    labelloc = "t"
+    fontname = "monospace"
+    fontsize = 13
+
+    node [fontname = "monospace", fontsize = 13, color = "#333333"]
+    edge [color = "#333333", penwidth = 1.4]
+
+    { rank = source
+      a [id="aux-node-a", label="a", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
+      b [id="aux-node-b", label="b", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
+      c [id="aux-node-c", label="c", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
+      d [id="aux-node-d", label="d", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
+      e [id="aux-node-e", label="e", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
+    }
+
+    p1 [id="aux-node-p1", label="p1", shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
+    p2 [id="aux-node-p2", label="p2", shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
+    p3 [id="aux-node-p3", label="p3", shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
+    f  [id="aux-node-f",  label="f",  shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
+
+    b -> p1 [id="aux-edge-b-p1", style=dashed]
+    c -> p1 [id="aux-edge-c-p1", style=dashed]
+    d -> p2 [id="aux-edge-d-p2", style=dashed]
+    e -> p2 [id="aux-edge-e-p2", style=dashed]
+    p1 -> p3 [id="aux-edge-p1-p3"]
+    p2 -> p3 [id="aux-edge-p2-p3"]
+    a -> f  [id="aux-edge-a-f"]
+    p3 -> f [id="aux-edge-p3-f", style=dashed]
+}

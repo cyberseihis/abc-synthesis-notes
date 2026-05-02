@@ -1,0 +1,198 @@
+{
+  "operator": "balance",
+  "circuit": "balance_chain",
+  "title": "balance on chain.blif",
+  "steps": [
+    {
+      "title": "Right-leaning AND chain — depth 4",
+      "auxCircuit": null,
+      "narrative": "Source: <code>chain.blif</code> with <code>f = ((((a·b)·c)·d)·e)</code>. After strash this is 4 right-leaning ANDs with depth 4. <strong>balance</strong> (<code>Dar_ManBalance</code>) is purely associativity-based: it leaves the function unchanged but reorders operands inside maximal AND-trees so they implement at minimum depth.",
+      "highlights": {
+        "node-n1": ["in-mffc"],
+        "node-n2": ["in-mffc"],
+        "node-n3": ["in-mffc"],
+        "node-f":  ["in-mffc"]
+      },
+      "panes": [
+        { "type": "kv", "title": "Stats",
+          "entries": { "ANDs": "4", "Depth": "<strong>4</strong>", "PIs/POs": "5 / 1" } },
+        { "type": "text", "title": "Why depth matters",
+          "body": "Depth (level) is the longest fanin-2 AIG path from any PI to a PO; it bounds critical-path delay after mapping. balance does <em>not</em> change AND count — it just shapes the tree so subsequent rewrite/refactor moves see regular structure." }
+      ]
+    },
+    {
+      "title": "Step 1 — collect supergate (Dar_BalanceCone_rec)",
+      "auxCircuit": null,
+      "narrative": "Walk down through children that are <em>same-type</em> (AND), <em>non-shared</em> (<code>Aig_ObjRefs == 1</code>) ANDs. Stop and record a leaf at every PI or fanout-cone boundary. For the chain, each internal AND is fanout-1 so the recursion bottoms out at all 5 PIs.<br><br>Result: <code>vSuper = [e, d, c, b, a]</code> (descending Id order at the moment of insertion).",
+      "highlights": {
+        "node-a": ["cut-leaf"],
+        "node-b": ["cut-leaf"],
+        "node-c": ["cut-leaf"],
+        "node-d": ["cut-leaf"],
+        "node-e": ["cut-leaf"],
+        "node-n1": ["in-mffc"],
+        "node-n2": ["in-mffc"],
+        "node-n3": ["in-mffc"],
+        "node-f":  ["in-mffc"]
+      },
+      "panes": [
+        { "type": "list", "title": "Supergate leaves",
+          "items": ["e", "d", "c", "b", "a"] },
+        { "type": "text",
+          "body": "<code>Dar_BalanceUniqify</code> next sorts the leaves by literal and folds <code>x·x = x</code>, <code>x·¬x = 0</code>. All 5 here are distinct PIs, so no change." }
+      ]
+    },
+    {
+      "title": "Step 2 — Huffman pairing: pop b, a → m1 = a·b",
+      "auxCircuit": "balance_tree",
+      "narrative": "<code>Dar_BalanceBuildSuper</code> sorts leaves ascending by level, then pops the two cheapest, ANDs them, and reinserts. All five leaves are at level 0 — ties break by Id, smaller first. b and a pop first.<br><br>Each <code>Aig_Oper</code> call goes through structural hashing (<code>Aig_TableLookupTwo</code>): an existing AND is reused if found.",
+      "highlights": {
+        "node-a": ["cut-leaf"],
+        "node-b": ["cut-leaf"],
+        "node-c": ["cut-leaf"],
+        "node-d": ["cut-leaf"],
+        "node-e": ["cut-leaf"],
+        "aux-node-a": ["cut-leaf"],
+        "aux-node-b": ["cut-leaf"],
+        "aux-node-c": ["cut-leaf"],
+        "aux-node-d": ["cut-leaf"],
+        "aux-node-e": ["cut-leaf"],
+        "aux-node-m1": ["fresh", "replacement-new"],
+        "aux-node-m2": ["hidden"],
+        "aux-node-m3": ["hidden"],
+        "aux-node-m4": ["hidden"],
+        "aux-node-PO": ["hidden"],
+        "aux-edge-a-m1": ["fresh"],
+        "aux-edge-b-m1": ["fresh"],
+        "aux-edge-c-m2": ["hidden"],
+        "aux-edge-d-m2": ["hidden"],
+        "aux-edge-m1-m3": ["hidden"],
+        "aux-edge-m2-m3": ["hidden"],
+        "aux-edge-m3-m4": ["hidden"],
+        "aux-edge-e-m4": ["hidden"],
+        "aux-edge-m4-PO": ["hidden"]
+      },
+      "panes": [
+        { "type": "kv", "title": "Pairing queue",
+          "entries": {
+            "Action": "pop b, a → AND",
+            "New": "<code>m1 = a·b</code>, level 1",
+            "Queue": "[m1, c, d, e]"
+          } }
+      ]
+    },
+    {
+      "title": "Step 3 — pop d, c → m2 = c·d",
+      "auxCircuit": "balance_tree",
+      "narrative": "Next two cheapest: c and d (both level 0). Pair into <code>m2</code>. The queue now holds two level-1 nodes (m1, m2) and one level-0 leaf (e).",
+      "highlights": {
+        "aux-node-a": ["cut-leaf"],
+        "aux-node-b": ["cut-leaf"],
+        "aux-node-c": ["cut-leaf"],
+        "aux-node-d": ["cut-leaf"],
+        "aux-node-e": ["cut-leaf"],
+        "aux-node-m1": ["replacement-new"],
+        "aux-node-m2": ["fresh", "replacement-new"],
+        "aux-node-m3": ["hidden"],
+        "aux-node-m4": ["hidden"],
+        "aux-node-PO": ["hidden"],
+        "aux-edge-c-m2": ["fresh"],
+        "aux-edge-d-m2": ["fresh"],
+        "aux-edge-m1-m3": ["hidden"],
+        "aux-edge-m2-m3": ["hidden"],
+        "aux-edge-m3-m4": ["hidden"],
+        "aux-edge-e-m4": ["hidden"],
+        "aux-edge-m4-PO": ["hidden"]
+      },
+      "panes": [
+        { "type": "kv", "title": "Pairing queue",
+          "entries": {
+            "Action": "pop d, c → AND",
+            "New": "<code>m2 = c·d</code>, level 1",
+            "Queue": "[m1, m2, e]"
+          } }
+      ]
+    },
+    {
+      "title": "Step 4 — pop m2, m1 → m3 = m1·m2",
+      "auxCircuit": "balance_tree",
+      "narrative": "The queue now holds <code>[e, m1, m2]</code> with e at level 0 and m1/m2 at level 1. Pure Huffman would pair the two minimum (e, m1), giving an unbalanced result. <code>Dar_BalanceFindLeft</code> instead prefers <em>same-level</em> partners when available — pairing both level-1 nodes first lets the level-0 leaf join nearer the root, keeping the eventual depth balanced.<br><br>Result: <code>m3 = m1·m2</code> at level 2.",
+      "highlights": {
+        "aux-node-a": ["cut-leaf"],
+        "aux-node-b": ["cut-leaf"],
+        "aux-node-c": ["cut-leaf"],
+        "aux-node-d": ["cut-leaf"],
+        "aux-node-e": ["cut-leaf"],
+        "aux-node-m1": ["replacement-new"],
+        "aux-node-m2": ["replacement-new"],
+        "aux-node-m3": ["fresh", "replacement-new"],
+        "aux-node-m4": ["hidden"],
+        "aux-node-PO": ["hidden"],
+        "aux-edge-m1-m3": ["fresh"],
+        "aux-edge-m2-m3": ["fresh"],
+        "aux-edge-m3-m4": ["hidden"],
+        "aux-edge-e-m4": ["hidden"],
+        "aux-edge-m4-PO": ["hidden"]
+      },
+      "panes": [
+        { "type": "kv", "title": "Pairing queue",
+          "entries": {
+            "Action": "pop m2, m1 → AND",
+            "New": "<code>m3 = m1·m2</code>, level 2",
+            "Queue": "[e, m3]"
+          } }
+      ]
+    },
+    {
+      "title": "Step 5 — pop m3, e → m4 = m3·e (the new f)",
+      "auxCircuit": "balance_tree",
+      "narrative": "Last pair: m3 (level 2) and e (level 0). The output AND is <code>m4 = m3·e</code> at level 3. The supergate's root is now <code>m4</code>; <code>Dar_Balance_rec</code> returns it as the replacement for the original <code>f</code>.",
+      "highlights": {
+        "aux-node-a": ["cut-leaf"],
+        "aux-node-b": ["cut-leaf"],
+        "aux-node-c": ["cut-leaf"],
+        "aux-node-d": ["cut-leaf"],
+        "aux-node-e": ["cut-leaf"],
+        "aux-node-m1": ["replacement-new"],
+        "aux-node-m2": ["replacement-new"],
+        "aux-node-m3": ["replacement-new"],
+        "aux-node-m4": ["fresh", "replacement-new"],
+        "aux-edge-m3-m4": ["fresh"],
+        "aux-edge-e-m4": ["fresh"]
+      },
+      "panes": [
+        { "type": "kv", "title": "Pairing queue",
+          "entries": {
+            "Action": "pop m3, e → AND",
+            "New": "<code>m4 = m3·e</code>, level 3 (root)",
+            "Queue": "[m4] — done"
+          } }
+      ]
+    },
+    {
+      "title": "Done — same 4 ANDs, depth 4 → 3",
+      "auxCircuit": "balance_tree",
+      "narrative": "The original chain and the balanced tree compute the same function (<code>x·x = x</code>, AND is associative and commutative). Node count is unchanged at 4 ANDs because every pair is genuinely new — no strash hit. Depth shrinks 4 → 3 because the AND-tree is now log<sub>2</sub>-shaped.<br><br>This is the cheap depth-only cleanup that runs between every other operator in <code>compress*</code>.",
+      "highlights": {
+        "node-n1": ["dimmed"],
+        "node-n2": ["dimmed"],
+        "node-n3": ["dimmed"],
+        "node-f":  ["dimmed"],
+        "aux-node-m1": ["replacement-new"],
+        "aux-node-m2": ["replacement-new"],
+        "aux-node-m3": ["replacement-new"],
+        "aux-node-m4": ["replacement-new"]
+      },
+      "panes": [
+        { "type": "table", "title": "Before / after",
+          "header": ["", "ANDs", "Depth"],
+          "rows": [
+            ["before", "4", "4"],
+            [{ "_cells": ["after", "<strong>4</strong>", "<strong>3</strong>"], "_cls": "changed" }]
+          ] },
+        { "type": "text",
+          "body": "<code>Dar_BalancePermute</code> looks one ply ahead: among leaves at the same minimum level, if a <code>(p1, p2)</code> pair already exists in the strash table it biases pairing to trigger reuse. The chain doesn't benefit (no pre-existing pairs), but in larger benchmarks this is where balance also reduces node count." }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,141 @@
+{
+  "operator": "resub",
+  "circuit": "resub_demo",
+  "title": "resub on resub_win.blif",
+  "steps": [
+    {
+      "title": "AIG: 4 ANDs, two POs (f = a+b, g = ¬(a+b)·d)",
+      "auxCircuit": null,
+      "narrative": "Source: <code>resub_win.blif</code>. The user wrote <code>f = ((a+b)·((a+b)+c))</code> the literal way: <code>n5 = ¬a·¬b</code>, <code>n6 = n5·¬c</code>, <code>f = ¬n5·¬n6</code>. The double-cover collapses to <code>f = a+b</code>, but neither rewrite (cone too small for a 4-input library hit) nor refactor (no algebraic simplification) catches it.<br><br><strong>resub</strong> spots it via simulation: f's 32-pattern bit-vector matches <code>¬n5</code> exactly. The fix is just a wire redirect.",
+      "highlights": {
+        "node-f": ["considering"]
+      },
+      "panes": [
+        { "type": "kv", "title": "Stats",
+          "entries": { "ANDs": "4", "POs": "f, g", "Why hidden": "Boolean equiv, not algebraic" } },
+        { "type": "text", "title": "Per-node pipeline",
+          "body": "<ol style=\"margin:0;padding-left:1.1rem\"><li>reconvergence cut + MFFC at the candidate</li><li>collect divisors (cone-internal nodes outside MFFC + leaves)</li><li>simulate everything with 32-pattern random vectors</li><li>k-step ladder Divs0…Divs3: try expressing the candidate's sim as 0…3 ANDs of divisors</li><li>SAT-verify the first hit, commit</li></ol>" }
+      ]
+    },
+    {
+      "title": "Reconvergence cut + MFFC at f",
+      "auxCircuit": null,
+      "narrative": "<code>Abc_NodeFindCut(pManCut, f, 0)</code> with default <code>nCutMax = 8</code> returns leaves <strong>{a, b, c}</strong>. The MFFC is computed via the boundary trick: only nodes whose every fanout is inside the cone become dereferenced.<br><br><strong>n5 has fanout 3</strong> — to n6, to f, <em>and to g</em>. The g consumer is outside f's cone, so n5 stays alive. Only <strong>{f, n6}</strong> joins the MFFC. (The trace's <code>mffc=2</code> matches.)",
+      "highlights": {
+        "node-a": ["cut-leaf"],
+        "node-b": ["cut-leaf"],
+        "node-c": ["cut-leaf"],
+        "node-n5": ["fanout-protected"],
+        "node-n6": ["in-mffc"],
+        "node-f":  ["in-mffc"]
+      },
+      "panes": [
+        { "type": "table", "title": "Fanout counts",
+          "header": ["node", "fanouts", "in MFFC?"],
+          "rows": [
+            ["n5", "n6, f, g", "<strong>no</strong> &mdash; g keeps it alive"],
+            ["n6", "f", "yes"],
+            ["f",  "PO_f", "yes (root)"]
+          ] },
+        { "type": "kv", "title": "MFFC",
+          "entries": { "Members": "{ f, n6 }", "Size": "<strong>2</strong>" } }
+      ]
+    },
+    {
+      "title": "Collect divisors — leaves + non-MFFC internal",
+      "auxCircuit": null,
+      "narrative": "<code>Abc_ManResubCollectDivs</code> gathers everything in the cone that <em>isn't</em> in the MFFC: the cut leaves themselves plus internal nodes with external fanouts. Each becomes a candidate building-block.<br><br>For our cut at f: divisors = <strong>{ a, b, c, n5 }</strong> — three PIs and one already-existing AND. n5 is the only non-leaf divisor; it's exactly what will save us.",
+      "highlights": {
+        "node-a":  ["cut-leaf", "considering"],
+        "node-b":  ["cut-leaf", "considering"],
+        "node-c":  ["cut-leaf", "considering"],
+        "node-n5": ["considering", "fanout-protected"],
+        "node-n6": ["in-mffc"],
+        "node-f":  ["in-mffc"]
+      },
+      "panes": [
+        { "type": "list", "title": "Divisor pool (4)",
+          "items": ["<code>a</code> &mdash; PI", "<code>b</code> &mdash; PI", "<code>c</code> &mdash; PI", "<code>n5</code> &mdash; existing AND, fanout to g"] }
+      ]
+    },
+    {
+      "title": "Simulate every divisor and the candidate",
+      "auxCircuit": null,
+      "narrative": "Each node gets a 32-pattern bit-vector. PIs are seeded with the standard ABC patterns; internal nodes are computed by AND-ing fanin sims with edge polarity applied. f's stored value <code>¬n5·¬n6</code> matches <code>0xEEEEEEEE</code> across all 32 patterns.<br><br>The Divs0 step (next) just compares these vectors.",
+      "highlights": {
+        "node-a":  ["cut-leaf"],
+        "node-b":  ["cut-leaf"],
+        "node-c":  ["cut-leaf"],
+        "node-n5": ["considering"],
+        "node-f":  ["considering"]
+      },
+      "panes": [
+        { "type": "table", "title": "Simulation vectors",
+          "header": ["node", "sim (32-bit, hex)", "definition"],
+          "rows": [
+            ["a",  "<code>0xAAAAAAAA</code>", "PI seed"],
+            ["b",  "<code>0xCCCCCCCC</code>", "PI seed"],
+            ["c",  "<code>0xF0F0F0F0</code>", "PI seed"],
+            ["n5", "<code>0x11111111</code>", "¬a · ¬b"],
+            [{ "_cells": ["<strong>f</strong>", "<code><strong>0xEEEEEEEE</strong></code>", "¬n5 · ¬n6"], "_cls": "changed" }]
+          ] }
+      ]
+    },
+    {
+      "title": "Divs0 — sim(f) == ¬sim(n5) ✓",
+      "auxCircuit": "resub_replace",
+      "narrative": "<code>Abc_ManResubDivs0</code> walks the divisor pool and tests <code>sim(f) == sim(d)</code> or <code>sim(f) == ¬sim(d)</code> for each divisor d. The match: <code>0xEEEEEEEE == ¬0x11111111</code>. So <strong>f ≡ ¬n5</strong> on all 32 sampled patterns.<br><br>Sim-equivalence isn't proof — could be aliasing — so a SAT call (<code>Abc_NtkResubVerify</code>) confirms the equivalence under the full Boolean function. CNF here is tiny; SAT closes in 0 conflicts. Replacement: just <code>n5</code> with the output-complement bit set.",
+      "highlights": {
+        "node-a":  ["cut-leaf"],
+        "node-b":  ["cut-leaf"],
+        "node-c":  ["cut-leaf"],
+        "node-n5": ["replacement-new"],
+        "node-n6": ["in-mffc"],
+        "node-f":  ["in-mffc"],
+        "aux-node-a":  ["cut-leaf"],
+        "aux-node-b":  ["cut-leaf"],
+        "aux-node-n5": ["replacement-new"]
+      },
+      "panes": [
+        { "type": "kv", "title": "Match found",
+          "entries": {
+            "Candidate":  "<code>f</code> &nbsp; sim = <code>0xEEEEEEEE</code>",
+            "Divisor":    "<code>n5</code> &nbsp; sim = <code>0x11111111</code>",
+            "Phase":      "negative (sim(f) = ¬sim(n5))",
+            "Replacement": "<code>f → ¬n5</code> &mdash; <strong>0 new ANDs</strong>",
+            "Gain":       "<strong>= |MFFC| = 2</strong>"
+          } },
+        { "type": "text",
+          "body": "If Divs0 had failed, the ladder would climb: <code>Divs1</code> tries <em>one</em> new AND of divisor pairs, <code>Divs12</code> tries one + two, <code>Divs2</code> tries two new ANDs, <code>Divs3</code> three. Default <code>-N 1</code> stops at Divs1; <code>resyn3</code> uses higher rungs." }
+      ]
+    },
+    {
+      "title": "Commit — redirect PO_f → ¬n5; n6, f dangle",
+      "auxCircuit": "resub_replace",
+      "narrative": "The replacement is converted to a 0-AND <code>Dec_Graph_t</code> and committed via <code>Dec_GraphUpdateNetwork</code>. PO_f's edge now points to <code>n5</code> with the inverter set. <code>n6</code> loses its only fanout (was f), <code>f</code> loses its only fanout (was PO_f) — both go dangling and are reclaimed by reference counting.<br><br>n5 stays because g still uses it. The resulting AIG has <strong>2 ANDs</strong> (n5, g), level 2.",
+      "highlights": {
+        "node-a":  ["cut-leaf"],
+        "node-b":  ["cut-leaf"],
+        "node-c":  ["dimmed"],
+        "node-n5": ["replacement-new"],
+        "node-n6": ["dimmed"],
+        "node-f":  ["dimmed"],
+        "aux-node-a":  ["cut-leaf"],
+        "aux-node-b":  ["cut-leaf"],
+        "aux-node-n5": ["replacement-new", "fresh"]
+      },
+      "panes": [
+        { "type": "kv", "title": "Final stats",
+          "entries": {
+            "ANDs (before)": "4",
+            "ANDs (after)":  "<strong>2</strong>",
+            "Level (before)": "3",
+            "Level (after)":  "<strong>2</strong>",
+            "Gain":          "<strong>2</strong>"
+          } },
+        { "type": "text",
+          "body": "Resub finds gain that rewrite + refactor cannot: it can collapse a sub-cone into an existing internal signal whenever the Boolean relationship coincidentally holds. It's sensitive to the divisor pool — that's why <code>resyn3</code> runs three different cut sizes consecutively." }
+      ]
+    }
+  ]
+}

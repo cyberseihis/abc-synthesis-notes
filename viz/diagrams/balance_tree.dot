@@ -1,0 +1,47 @@
+// Balanced AND tree built by Dar_BalanceBuildSuper's Huffman pairing
+// of [a, b, c, d, e]:
+//   m1 = a & b
+//   m2 = c & d
+//   m3 = m1 & m2
+//   f' = m3 & e
+// 4 ANDs, depth 3. Leaves cluster b/a then d/c first (sorted by Id).
+digraph balance_tree {
+    rankdir = TB
+    ranksep = 0.55
+    nodesep = 0.35
+    bgcolor = "transparent"
+    label = "Balanced tree (depth 3)"
+    labelloc = "t"
+    fontname = "monospace"
+    fontsize = 13
+
+    node [fontname = "monospace", fontsize = 14, color = "#333333"]
+    edge [color = "#333333", penwidth = 1.4]
+
+    { rank = source
+      a [id="aux-node-a", label="a", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
+      b [id="aux-node-b", label="b", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
+      c [id="aux-node-c", label="c", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
+      d [id="aux-node-d", label="d", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
+      e [id="aux-node-e", label="e", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
+    }
+
+    m1 [id="aux-node-m1", label="m1", shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
+    m2 [id="aux-node-m2", label="m2", shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
+    m3 [id="aux-node-m3", label="m3", shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
+    m4 [id="aux-node-m4", label="f",  shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
+
+    { rank = sink
+      PO [id="aux-node-PO", label="PO", shape=plaintext, fontsize=14, fontcolor="#806000"]
+    }
+
+    a  -> m1 [id="aux-edge-a-m1"]
+    b  -> m1 [id="aux-edge-b-m1"]
+    c  -> m2 [id="aux-edge-c-m2"]
+    d  -> m2 [id="aux-edge-d-m2"]
+    m1 -> m3 [id="aux-edge-m1-m3"]
+    m2 -> m3 [id="aux-edge-m2-m3"]
+    m3 -> m4 [id="aux-edge-m3-m4"]
+    e  -> m4 [id="aux-edge-e-m4"]
+    m4 -> PO [id="aux-edge-m4-PO"]
+}
