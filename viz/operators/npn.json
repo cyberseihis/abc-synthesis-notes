@@ -5,14 +5,18 @@
   "title": "NPN canonization: fetch, transform, slot in",
   "steps": [
     {
-      "title": "The cut and its truth table",
-      "narrative": "Rewrite has chosen a 4-leaf cut at node <code>T</code> with leaves <code>{a, b, c, d}</code>. Sim over the cut returns <code>u = 0x020F</code> — that's the function we need to re-implement using a precomputed library subgraph.<br><br>The aux pane is empty for now; we haven't fetched anything yet.",
+      "title": "An inefficient cut: 5 ANDs computing TT 0x020F",
+      "narrative": "The host AIG implements <code>f = ¬c·¬d + a·¬b·¬c·d</code> as a 5-node MFFC <code>{t1, t2, t3, t4, t5}</code>. Notice <code>¬c</code> appears in both terms but isn't shared: the inputs t1 and t3 each separately invert c. There's a smaller circuit hiding in this same NPN class — that's what rewrite is here to find.<br><br>Sim over the cut leaves <code>{a, b, c, d}</code> returns <code>u = 0x020F</code>. The aux pane is empty for now; we haven't fetched anything yet.",
       "highlights": {
-        "node-T": ["considering"],
         "node-a": ["cut-leaf"],
         "node-b": ["cut-leaf"],
         "node-c": ["cut-leaf"],
         "node-d": ["cut-leaf"],
+        "node-t1": ["in-mffc"],
+        "node-t2": ["in-mffc"],
+        "node-t3": ["in-mffc"],
+        "node-t4": ["in-mffc"],
+        "node-t5": ["in-mffc"],
         "node-n1": ["hidden"],
         "node-n2": ["hidden"],
         "node-F":  ["hidden"],
@@ -52,21 +56,26 @@
           "title": "What we know",
           "entries": {
             "Cut leaves": "<code>{a, b, c, d}</code>",
+            "MFFC":       "<code>{t1, t2, t3, t4, t5}</code> — 5 ANDs",
             "u":          "<code>0x020F</code>",
-            "Goal":       "find a fanin-2 AIG over {a,b,c,d} computing u, reusing precomputed library subgraphs"
+            "Goal":       "find a smaller AIG over {a,b,c,d} computing the same u, by reusing precomputed library subgraphs"
           }
         }
       ]
     },
     {
       "title": "Lookup u → class index, fetch canonical subgraph",
-      "narrative": "Index the four precomputed arrays at <code>u = 0x020F</code>. <code>pMap[u] = 12</code> tells us the NPN class; <code>puCanons[u] = 0x001F</code> gives the canonical TT for that class. Library subgraphs are stored against canonicals, so we now pull a subgraph from <code>vClasses[12]</code> — the aux pane is the one we picked: three fanin-2 ANDs computing <code>0x001F</code> over inputs <code>x0..x3</code>.",
+      "narrative": "Index the four precomputed arrays at <code>u = 0x020F</code>. <code>pMap[u] = 12</code> tells us the NPN class; <code>puCanons[u] = 0x001F</code> gives the canonical TT. Library subgraphs are stored against canonicals, so we now pull a subgraph from <code>vClasses[12]</code> — the aux pane shows the one we picked: three fanin-2 ANDs computing <code>0x001F</code> over inputs <code>x0..x3</code>. <strong>Three ANDs vs. our current five.</strong>",
       "highlights": {
-        "node-T": ["considering"],
         "node-a": ["cut-leaf"],
         "node-b": ["cut-leaf"],
         "node-c": ["cut-leaf"],
         "node-d": ["cut-leaf"],
+        "node-t1": ["in-mffc"],
+        "node-t2": ["in-mffc"],
+        "node-t3": ["in-mffc"],
+        "node-t4": ["in-mffc"],
+        "node-t5": ["in-mffc"],
         "node-n1": ["hidden"],
         "node-n2": ["hidden"],
         "node-F":  ["hidden"],
@@ -103,11 +112,15 @@
       "title": "Apply input phase: pPhases[u] & 0xF = 0x01 → negate x0",
       "narrative": "The low 4 bits of <code>pPhases[u]</code> are an input-phase mask: bit k set means input <code>x_k</code> is negated. Here only bit 0 is set — feed <code>¬x0</code> into the slot that originally received <code>x0</code>.<br><br>Visually: the canonical edge from x0 was <em>dashed</em> (canonical wanted <code>¬x0</code>). Composing the edge polarity with the new input negation gives <em>solid</em> (¬¬x0 = x0). The slot label flips to <code>¬x0</code> to record the binding.",
       "highlights": {
-        "node-T": ["considering"],
         "node-a": ["cut-leaf"],
         "node-b": ["cut-leaf"],
         "node-c": ["cut-leaf"],
         "node-d": ["cut-leaf"],
+        "node-t1": ["in-mffc"],
+        "node-t2": ["in-mffc"],
+        "node-t3": ["in-mffc"],
+        "node-t4": ["in-mffc"],
+        "node-t5": ["in-mffc"],
         "node-n1": ["hidden"],
         "node-n2": ["hidden"],
         "node-F":  ["hidden"],
@@ -152,11 +165,15 @@
       "title": "Apply input permutation: pPerms[u] decodes to swap x2 ↔ x3",
       "narrative": "<code>pPerms[u]</code> is an index into <code>pPerms4[]</code> (the table of 24 input permutations). Here it decodes to <code>(x0, x1, x3, x2)</code> — i.e., swap the slots wired to x2 and x3.<br><br>The subgraph topology doesn't change — only the binding of inputs to slot positions does. Slot 2 now reads what x3 supplies; slot 3 reads what x2 supplies. The output TT updates to <code>0x020F = u</code>.",
       "highlights": {
-        "node-T": ["considering"],
         "node-a": ["cut-leaf"],
         "node-b": ["cut-leaf"],
         "node-c": ["cut-leaf"],
         "node-d": ["cut-leaf"],
+        "node-t1": ["in-mffc"],
+        "node-t2": ["in-mffc"],
+        "node-t3": ["in-mffc"],
+        "node-t4": ["in-mffc"],
+        "node-t5": ["in-mffc"],
         "node-n1": ["hidden"],
         "node-n2": ["hidden"],
         "node-F":  ["hidden"],
@@ -201,11 +218,15 @@
       "title": "Output phase: pPhases[u] bit 4 = 0 → no-op",
       "narrative": "The high bit of <code>pPhases[u]</code> would tell us to negate the output edge. For this example it's <code>0</code>, so nothing to do. (If it were set, the edge from F to its consumer would flip polarity here — visually we'd dash it.)<br><br>Subgraph computes <code>0x020F</code> already. We're done morphing.",
       "highlights": {
-        "node-T": ["considering"],
         "node-a": ["cut-leaf"],
         "node-b": ["cut-leaf"],
         "node-c": ["cut-leaf"],
         "node-d": ["cut-leaf"],
+        "node-t1": ["in-mffc"],
+        "node-t2": ["in-mffc"],
+        "node-t3": ["in-mffc"],
+        "node-t4": ["in-mffc"],
+        "node-t5": ["in-mffc"],
         "node-n1": ["hidden"],
         "node-n2": ["hidden"],
         "node-F":  ["hidden"],
@@ -243,15 +264,25 @@
       ]
     },
     {
-      "title": "Slot the morphed subgraph in — replace T",
-      "narrative": "Final step. The cut box <code>T</code> is gone; the 3-AND chain takes its place. Each canonical input slot is wired to its bound cut leaf:<br><br>• slot 0 (originally <code>x0</code>, phase-flipped to <code>¬x0</code>): receives <code>a</code>; the <em>composed</em> polarity is solid.<br>• slot 1 (<code>x1</code>): receives <code>b</code>; canonical's dashed edge stays dashed.<br>• slot 2 (after perm: <code>x3</code>): receives <code>d</code>; canonical's solid stays solid.<br>• slot 3 (after perm: <code>x2</code>): receives <code>c</code>; canonical's dashed stays dashed.<br><br>The new node <code>F</code> feeds <code>G</code> in place of <code>T</code>. Strash dedups against existing AIG nodes; only genuinely new ANDs cost gates.",
+      "title": "Slot the morphed subgraph in — 5 ANDs out, 3 ANDs in",
+      "narrative": "Final step. The 5-node MFFC <code>{t1..t5}</code> is gone; the 3-AND chain <code>{n1, n2, F}</code> takes its place. Each canonical input slot is wired to its bound cut leaf with the composed edge polarity:<br><br>• slot 0 (originally <code>x0</code>, phase-flipped to <code>¬x0</code>): receives <code>a</code>; canonical's dashed × phase-neg = solid.<br>• slot 1 (<code>x1</code>): receives <code>b</code>; canonical's dashed stays dashed.<br>• slot 2 (after perm: <code>x3</code>): receives <code>d</code>; canonical's solid stays solid.<br>• slot 3 (after perm: <code>x2</code>): receives <code>c</code>; canonical's dashed stays dashed.<br><br>The new node <code>F</code> feeds <code>G</code> in place of <code>t5</code>'s dashed output. Strash dedups the new ANDs against the rest of the AIG; only genuinely new ANDs cost gates.",
       "highlights": {
-        "node-T": ["hidden"],
-        "edge-a-T": ["hidden"],
-        "edge-b-T": ["hidden"],
-        "edge-c-T": ["hidden"],
-        "edge-d-T": ["hidden"],
-        "edge-T-G": ["hidden"],
+        "node-t1": ["hidden"],
+        "node-t2": ["hidden"],
+        "node-t3": ["hidden"],
+        "node-t4": ["hidden"],
+        "node-t5": ["hidden"],
+        "edge-a-t2": ["hidden"],
+        "edge-b-t2": ["hidden"],
+        "edge-c-t1": ["hidden"],
+        "edge-d-t1": ["hidden"],
+        "edge-c-t3": ["hidden"],
+        "edge-t2-t3": ["hidden"],
+        "edge-d-t4": ["hidden"],
+        "edge-t3-t4": ["hidden"],
+        "edge-t1-t5": ["hidden"],
+        "edge-t4-t5": ["hidden"],
+        "edge-t5-G": ["hidden"],
         "node-a": ["cut-leaf"],
         "node-b": ["cut-leaf"],
         "node-c": ["cut-leaf"],
@@ -282,6 +313,15 @@
         "aux-node-out": "TT = 0x020F  ✓"
       },
       "panes": [
+        {
+          "type": "kv",
+          "title": "Gain",
+          "entries": {
+            "MFFC size (old)":  "<strong>5</strong>",
+            "New ANDs (after strash dedup)": "<strong>3</strong>",
+            "Gain":             "<strong>2</strong>  → accept"
+          }
+        },
         {
           "type": "table",
           "title": "Slot → cut-leaf wiring",
