@@ -1,0 +1,75 @@
+// Main SVG for npn: a host AIG containing a 4-leaf cut at node T.
+// The cut at T implements TT 0x020F over leaves {a, b, c, d}; rewrite
+// will replace T with a class-12 subgraph from the library.
+//
+// The diagram bakes BOTH states into the same SVG:
+//   * Steps 1-5: the cut box T is visible, the 3-AND replacement is hidden.
+//   * Step 6 (slot-in): T hides, the 3-AND chain is shown with proper
+//     wiring to the cut leaves (after pPhases + pPerms applied).
+//
+// Replacement (after phase 0x01 + perm swap-x2,x3 applied to canonical):
+//   n1 = a · ¬b
+//   n2 = d · ¬n1
+//   F  = ¬c · ¬n2          ( ≡ TT 0x020F )
+digraph npn_aig {
+    rankdir = TB
+    ranksep = 0.55
+    nodesep = 0.4
+    bgcolor = "transparent"
+    label = "Host AIG with cut at T (TT = 0x020F)"
+    labelloc = "t"
+    fontname = "monospace"
+    fontsize = 13
+
+    node [fontname = "monospace", fontsize = 14, color = "#333333"]
+    edge [color = "#333333", penwidth = 1.4]
+
+    { rank = source
+      a [id="node-a", label="a", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
+      b [id="node-b", label="b", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
+      c [id="node-c", label="c", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
+      d [id="node-d", label="d", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
+      e [id="node-e", label="e", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
+    }
+
+    // Cut box (visible in steps 1..5)
+    T  [id="node-T",  label="T (cut)\nTT=0x020F", shape=box, width=2.0, height=0.8, fixedsize=true, style=filled, fillcolor="#fff6e6", color="#b08040", penwidth=2]
+
+    // Replacement subgraph (hidden until step 6)
+    n1 [id="node-n1", label="n1", shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
+    n2 [id="node-n2", label="n2", shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
+    F  [id="node-F",  label="F",  shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
+
+    // Downstream context (the rest of the AIG)
+    G  [id="node-G",  label="G",  shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
+
+    { rank = sink
+      PO [id="node-PO", label="PO", shape=plaintext, fontsize=14, fontcolor="#806000"]
+    }
+
+    // Cut-state edges (visible in steps 1..5, hidden in step 6)
+    a -> T [id="edge-a-T"]
+    b -> T [id="edge-b-T"]
+    c -> T [id="edge-c-T"]
+    d -> T [id="edge-d-T"]
+    T -> G [id="edge-T-G"]
+
+    // Slot-in edges (hidden in steps 1..5, visible in step 6).
+    // Polarities reflect canonical's polarities composed with pPhases(0x01)
+    // applied at slot 0, and pPerms swap-x2,x3 routing slots 2/3 to d/c:
+    //   slot 0 (originally ~x0, now phase-flipped) → solid edge from a
+    //   slot 1 (~x1) → dashed edge from b
+    //   slot 2 (canonical x2 solid; perm sends it to d) → solid edge from d
+    //   slot 3 (canonical ~x3; perm sends it to c) → dashed edge from c
+    a -> n1 [id="edge-a-n1"]
+    b -> n1 [id="edge-b-n1", style=dashed]
+    d -> n2 [id="edge-d-n2"]
+    n1 -> n2 [id="edge-n1-n2", style=dashed]
+    c -> F [id="edge-c-F", style=dashed]
+    n2 -> F [id="edge-n2-F", style=dashed]
+    F -> G [id="edge-F-G"]
+
+    // Always-visible context
+    e -> G [id="edge-e-G"]
+    G -> PO [id="edge-G-PO"]
+}

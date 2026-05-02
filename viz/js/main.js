@@ -17,7 +17,8 @@ const HIGHLIGHT_CLASSES = [
     'fanout-protected', 'dimmed', 'active', 'hidden', 'fresh',
     'const-true', 'const-false',
     'verdict-miss', 'verdict-hit', 'verdict-fold', 'verdict-text',
-    'survives'
+    'survives',
+    'edge-pos', 'edge-neg'
 ];
 
 // Bust HTTP caching — fetch with no-cache so stale operator JSON / SVGs

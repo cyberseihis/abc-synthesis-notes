@@ -271,6 +271,11 @@ footer a { color: #2c3e50; }
 /* Not-yet-introduced */
 .node.hidden, .edge.hidden { opacity: 0.08; }
 
+/* Edge polarity override (for npn morph: subgraph edges flip polarity per
+   step as input phase / output phase are applied). */
+.edge.edge-pos path { stroke-dasharray: none !important; }
+.edge.edge-neg path { stroke-dasharray: 5,2 !important; }
+
 /* Just-introduced (one-shot glow) */
 .node.fresh ellipse {
     fill: #b3ffc4 !important;

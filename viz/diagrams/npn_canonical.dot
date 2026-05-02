@@ -1,0 +1,48 @@
+// Aux SVG for npn: a class-12 canonical subgraph.
+// Topology (3 fanin-2 ANDs) implementing TT 0x001F over inputs x0..x3:
+//
+//   n1 = ~x0 · ~x1
+//   n2 = x2 · ~n1
+//   F  = ~x3 · ~n2     ( = ~x3 · (~x2 + ~x0·~x1) = TT 0x001F )
+//
+// The walkthrough morphs this subgraph as ABC's NPN lookup applies
+// pPhases + pPerms to bring it from the canonical form to the cut's
+// query TT. Edge polarities baked in here are the CANONICAL polarities;
+// the walkthrough overrides them via edge-pos / edge-neg classes.
+digraph npn_canonical {
+    rankdir = TB
+    ranksep = 0.55
+    nodesep = 0.5
+    bgcolor = "transparent"
+    label = "Canonical subgraph for class 12 (TT = 0x001F)"
+    labelloc = "t"
+    fontname = "monospace"
+    fontsize = 13
+
+    node [fontname = "monospace", fontsize = 14, color = "#333333"]
+    edge [color = "#333333", penwidth = 1.4]
+
+    { rank = source
+      s0 [id="aux-node-s0", label="x0", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
+      s1 [id="aux-node-s1", label="x1", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
+      s2 [id="aux-node-s2", label="x2", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
+      s3 [id="aux-node-s3", label="x3", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
+    }
+
+    n1 [id="aux-node-n1", label="n1", shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
+    n2 [id="aux-node-n2", label="n2", shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
+    F  [id="aux-node-F",  label="F",  shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
+
+    { rank = sink
+      out [id="aux-node-out", label="TT = 0x001F", shape=plaintext, fontsize=14, fontcolor="#806000"]
+    }
+
+    // Canonical edge polarities (dashed = inverted)
+    s0 -> n1 [id="aux-edge-s0-n1", style=dashed]
+    s1 -> n1 [id="aux-edge-s1-n1", style=dashed]
+    s2 -> n2 [id="aux-edge-s2-n2"]
+    n1 -> n2 [id="aux-edge-n1-n2", style=dashed]
+    s3 -> F  [id="aux-edge-s3-F",  style=dashed]
+    n2 -> F  [id="aux-edge-n2-F",  style=dashed]
+    F  -> out [id="aux-edge-F-out"]
+}

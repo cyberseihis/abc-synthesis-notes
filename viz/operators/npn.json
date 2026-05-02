@@ -1,155 +1,301 @@
 {
   "operator": "npn",
-  "circuit": "blackbox4",
-  "title": "NPN canonization for 4-input functions",
+  "circuit": "npn_aig",
+  "auxCircuit": "npn_canonical",
+  "title": "NPN canonization: fetch, transform, slot in",
   "steps": [
     {
-      "title": "What ABC precomputes once at startup",
-      "narrative": "<code>Extra_Truth4VarNPN</code> (in <code>extraUtilMisc.c:643</code>) builds four parallel arrays indexed by 16-bit truth tables (65,536 entries each). For every 4-input function it records which NPN class it lies in, and the canonicalizing permutation+phase that brings it to the class's representative TT. The table is built once when <code>Dec_ManStart</code> runs (called by rewrite, refactor, etc.).",
-      "highlights": {},
-      "panes": [
-        {
-          "type": "table",
-          "title": "Lookup arrays",
-          "header": ["array", "size", "type", "meaning"],
-          "rows": [
-            ["pMap[u]",     "65536", "u8",  "NPN class index, 0..221"],
-            ["pPhases[u]",  "65536", "u8",  "low 4 bits = input inverters; bit 4 = output negation"],
-            ["pPerms[u]",   "65536", "u8",  "index into 4! = 24 permutations of (x0,x1,x2,x3)"],
-            ["puCanons[u]", "65536", "u16", "canonical TT (lex-smallest representative of the class)"]
-          ]
-        },
-        {
-          "type": "text",
-          "body": "<strong>222 classes</strong> partition the 65,536 functions. The asserts at <code>extraUtilMisc.c:716</code> and <code>decMan.c:716</code> confirm this count."
-        }
-      ]
-    },
-    {
-      "title": "How the table is built (sketch)",
-      "narrative": "For each truth table u in [1, 32768) not yet assigned a class:<ol><li>Allocate a new class index.</li><li>For each of the 16 input-phase masks i and 24 permutations k:<ul><li>Compute <code>uPerm = perm(polarize(u, i), k)</code>.</li><li>Mark <em>uPerm</em> and its complement as members of this class.</li></ul></li></ol>Each class's orbit is at most 16 × 24 × 2 = 768 NPN-equivalent forms.",
+      "title": "The cut and its truth table",
+      "narrative": "Rewrite has chosen a 4-leaf cut at node <code>T</code> with leaves <code>{a, b, c, d}</code>. Sim over the cut returns <code>u = 0x020F</code> — that's the function we need to re-implement using a precomputed library subgraph.<br><br>The aux pane is empty for now; we haven't fetched anything yet.",
       "highlights": {
-        "node-cut": ["considering"]
-      },
-      "panes": [
-        {
-          "type": "kv",
-          "title": "Group sizes",
-          "entries": {
-            "Total functions": "65,536",
-            "NPN classes":     "222",
-            "Avg orbit":       "≈ 295",
-            "Max orbit":       "768"
-          }
-        }
-      ]
-    },
-    {
-      "title": "Concrete example: u = 0x001F",
-      "narrative": "From the §3 rewrite trace, the cut chosen at f had truth <code>0x001F</code> (i.e. f = 1 only when input pattern is 0,1,2,3, or 4). Bit i of the truth table is f's value for input pattern i, where pattern bit k = x_k.",
-      "highlights": {
-        "node-cut": ["considering"]
+        "node-T": ["considering"],
+        "node-a": ["cut-leaf"],
+        "node-b": ["cut-leaf"],
+        "node-c": ["cut-leaf"],
+        "node-d": ["cut-leaf"],
+        "node-n1": ["hidden"],
+        "node-n2": ["hidden"],
+        "node-F":  ["hidden"],
+        "edge-a-n1": ["hidden"],
+        "edge-b-n1": ["hidden"],
+        "edge-d-n2": ["hidden"],
+        "edge-n1-n2": ["hidden"],
+        "edge-c-F": ["hidden"],
+        "edge-n2-F": ["hidden"],
+        "edge-F-G": ["hidden"],
+        "aux-node-s0": ["hidden"],
+        "aux-node-s1": ["hidden"],
+        "aux-node-s2": ["hidden"],
+        "aux-node-s3": ["hidden"],
+        "aux-node-n1": ["hidden"],
+        "aux-node-n2": ["hidden"],
+        "aux-node-F":  ["hidden"],
+        "aux-node-out": ["hidden"],
+        "aux-edge-s0-n1": ["hidden"],
+        "aux-edge-s1-n1": ["hidden"],
+        "aux-edge-s2-n2": ["hidden"],
+        "aux-edge-n1-n2": ["hidden"],
+        "aux-edge-s3-F": ["hidden"],
+        "aux-edge-n2-F": ["hidden"],
+        "aux-edge-F-out": ["hidden"]
       },
       "panes": [
         {
           "type": "tt-grid",
-          "title": "u = 0x001F",
-          "label": "patterns 0..15 — green = 1, gray = 0",
-          "tt": "0000000000011111",
-          "order": "msb-first"
-        },
-        {
-          "type": "table",
-          "title": "Verify by enumeration",
-          "header": ["pattern", "x3 x2 x1 x0", "bit"],
-          "rows": [
-            [" 0", "0 0 0 0", "<span style='color:#2a8b46;font-weight:700'>1</span>"],
-            [" 1", "0 0 0 1", "<span style='color:#2a8b46;font-weight:700'>1</span>"],
-            [" 2", "0 0 1 0", "<span style='color:#2a8b46;font-weight:700'>1</span>"],
-            [" 3", "0 0 1 1", "<span style='color:#2a8b46;font-weight:700'>1</span>"],
-            [" 4", "0 1 0 0", "<span style='color:#2a8b46;font-weight:700'>1</span>"],
-            [" 5", "0 1 0 1", "0"],
-            ["…",  "…",       "0"],
-            ["15", "1 1 1 1", "0"]
-          ]
-        }
-      ]
-    },
-    {
-      "title": "Lookup result for u = 0x001F",
-      "narrative": "Read the four arrays at index 0x001F. The values shown here were verified by running <code>print_npn 001F</code> against a built ABC. Note <code>puCanons[0x001F] = 0x001F</code> &mdash; this TT is itself the canonical representative of its class. So pPhases and pPerms encode the identity transformation.",
-      "highlights": {
-        "node-cut": ["considering"]
-      },
-      "panes": [
-        {
-          "type": "kv",
-          "title": "Lookup result",
-          "entries": {
-            "pMap[0x001F]":      "<strong>12</strong>  (matches §3 rewrite trace's <code>Class = 12</code>)",
-            "puCanons[0x001F]":  "<strong>0x001F</strong>  (this TT is its own canonical)",
-            "pPhases[0x001F]":   "<strong>0</strong>  (no inverters, no output negation)",
-            "pPerms[0x001F]":    "<strong>0</strong>  (identity permutation: x0→x0, x1→x1, …)"
-          }
+          "title": "u = 0x020F  —  cell i = f at pattern i",
+          "label": "bits set: 0, 1, 2, 3, 9",
+          "tt": "1111000010000000",
+          "order": "lsb-first"
         },
         {
           "type": "kv",
-          "title": "Class 12 orbit",
+          "title": "What we know",
           "entries": {
-            "Distinct TTs": "<strong>384</strong>  (i.e. 384 different 16-bit truth tables sit in class 12)",
-            "Frequency":    "2  (each TT is reached twice across the 768 perm × phase × output combinations)"
+            "Cut leaves": "<code>{a, b, c, d}</code>",
+            "u":          "<code>0x020F</code>",
+            "Goal":       "find a fanin-2 AIG over {a,b,c,d} computing u, reusing precomputed library subgraphs"
           }
         }
       ]
     },
     {
-      "title": "A nearby orbit member: u = 0x010F",
-      "narrative": "<code>print_npn 0x001F</code> enumerates orbit members. Row 1 of the verbose dump shows: <strong>perm = 2 3 1 0</strong>, phase = 0 → F = 0x010F. So if rewrite encountered a cut with TT 0x010F, it would still want to use class 12's library subgraphs &mdash; but first apply this perm to its 4 fanins.",
+      "title": "Lookup u → class index, fetch canonical subgraph",
+      "narrative": "Index the four precomputed arrays at <code>u = 0x020F</code>. <code>pMap[u] = 12</code> tells us the NPN class; <code>puCanons[u] = 0x001F</code> gives the canonical TT for that class. Library subgraphs are stored against canonicals, so we now pull a subgraph from <code>vClasses[12]</code> — the aux pane is the one we picked: three fanin-2 ANDs computing <code>0x001F</code> over inputs <code>x0..x3</code>.",
       "highlights": {
-        "node-cut": ["considering"]
+        "node-T": ["considering"],
+        "node-a": ["cut-leaf"],
+        "node-b": ["cut-leaf"],
+        "node-c": ["cut-leaf"],
+        "node-d": ["cut-leaf"],
+        "node-n1": ["hidden"],
+        "node-n2": ["hidden"],
+        "node-F":  ["hidden"],
+        "edge-a-n1": ["hidden"],
+        "edge-b-n1": ["hidden"],
+        "edge-d-n2": ["hidden"],
+        "edge-n1-n2": ["hidden"],
+        "edge-c-F": ["hidden"],
+        "edge-n2-F": ["hidden"],
+        "edge-F-G": ["hidden"],
+        "aux-node-n1": ["fresh"],
+        "aux-node-n2": ["fresh"],
+        "aux-node-F":  ["fresh"]
       },
       "panes": [
         {
-          "type": "kv",
-          "title": "If a cut has u = 0x010F",
-          "entries": {
-            "pMap[0x010F]":     "<strong>12</strong>  (same class as 0x001F)",
-            "puCanons[0x010F]": "<strong>0x001F</strong>  (canonical of the class)",
-            "pPhases[0x010F]":  "0  (no inversions)",
-            "pPerms[0x010F]":   "non-zero  (encodes the permutation 2 3 1 0)"
-          }
+          "type": "table",
+          "title": "Lookup at index u = 0x020F",
+          "header": ["array", "value", "meaning"],
+          "rows": [
+            ["<code>pMap[u]</code>",     "<strong>12</strong>",         "NPN class index"],
+            ["<code>puCanons[u]</code>", "<strong>0x001F</strong>",     "canonical TT of class 12"],
+            ["<code>pPhases[u]</code>",  "<strong>0x01</strong>",       "low 4 bits = input phase mask; bit 4 = output phase"],
+            ["<code>pPerms[u]</code>",   "<strong>k_swap23</strong>",   "index into the 24-perm table; here decodes to swap x2↔x3"]
+          ]
         },
         {
-          "type": "table",
-          "title": "What rewrite does with this",
-          "header": ["step", "action"],
-          "rows": [
-            ["1", "look up <code>pMap[0x010F]</code> → 12"],
-            ["2", "fetch the precomputed subgraph list <code>p->vClasses[12]</code>"],
-            ["3", "permute fanins by <code>p->pPerms4[ pPerms[0x010F] ]</code>"],
-            ["4", "complement fanins by low 4 bits of <code>pPhases[0x010F]</code>"],
-            ["5", "if pPhases bit 4 set, complement the output"],
-            ["6", "evaluate each candidate subgraph in this canonical-coordinate frame"],
-            ["7", "after picking, apply the inverse to wire the new subgraph back into the AIG"]
-          ]
+          "type": "text",
+          "body": "The aux subgraph is a class-12 representative — call it G. It has the canonical edge polarities (dashed = inverted): <code>n1 = ¬x0·¬x1</code>, <code>n2 = x2·¬n1</code>, <code>F = ¬x3·¬n2</code>. Sim says it computes <code>0x001F</code>, not <code>0x020F</code>. We have to transform G to fix that — that's what pPhases and pPerms are for."
         }
       ]
     },
     {
-      "title": "Storage savings",
-      "narrative": "Storing per-truth-table subgraphs would need 65,536 × N entries. Storing them per <em>NPN class</em> needs 222 × N — a ~300× compression — at the cost of a few cheap permute/complement operations per use. The same trick is used by <code>map</code> (supergate library) and exact-synthesis caches.",
+      "title": "Apply input phase: pPhases[u] & 0xF = 0x01 → negate x0",
+      "narrative": "The low 4 bits of <code>pPhases[u]</code> are an input-phase mask: bit k set means input <code>x_k</code> is negated. Here only bit 0 is set — feed <code>¬x0</code> into the slot that originally received <code>x0</code>.<br><br>Visually: the canonical edge from x0 was <em>dashed</em> (canonical wanted <code>¬x0</code>). Composing the edge polarity with the new input negation gives <em>solid</em> (¬¬x0 = x0). The slot label flips to <code>¬x0</code> to record the binding.",
       "highlights": {
-        "node-cut": ["considering"]
+        "node-T": ["considering"],
+        "node-a": ["cut-leaf"],
+        "node-b": ["cut-leaf"],
+        "node-c": ["cut-leaf"],
+        "node-d": ["cut-leaf"],
+        "node-n1": ["hidden"],
+        "node-n2": ["hidden"],
+        "node-F":  ["hidden"],
+        "edge-a-n1": ["hidden"],
+        "edge-b-n1": ["hidden"],
+        "edge-d-n2": ["hidden"],
+        "edge-n1-n2": ["hidden"],
+        "edge-c-F": ["hidden"],
+        "edge-n2-F": ["hidden"],
+        "edge-F-G": ["hidden"],
+        "aux-node-s0": ["considering"],
+        "aux-edge-s0-n1": ["edge-pos"]
+      },
+      "textReplace": {
+        "aux-node-s0":  "¬x0",
+        "aux-node-out": "after phase: TT = 0x002F"
+      },
+      "panes": [
+        {
+          "type": "kv",
+          "title": "Phase bits",
+          "entries": {
+            "pPhases[u]":   "<code>0b00001</code>",
+            "low 4 bits":   "<code>0001</code>  → negate <code>x0</code>",
+            "bit 4":        "<code>0</code>      → output stays positive"
+          }
+        },
+        {
+          "type": "tt-grid",
+          "title": "Subgraph TT after phase: 0x002F",
+          "label": "canonical 0x001F → neg(x0) → 0x002F",
+          "tt": "1111010000000000",
+          "order": "lsb-first"
+        },
+        {
+          "type": "text",
+          "body": "Algebraically: original <code>n1 = ¬x0·¬x1</code>; with x0 negated, <code>n1 = ¬(¬x0)·¬x1 = x0·¬x1</code>. The other two ANDs are unchanged because they don't read x0 directly."
+        }
+      ]
+    },
+    {
+      "title": "Apply input permutation: pPerms[u] decodes to swap x2 ↔ x3",
+      "narrative": "<code>pPerms[u]</code> is an index into <code>pPerms4[]</code> (the table of 24 input permutations). Here it decodes to <code>(x0, x1, x3, x2)</code> — i.e., swap the slots wired to x2 and x3.<br><br>The subgraph topology doesn't change — only the binding of inputs to slot positions does. Slot 2 now reads what x3 supplies; slot 3 reads what x2 supplies. The output TT updates to <code>0x020F = u</code>.",
+      "highlights": {
+        "node-T": ["considering"],
+        "node-a": ["cut-leaf"],
+        "node-b": ["cut-leaf"],
+        "node-c": ["cut-leaf"],
+        "node-d": ["cut-leaf"],
+        "node-n1": ["hidden"],
+        "node-n2": ["hidden"],
+        "node-F":  ["hidden"],
+        "edge-a-n1": ["hidden"],
+        "edge-b-n1": ["hidden"],
+        "edge-d-n2": ["hidden"],
+        "edge-n1-n2": ["hidden"],
+        "edge-c-F": ["hidden"],
+        "edge-n2-F": ["hidden"],
+        "edge-F-G": ["hidden"],
+        "aux-node-s0": ["considering"],
+        "aux-edge-s0-n1": ["edge-pos"],
+        "aux-node-s2": ["considering"],
+        "aux-node-s3": ["considering"]
+      },
+      "textReplace": {
+        "aux-node-s0":  "¬x0",
+        "aux-node-s2":  "x3",
+        "aux-node-s3":  "x2",
+        "aux-node-out": "after perm: TT = 0x020F  ✓"
+      },
+      "panes": [
+        {
+          "type": "kv",
+          "title": "Permutation",
+          "entries": {
+            "pPerms[u]":      "k_swap23",
+            "pPerms4[k]":     "<code>(0, 1, 3, 2)</code>",
+            "Effect":         "slot 2 now binds to x3; slot 3 binds to x2"
+          }
+        },
+        {
+          "type": "tt-grid",
+          "title": "Subgraph TT after perm: 0x020F",
+          "label": "matches u — we're ready to wire up cut leaves",
+          "tt": "1111000010000000",
+          "order": "lsb-first"
+        }
+      ]
+    },
+    {
+      "title": "Output phase: pPhases[u] bit 4 = 0 → no-op",
+      "narrative": "The high bit of <code>pPhases[u]</code> would tell us to negate the output edge. For this example it's <code>0</code>, so nothing to do. (If it were set, the edge from F to its consumer would flip polarity here — visually we'd dash it.)<br><br>Subgraph computes <code>0x020F</code> already. We're done morphing.",
+      "highlights": {
+        "node-T": ["considering"],
+        "node-a": ["cut-leaf"],
+        "node-b": ["cut-leaf"],
+        "node-c": ["cut-leaf"],
+        "node-d": ["cut-leaf"],
+        "node-n1": ["hidden"],
+        "node-n2": ["hidden"],
+        "node-F":  ["hidden"],
+        "edge-a-n1": ["hidden"],
+        "edge-b-n1": ["hidden"],
+        "edge-d-n2": ["hidden"],
+        "edge-n1-n2": ["hidden"],
+        "edge-c-F": ["hidden"],
+        "edge-n2-F": ["hidden"],
+        "edge-F-G": ["hidden"],
+        "aux-node-s0": ["considering"],
+        "aux-edge-s0-n1": ["edge-pos"]
+      },
+      "textReplace": {
+        "aux-node-s0":  "¬x0",
+        "aux-node-s2":  "x3",
+        "aux-node-s3":  "x2",
+        "aux-node-out": "TT = 0x020F  ✓"
       },
       "panes": [
         {
           "type": "table",
-          "title": "Storage",
-          "header": ["scheme", "entries"],
+          "title": "Order summary",
+          "header": ["op", "applied to canonical 0x001F", "result"],
           "rows": [
-            ["per truth table", "65,536 × N"],
-            ["per NPN class",   "222 × N"]
+            ["1. input phase",   "negate x0",                         "<code>0x002F</code>"],
+            ["2. input perm",    "swap x2 ↔ x3",                      "<code>0x020F</code> = u"],
+            ["3. output phase",  "(none — bit 4 of pPhases is 0)",    "<code>0x020F</code>"]
           ]
+        },
+        {
+          "type": "text",
+          "body": "<strong>Why phase before perm?</strong> The build of the lookup table goes <code>uPerm = perm(polarize(canonical, i), k)</code> — phase first, then perm. To reach the query from canonical we apply the same composition in the same order."
+        }
+      ]
+    },
+    {
+      "title": "Slot the morphed subgraph in — replace T",
+      "narrative": "Final step. The cut box <code>T</code> is gone; the 3-AND chain takes its place. Each canonical input slot is wired to its bound cut leaf:<br><br>• slot 0 (originally <code>x0</code>, phase-flipped to <code>¬x0</code>): receives <code>a</code>; the <em>composed</em> polarity is solid.<br>• slot 1 (<code>x1</code>): receives <code>b</code>; canonical's dashed edge stays dashed.<br>• slot 2 (after perm: <code>x3</code>): receives <code>d</code>; canonical's solid stays solid.<br>• slot 3 (after perm: <code>x2</code>): receives <code>c</code>; canonical's dashed stays dashed.<br><br>The new node <code>F</code> feeds <code>G</code> in place of <code>T</code>. Strash dedups against existing AIG nodes; only genuinely new ANDs cost gates.",
+      "highlights": {
+        "node-T": ["hidden"],
+        "edge-a-T": ["hidden"],
+        "edge-b-T": ["hidden"],
+        "edge-c-T": ["hidden"],
+        "edge-d-T": ["hidden"],
+        "edge-T-G": ["hidden"],
+        "node-a": ["cut-leaf"],
+        "node-b": ["cut-leaf"],
+        "node-c": ["cut-leaf"],
+        "node-d": ["cut-leaf"],
+        "node-n1": ["replacement-new"],
+        "node-n2": ["replacement-new"],
+        "node-F":  ["replacement-new"],
+        "aux-node-s0": ["dimmed"],
+        "aux-node-s1": ["dimmed"],
+        "aux-node-s2": ["dimmed"],
+        "aux-node-s3": ["dimmed"],
+        "aux-node-n1": ["dimmed"],
+        "aux-node-n2": ["dimmed"],
+        "aux-node-F":  ["dimmed"],
+        "aux-node-out": ["dimmed"],
+        "aux-edge-s0-n1": ["dimmed"],
+        "aux-edge-s1-n1": ["dimmed"],
+        "aux-edge-s2-n2": ["dimmed"],
+        "aux-edge-n1-n2": ["dimmed"],
+        "aux-edge-s3-F": ["dimmed"],
+        "aux-edge-n2-F": ["dimmed"],
+        "aux-edge-F-out": ["dimmed"]
+      },
+      "textReplace": {
+        "aux-node-s0":  "¬x0",
+        "aux-node-s2":  "x3",
+        "aux-node-s3":  "x2",
+        "aux-node-out": "TT = 0x020F  ✓"
+      },
+      "panes": [
+        {
+          "type": "table",
+          "title": "Slot → cut-leaf wiring",
+          "header": ["slot", "post-transform binding", "cut leaf", "edge polarity"],
+          "rows": [
+            ["s0", "¬x0",  "<code>a</code>", "solid (canonical's dashed × phase-neg = positive)"],
+            ["s1", "x1",   "<code>b</code>", "dashed (canonical)"],
+            ["s2", "x3",   "<code>d</code>", "solid (canonical)"],
+            ["s3", "x2",   "<code>c</code>", "dashed (canonical)"]
+          ]
+        },
+        {
+          "type": "text",
+          "body": "<strong>Storage payoff.</strong> Storing one canonical's worth of subgraphs (in <code>vClasses[12]</code>) covers all 384 distinct TTs in this orbit. Across all 222 classes, ~300× compression vs. one-subgraph-per-truth-table — at the cost of the cheap permute/complement work shown across these steps. The same trick powers <code>map</code>'s supergate library and exact-synthesis caches."
         }
       ]
     }
