@@ -1,0 +1,47 @@
+// AIG of fraig_eq.blif (post-strash):
+//   ab = a · b               (level 1)
+//   f1 = ab · c               (level 2)   user wrote (a&b)&c
+//   bc = b · c               (level 1)
+//   f2 = a · bc               (level 2)   user wrote a&(b&c)
+// 4 ANDs. Strash keys (a,b) ≠ (b,c) and (ab,c) ≠ (a,bc), so
+// neither AND fully collapses. Both POs compute a·b·c.
+digraph fraig_demo {
+    rankdir = TB
+    ranksep = 0.55
+    nodesep = 0.5
+    bgcolor = "transparent"
+    label = "Source AIG: 4 ANDs, two POs (both = a·b·c structurally distinct)"
+    labelloc = "t"
+    fontname = "monospace"
+    fontsize = 13
+
+    node [fontname = "monospace", fontsize = 13, color = "#333333"]
+    edge [color = "#333333", penwidth = 1.4]
+
+    { rank = source
+      a [id="node-a", label="a", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
+      b [id="node-b", label="b", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
+      c [id="node-c", label="c", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
+    }
+
+    ab [id="node-ab", label="ab", shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
+    bc [id="node-bc", label="bc", shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
+    f1 [id="node-f1", label="f1", shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
+    f2 [id="node-f2", label="f2", shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
+
+    { rank = sink
+      POf1 [id="node-POf1", label="PO_f1", shape=plaintext, fontsize=14, fontcolor="#806000"]
+      POf2 [id="node-POf2", label="PO_f2", shape=plaintext, fontsize=14, fontcolor="#806000"]
+    }
+
+    a -> ab [id="edge-a-ab"]
+    b -> ab [id="edge-b-ab"]
+    b -> bc [id="edge-b-bc"]
+    c -> bc [id="edge-c-bc"]
+    ab -> f1 [id="edge-ab-f1"]
+    c  -> f1 [id="edge-c-f1"]
+    a  -> f2 [id="edge-a-f2"]
+    bc -> f2 [id="edge-bc-f2"]
+    f1 -> POf1 [id="edge-f1-POf1"]
+    f2 -> POf2 [id="edge-f2-POf2"]
+}

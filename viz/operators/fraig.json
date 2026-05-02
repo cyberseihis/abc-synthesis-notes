@@ -1,0 +1,151 @@
+{
+  "operator": "fraig",
+  "circuit": "fraig_demo",
+  "title": "fraig on fraig_eq.blif",
+  "steps": [
+    {
+      "title": "AIG: 4 ANDs, two POs both compute a·b·c",
+      "auxCircuit": null,
+      "narrative": "Source: <code>fraig_eq.blif</code> writes the same function two ways: <code>f1 = (a·b)·c</code> and <code>f2 = a·(b·c)</code>. Strash uses sorted-fanin keys, so <code>(a,b)</code> and <code>(b,c)</code> hash differently and both intermediates survive. The result: 4 structurally distinct ANDs computing the same logical 3-AND.<br><br><strong>fraig</strong> (<em>functionally reduced AIG</em>) finds these by simulation + SAT and merges them.",
+      "highlights": {},
+      "panes": [
+        { "type": "kv", "title": "Stats",
+          "entries": { "ANDs": "4", "POs": "f1, f2", "PIs": "3 (a, b, c)" } },
+        { "type": "text", "title": "Per-node pipeline",
+          "body": "<ol style=\"margin:0;padding-left:1.1rem\"><li>process internal ANDs in topological order via <code>Fraig_NodeAndCanon</code></li><li>for each candidate: structural-hash lookup → folded if existing pair matches</li><li>else: compute 32-pattern (per word) random simulation signature</li><li>sim-table lookup by signature → if hit, candidate equivalence</li><li>SAT-prove the miter — UNSAT confirms equivalence</li><li>merge: candidate's pRepr = winner; later uses redirect</li></ol>" }
+      ]
+    },
+    {
+      "title": "Process ab — first AND in topo order",
+      "auxCircuit": null,
+      "narrative": "<code>Fraig_NodeAndCanon(a, b)</code>: trivial cases (<code>x·x = x</code>, <code>x·¬x = 0</code>) miss; structural-hash table is empty; sim signature is computed from the random PI seeds.<br><br>Sim table empty ⇒ <strong>insert</strong>. No SAT call. <em>ab survives</em> as the representative of its sim class.",
+      "highlights": {
+        "node-ab": ["verdict-miss", "considering"]
+      },
+      "panes": [
+        { "type": "table", "title": "Sim table (32 random patterns)",
+          "header": ["node", "sim", "verdict"],
+          "rows": [
+            [{ "_cells": ["ab", "<code>0xAAAAAAAA &amp; 0xCCCCCCCC = <strong>0x88888888</strong></code>", "miss → insert"], "_cls": "changed" }]
+          ] },
+        { "type": "kv", "title": "FRAIG state",
+          "entries": {
+            "Members": "{ ab }",
+            "Sim hits so far": "0",
+            "SAT calls": "0"
+          } }
+      ]
+    },
+    {
+      "title": "Process f1 — sim signature is fresh",
+      "auxCircuit": null,
+      "narrative": "<code>Fraig_NodeAndCanon(ab, c)</code>: structural-hash miss (no existing AND with fanins <code>(ab, c)</code>); sim is <code>sim(ab) &amp; sim(c) = 0x80808080</code>. Not in the sim table.<br><br>Insert. f1 survives. The sim table now has two entries.",
+      "highlights": {
+        "node-ab": ["survives"],
+        "node-f1": ["verdict-miss", "considering"]
+      },
+      "panes": [
+        { "type": "table", "title": "Sim table",
+          "header": ["node", "sim", "verdict"],
+          "rows": [
+            ["ab", "<code>0x88888888</code>", "—"],
+            [{ "_cells": ["f1", "<code>0x88888888 &amp; 0xF0F0F0F0 = <strong>0x80808080</strong></code>", "miss → insert"], "_cls": "changed" }]
+          ] }
+      ]
+    },
+    {
+      "title": "Process bc — sim signature is fresh",
+      "auxCircuit": null,
+      "narrative": "<code>Fraig_NodeAndCanon(b, c)</code>: structural miss; sim <code>= 0xC0C0C0C0</code>; sim-table miss; insert. bc survives.<br><br>Note that bc's sim differs from ab's even though both ANDs include b — the per-pattern bit-vector is keyed to the <em>actual fanin combination</em>, not just shared variables.",
+      "highlights": {
+        "node-ab": ["survives"],
+        "node-f1": ["survives"],
+        "node-bc": ["verdict-miss", "considering"]
+      },
+      "panes": [
+        { "type": "table", "title": "Sim table",
+          "header": ["node", "sim", "verdict"],
+          "rows": [
+            ["ab", "<code>0x88888888</code>", "—"],
+            ["f1", "<code>0x80808080</code>", "—"],
+            [{ "_cells": ["bc", "<code>0xCCCCCCCC &amp; 0xF0F0F0F0 = <strong>0xC0C0C0C0</strong></code>", "miss → insert"], "_cls": "changed" }]
+          ] }
+      ]
+    },
+    {
+      "title": "Process f2 — sim HIT against f1!",
+      "auxCircuit": null,
+      "narrative": "<code>Fraig_NodeAndCanon(a, bc)</code>: structural-hash misses (we have <code>(ab, c)</code>, not <code>(a, bc)</code>). Sim is <code>sim(a) &amp; sim(bc) = 0xAAAAAAAA &amp; 0xC0C0C0C0 = 0x80808080</code>.<br><br>Sim-table lookup by <code>0x80808080</code> → <strong>hits f1</strong>. The pair <code>(f1, f2)</code> is a candidate equivalence. Sim equality on 32 patterns isn't proof (could be aliasing) — SAT verifies next.",
+      "highlights": {
+        "node-ab": ["survives"],
+        "node-f1": ["verdict-hit"],
+        "node-bc": ["survives"],
+        "node-f2": ["verdict-hit", "considering"]
+      },
+      "panes": [
+        { "type": "table", "title": "Sim table",
+          "header": ["node", "sim", "verdict"],
+          "rows": [
+            ["ab", "<code>0x88888888</code>", "—"],
+            ["f1", "<code>0x80808080</code>", "→ candidate match"],
+            ["bc", "<code>0xC0C0C0C0</code>", "—"],
+            [{ "_cells": ["f2", "<code>0xAAAAAAAA &amp; 0xC0C0C0C0 = <strong>0x80808080</strong></code>", "<strong>HIT vs f1</strong>"], "_cls": "changed" }]
+          ] },
+        { "type": "kv", "title": "FRAIG counters",
+          "entries": {
+            "Sim hits": "<span class=\"counter-bumped\">1</span>",
+            "Pending SAT": "1"
+          } }
+      ]
+    },
+    {
+      "title": "SAT verify the miter — UNSAT in 0 conflicts",
+      "auxCircuit": null,
+      "narrative": "<code>Fraig_NodeIsEquivalent(f1, f2)</code> builds the miter <code>out = f1 ⊕ f2</code> in CNF (Tseitin: 8 clauses, 8 variables for this tiny cone) and calls <code>Fraig_ManCheckClauseUsingSat</code> with <code>nBTLimit = 100</code> conflicts.<br><br>The solver propagates: if a node's value forces both f1 = 1 and f2 = 1 (or both = 0), the XOR can't be 1. Pure unit propagation closes it: <strong>UNSAT in 0 conflicts</strong> (trace reports propagations=9, inspects=15).",
+      "highlights": {
+        "node-ab": ["survives"],
+        "node-f1": ["verdict-fold"],
+        "node-bc": ["survives"],
+        "node-f2": ["verdict-fold", "considering"]
+      },
+      "panes": [
+        { "type": "kv", "title": "Miter SAT call",
+          "entries": {
+            "CNF clauses":      "8",
+            "CNF vars":         "8",
+            "Backtrack limit":  "100",
+            "Conflicts used":   "0",
+            "Result":           "<strong>UNSAT</strong> &mdash; f1 ≡ f2"
+          } },
+        { "type": "text",
+          "body": "If SAT had returned a counter-example, FRAIG would <em>add the cex pattern to the dynamic sim words</em> and re-simulate, refining future signatures so the false candidate doesn't recur. (Trace fields: <code>Counter-example</code>, <code>Dynamic words</code>.)" }
+      ]
+    },
+    {
+      "title": "Merge — f2 → f1; redirect PO_f2",
+      "auxCircuit": "fraig_merged",
+      "narrative": "Set <code>f2-&gt;pRepr = f1</code> with output-complement bit 0. Subsequent fanouts of f2 (here just <code>PO_f2</code>) are redirected to f1. <code>bc</code> loses its only fanout (was f2) — it goes dangling, reclaimed by reference counting.<br><br>The aux pane shows the resulting AIG: <strong>2 ANDs (ab, f1)</strong> with both POs sharing f1.",
+      "highlights": {
+        "node-ab": ["survives"],
+        "node-f1": ["replacement-new"],
+        "node-bc": ["dimmed"],
+        "node-f2": ["dimmed"],
+        "edge-f2-POf2": ["dimmed"],
+        "aux-node-ab": ["survives"],
+        "aux-node-f":  ["replacement-new", "fresh"]
+      },
+      "panes": [
+        { "type": "kv", "title": "Final stats",
+          "entries": {
+            "ANDs (before)": "4",
+            "ANDs (after)":  "<strong>2</strong>",
+            "Sim hits":      "1",
+            "SAT proofs":    "1 (UNSAT)",
+            "Counter-examples": "0"
+          } },
+        { "type": "text",
+          "body": "With <code>-c</code> (or via <code>dch</code>), the SAT-proven equivalent f2 would be appended to <code>f1-&gt;pNextE</code> instead of discarded — the downstream <code>if</code>/<code>map</code> mapper then sees both structural alternatives per cone and picks the cheapest under its delay/area model." }
+      ]
+    }
+  ]
+}

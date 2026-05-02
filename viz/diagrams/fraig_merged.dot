@@ -1,0 +1,37 @@
+// FRAIG result for fraig_eq: f2 was merged into f1 via SAT-proven
+// equivalence. The user-visible AIG has just 2 ANDs (ab and f1), and
+// both POs reference the same f1 node.
+digraph fraig_merged {
+    rankdir = TB
+    ranksep = 0.55
+    nodesep = 0.6
+    bgcolor = "transparent"
+    label = "After fraig: 2 ANDs, two POs share f1"
+    labelloc = "t"
+    fontname = "monospace"
+    fontsize = 13
+
+    node [fontname = "monospace", fontsize = 13, color = "#333333"]
+    edge [color = "#333333", penwidth = 1.4]
+
+    { rank = source
+      a [id="aux-node-a", label="a", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
+      b [id="aux-node-b", label="b", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
+      c [id="aux-node-c", label="c", shape=plaintext, fontsize=18, fontcolor="#1a4d80"]
+    }
+
+    ab [id="aux-node-ab", label="ab", shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
+    f  [id="aux-node-f",  label="f1", shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
+
+    { rank = sink
+      POf1 [id="aux-node-POf1", label="PO_f1", shape=plaintext, fontsize=14, fontcolor="#806000"]
+      POf2 [id="aux-node-POf2", label="PO_f2", shape=plaintext, fontsize=14, fontcolor="#806000"]
+    }
+
+    a -> ab [id="aux-edge-a-ab"]
+    b -> ab [id="aux-edge-b-ab"]
+    ab -> f [id="aux-edge-ab-f"]
+    c  -> f [id="aux-edge-c-f"]
+    f -> POf1 [id="aux-edge-f-POf1"]
+    f -> POf2 [id="aux-edge-f-POf2"]
+}
