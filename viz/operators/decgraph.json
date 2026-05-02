@@ -27,8 +27,8 @@
       ]
     },
     {
-      "title": "Setup: rewrite chose cut {a, c, d, n6}",
-      "narrative": "From the §rewrite trace: the chosen cut at f is <code>{a, c, d, n6}</code>. The MFFC of f w.r.t. that cut is <code>{f, n8, n7, n9}</code> — those four ANDs are TravId-tagged. The candidate Dec_Graph (right) has 3 internal nodes m1, m2, m3 over the same 4 leaves.",
+      "title": "Setup: cut {a, c, d, n6}; candidate is 3 fanin-2 ANDs",
+      "narrative": "From the §rewrite trace: cut at f is <code>{a, c, d, n6}</code>; MFFC of f w.r.t. that cut is <code>{f, n8, n7, n9}</code>. The candidate (right) implements the same function at f using <strong>three fanin-2 ANDs</strong> with edge negations (dashed = inverted edge):<br><br><code>m1 = ¬a · ¬c</code>&nbsp;&nbsp;<code>m2 = d · ¬m1</code>&nbsp;&nbsp;<code>m3 = ¬n6 · ¬m2</code><br><br>Output is <code>m3</code>. Algebraically <code>m3 = ¬n6 · ¬(d·(a+c)) = ¬n6 · ¬(a·d) · ¬(c·d)</code> — exactly the function the original f computes.",
       "highlights": {
         "node-a":  ["cut-leaf"],
         "node-c":  ["cut-leaf"],
@@ -45,13 +45,13 @@
       },
       "panes": [
         {
-          "type": "kv",
-          "title": "Candidate Dec_Graph (illustrative)",
-          "entries": {
-            "m1": "a · d",
-            "m2": "c · d",
-            "m3": "OR(m1, m2, n6) — implements n6 + ad + cd"
-          }
+          "type": "table",
+          "title": "Equivalence check at f",
+          "header": ["", "expression", "over leaves {a, c, d, n6}"],
+          "rows": [
+            ["original f",  "<code>n8 · ¬n9 = ¬n6·¬n7 · ¬n9</code>", "<code>¬n6 · ¬(a·d) · ¬(c·d)</code>"],
+            ["candidate m3", "<code>¬n6 · ¬m2</code> with <code>m2 = d·¬m1</code>, <code>m1 = ¬a·¬c</code>", "<code>¬n6 · ¬(d·(a+c))</code>"]
+          ]
         },
         {
           "type": "kv",
@@ -65,16 +65,16 @@
       ]
     },
     {
-      "title": "Visit m1 = a · d → strash hits n7, but n7 ∈ MFFC → ADD",
-      "narrative": "<code>Abc_AigAndLookup(a, d)</code> hits <strong>n7</strong>. But <code>Abc_NodeIsTravIdCurrent(n7)</code> returns <code>true</code> — n7 is in the MFFC and will be deleted post-commit. The strash-table hit is illusory. <strong>Treat as add.</strong> count = 1.",
+      "title": "Visit m1 = ¬a · ¬c — strash MISS → ADD",
+      "narrative": "<code>Abc_AigAndLookup(¬a, ¬c)</code>. The current AIG has only n6=a·b, n7=a·d, n8=¬n6·¬n7, n9=c·d, f. None matches the (a-negated, c-negated) signature — <strong>miss</strong>. <code>count = 1</code>.",
       "highlights": {
         "node-a":  ["cut-leaf"],
         "node-c":  ["cut-leaf"],
         "node-d":  ["cut-leaf"],
         "node-n6": ["cut-leaf"],
-        "node-n7": ["considering", "in-mffc"],
         "node-f":  ["in-mffc"],
         "node-n8": ["in-mffc"],
+        "node-n7": ["in-mffc"],
         "node-n9": ["in-mffc"],
         "aux-node-a":  ["cut-leaf"],
         "aux-node-c":  ["cut-leaf"],
@@ -82,57 +82,56 @@
         "aux-node-n6": ["cut-leaf"],
         "aux-node-m1": ["considering"],
         "aux-edge-a-m1": ["active"],
-        "aux-edge-d-m1": ["active"]
+        "aux-edge-c-m1": ["active"]
       },
       "panes": [
         {
           "type": "kv",
           "title": "m1 lookup",
           "entries": {
-            "Abc_AigAndLookup(a, d)":      "→ n7 (exists)",
-            "Abc_NodeIsTravIdCurrent(n7)": "<span class=\"counter-zeroed\">true (in MFFC)</span>",
-            "Decision":                    "<strong>add</strong>",
-            "count":                       "<span class=\"counter-bumped\">1</span>"
+            "Abc_AigAndLookup(¬a, ¬c)": "<span style='color:#b04040'>miss</span>",
+            "Decision":                  "<strong>add</strong>",
+            "count":                     "<span class=\"counter-bumped\">1</span>"
           }
         }
       ]
     },
     {
-      "title": "Visit m2 = c · d → hits n9, also in MFFC → ADD",
-      "narrative": "Same as m1 but for n9. count = 2.",
+      "title": "Visit m2 = d · ¬m1 — m1 is brand-new → MISS → ADD",
+      "narrative": "<code>Abc_AigAndLookup(d, ¬m1)</code>. m1 was just created in the previous step; nothing in the existing AIG references it. Lookup misses by definition. <code>count = 2</code>.",
       "highlights": {
         "node-a":  ["cut-leaf"],
         "node-c":  ["cut-leaf"],
         "node-d":  ["cut-leaf"],
         "node-n6": ["cut-leaf"],
-        "node-n7": ["in-mffc"],
-        "node-n9": ["considering", "in-mffc"],
         "node-f":  ["in-mffc"],
         "node-n8": ["in-mffc"],
+        "node-n7": ["in-mffc"],
+        "node-n9": ["in-mffc"],
         "aux-node-a":  ["cut-leaf"],
         "aux-node-c":  ["cut-leaf"],
         "aux-node-d":  ["cut-leaf"],
         "aux-node-n6": ["cut-leaf"],
         "aux-node-m1": ["replacement-new"],
         "aux-node-m2": ["considering"],
-        "aux-edge-c-m2": ["active"],
-        "aux-edge-d-m2": ["active"]
+        "aux-edge-d-m2":  ["active"],
+        "aux-edge-m1-m2": ["active"]
       },
       "panes": [
         {
           "type": "kv",
           "title": "m2 lookup",
           "entries": {
-            "Abc_AigAndLookup(c, d)":      "→ n9 (exists, in MFFC)",
-            "Decision":                    "<strong>add</strong>",
-            "count":                       "<span class=\"counter-bumped\">2</span>"
+            "Abc_AigAndLookup(d, ¬m1)": "<span style='color:#b04040'>miss</span> (m1 is fresh)",
+            "Decision":                  "<strong>add</strong>",
+            "count":                     "<span class=\"counter-bumped\">2</span>"
           }
         }
       ]
     },
     {
-      "title": "Visit m3 = OR(m1, m2, n6) — no strash match → ADD",
-      "narrative": "m3's structure (combining m1, m2, n6) doesn't match any existing AND. <code>Abc_AigAndLookup</code> misses → add. count = 3. Note: m3 is built as a small AND-tree internally — the &quot;Cone = 3&quot; in the rewrite trace counts those binary ANDs.",
+      "title": "Visit m3 = ¬n6 · ¬m2 — MISS → ADD",
+      "narrative": "<code>Abc_AigAndLookup(¬n6, ¬m2)</code>. m2 is also fresh; can't match anything. <strong>Miss → add.</strong> <code>count = 3</code>.<br><br>The structural check at <code>decAbc.c:196..197</code> also asks: would this top-level AND equal <code>pRoot</code>? If yes, return -1 (self-loop). For our candidate, <code>¬n6·¬m2</code> isn't structurally f (f's fanin1 is ¬n9, not ¬m2 over a freshly-built cone), so the check passes.",
       "highlights": {
         "node-a":  ["cut-leaf"],
         "node-c":  ["cut-leaf"],
@@ -149,18 +148,17 @@
         "aux-node-m1": ["replacement-new"],
         "aux-node-m2": ["replacement-new"],
         "aux-node-m3": ["considering"],
-        "aux-edge-m1-m3": ["active"],
-        "aux-edge-m2-m3": ["active"],
-        "aux-edge-n6-m3": ["active"]
+        "aux-edge-n6-m3": ["active"],
+        "aux-edge-m2-m3": ["active"]
       },
       "panes": [
         {
           "type": "kv",
           "title": "m3 lookup",
           "entries": {
-            "Lookup":   "miss",
-            "Decision": "<strong>add</strong>",
-            "count":    "<span class=\"counter-bumped\">3</span>"
+            "Abc_AigAndLookup(¬n6, ¬m2)": "<span style='color:#b04040'>miss</span>",
+            "Decision":                    "<strong>add</strong>",
+            "count":                       "<span class=\"counter-bumped\">3</span>"
           }
         }
       ]
@@ -199,31 +197,41 @@
         {
           "type": "text",
           "title": "When this function returns -1",
-          "body": "Two cases: (a) the running count exceeds <code>NodeMax</code> = MFFC size — bail out early; (b) the new top-level node would equal <code>pRoot</code> structurally (a self-loop, <code>decAbc.c:196..197</code>) — also bail. Both are short-circuits; not all candidates need full evaluation."
+          "body": "Two cases: (a) running count exceeds <code>NodeMax</code> = MFFC size — bail out early; (b) the new top-level node would equal <code>pRoot</code> structurally (a self-loop, <code>decAbc.c:196..197</code>). Both are short-circuits; not all candidates need full evaluation."
         }
       ]
     },
     {
-      "title": "Why MFFC tagging matters",
-      "narrative": "Without the TravId check, rewrite would happily &quot;reuse&quot; n7 and n9 from the existing strash table, claim count = 1, gain = 3, and commit. But after committing, n7 and n9 — being inside the original MFFC — get deallocated by reference counting, leaving dangling pointers in the new graph. The TravId check at <code>decAbc.c:202</code> is the safety belt: it forces the count to reflect what will <em>actually</em> exist post-commit.",
+      "title": "Why MFFC tagging matters (hypothetical)",
+      "narrative": "Our candidate happens to miss everywhere. But class 12 also has candidates whose intermediate ANDs <em>do</em> match existing structure — for instance one that computes <code>t1 = a·d</code> directly. <code>Abc_AigAndLookup(a, d)</code> would <strong>hit n7</strong>. Without further checks, rewrite would assume t1 reuses n7 for free — count = 0 for that step.<br><br>But <strong>n7 is in the MFFC</strong>: it's about to be deleted post-commit. The TravId check at <code>decAbc.c:202</code> catches this: <code>Abc_NodeIsTravIdCurrent(n7) → true</code> → the hit is illusory → count as add anyway. Without the check we'd post-commit dangle a pointer to a deallocated node.<br><br>Real reuse only counts when the hit lands on a node <em>outside</em> the MFFC.",
       "highlights": {
         "node-a":  ["cut-leaf"],
         "node-c":  ["cut-leaf"],
         "node-d":  ["cut-leaf"],
         "node-n6": ["cut-leaf"],
         "node-f":  ["in-mffc"],
-        "node-n7": ["in-mffc"],
+        "node-n7": ["considering", "in-mffc"],
         "node-n8": ["in-mffc"],
         "node-n9": ["in-mffc"],
         "aux-node-a":  ["cut-leaf"],
         "aux-node-c":  ["cut-leaf"],
         "aux-node-d":  ["cut-leaf"],
         "aux-node-n6": ["cut-leaf"],
-        "aux-node-m1": ["replacement-new"],
-        "aux-node-m2": ["replacement-new"],
-        "aux-node-m3": ["replacement-new"]
+        "aux-node-m1": ["dimmed"],
+        "aux-node-m2": ["dimmed"],
+        "aux-node-m3": ["dimmed"]
       },
       "panes": [
+        {
+          "type": "table",
+          "title": "Three lookup outcomes",
+          "header": ["lookup", "result", "in MFFC?", "decision"],
+          "rows": [
+            ["miss",                 "&mdash;", "&mdash;", "<strong>add</strong>"],
+            ["hit, node ∉ MFFC",     "real",    "no",      "<strong>reuse</strong> (no add)"],
+            ["hit, node ∈ MFFC",     "illusory","yes",     "<strong>add</strong> (TravId rescue)"]
+          ]
+        },
         {
           "type": "text",
           "body": "Same logic governs refactor (<code>abcRefactor.c:207</code>) and the various candidate-scoring sites in resub. All three operators commit only if <code>Dec_GraphToNetworkCount</code>'s return strictly beats their <code>nMinSaved</code> threshold."

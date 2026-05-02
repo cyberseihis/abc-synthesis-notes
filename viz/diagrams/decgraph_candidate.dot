@@ -1,25 +1,26 @@
 // Aux SVG for decgraph: a candidate Dec_Graph_t over leaves {a, c, d, n6}.
-// Three internal ANDs m1, m2, m3 implementing the truth function for class 12.
+// Three internal ANDs implementing the function at f, which is
+//   f = ~(a·b) · ~(a·d) · ~(c·d)  =  ~n6 · ~(a·d) · ~(c·d)
+//     =  ~n6 · ~(d·(a+c))
+//     =  ~n6 · ~(d · ~(~a·~c)).
 //
-//   a    c    d    n6
-//   |\   |    |\   |
-//   | \  |    | \  |
-//   m1   m2   |   |   m1 = a & d
-//    \   |   /   /    m2 = c & d
-//     \  |  /  /      m3 = OR(m1, m2, n6)
-//      \\__//
-//       m3
-//        |
-//       OUT
+// Pure fanin-2 AIG (every AND has two inputs; negations live on edges,
+// drawn as dashed lines):
+//
+//   m1 = ~a · ~c          (= ~(a + c))
+//   m2 = d · ~m1          (= d · (a + c))
+//   m3 = ~n6 · ~m2        (= ~n6 · ~(d·(a+c))   = f)
+//
+// Output of the candidate is m3.
 digraph decgraph_candidate {
     rankdir = TB
     bgcolor = "transparent"
-    label = "Candidate Dec_Graph"
+    label = "Candidate Dec_Graph (3 fanin-2 ANDs)"
     labelloc = "t"
     fontname = "monospace"
     fontsize = 14
     nodesep = 0.4
-    ranksep = 0.5
+    ranksep = 0.55
 
     node [fontname = "monospace", fontsize = 14, color = "#333333"]
     edge [color = "#333333", penwidth = 1.4]
@@ -39,14 +40,18 @@ digraph decgraph_candidate {
       OUT [id="aux-node-OUT", label="f'", shape=plaintext, fontsize=14, fontcolor="#806000"]
     }
 
-    a -> m1 [id="aux-edge-a-m1"]
-    d -> m1 [id="aux-edge-d-m1"]
-    c -> m2 [id="aux-edge-c-m2"]
-    d -> m2 [id="aux-edge-d-m2"]
+    // m1 = ~a · ~c — both fanin edges inverted (dashed)
+    a -> m1 [id="aux-edge-a-m1", style=dashed]
+    c -> m1 [id="aux-edge-c-m1", style=dashed]
 
-    m1 -> m3 [id="aux-edge-m1-m3"]
-    m2 -> m3 [id="aux-edge-m2-m3"]
-    n6 -> m3 [id="aux-edge-n6-m3"]
+    // m2 = d · ~m1 — d positive, m1 inverted
+    d  -> m2 [id="aux-edge-d-m2"]
+    m1 -> m2 [id="aux-edge-m1-m2", style=dashed]
 
+    // m3 = ~n6 · ~m2 — both inverted
+    n6 -> m3 [id="aux-edge-n6-m3", style=dashed]
+    m2 -> m3 [id="aux-edge-m2-m3", style=dashed]
+
+    // Output edge: positive (the candidate's top-level polarity matches f)
     m3 -> OUT [id="aux-edge-m3-OUT"]
 }
