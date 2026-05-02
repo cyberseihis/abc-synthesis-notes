@@ -1,0 +1,62 @@
+// Diagram for the simulation walkthrough.
+//
+// A small AIG cone implementing f = x0·x1 + x0·x3 + x2·x3 with strictly
+// fanin-2 ANDs (negations live on edges, drawn as dashed):
+//
+//   t1   = x0 · x1
+//   t2   = x0 · x3
+//   t3   = x2 · x3
+//   n12  = ~t1 · ~t2          ( = ~(t1 + t2) )
+//   n123 = n12 · ~t3           ( = ~(t1 + t2 + t3) )
+//   f    = ~n123               ( drawn as inverted output edge )
+//
+// Each node carries an xlabel that the walkthrough's textReplace fills in
+// step-by-step with the 32-bit simulation signature (in hex).
+digraph sim_demo {
+    rankdir = TB
+    ranksep = 0.55
+    nodesep = 0.45
+    bgcolor = "transparent"
+    label = "f = x0·x1 + x0·x3 + x2·x3   —   bitwise sim per node"
+    labelloc = "t"
+    fontname = "monospace"
+    fontsize = 13
+
+    node [fontname = "monospace", fontsize = 14, color = "#333333"]
+    edge [color = "#333333", penwidth = 1.4]
+
+    { rank = source
+      x0 [id="node-x0", label="x0", xlabel="—", shape=plaintext, fontsize=16, fontcolor="#1a4d80"]
+      x1 [id="node-x1", label="x1", xlabel="—", shape=plaintext, fontsize=16, fontcolor="#1a4d80"]
+      x2 [id="node-x2", label="x2", xlabel="—", shape=plaintext, fontsize=16, fontcolor="#1a4d80"]
+      x3 [id="node-x3", label="x3", xlabel="—", shape=plaintext, fontsize=16, fontcolor="#1a4d80"]
+    }
+
+    t1   [id="node-t1",   label="t1",   xlabel="—", shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
+    t2   [id="node-t2",   label="t2",   xlabel="—", shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
+    t3   [id="node-t3",   label="t3",   xlabel="—", shape=circle, width=0.55, fixedsize=true, style=filled, fillcolor="#f7f7f7"]
+    n12  [id="node-n12",  label="n12",  xlabel="—", shape=circle, width=0.6,  fixedsize=true, style=filled, fillcolor="#f7f7f7"]
+    n123 [id="node-n123", label="n123", xlabel="—", shape=circle, width=0.7,  fixedsize=true, style=filled, fillcolor="#f7f7f7"]
+
+    { rank = sink
+      f [id="node-f", label="f", xlabel="—", shape=plaintext, fontsize=16, fontcolor="#806000"]
+    }
+
+    // t1 = x0·x1
+    x0 -> t1 [id="edge-x0-t1"]
+    x1 -> t1 [id="edge-x1-t1"]
+    // t2 = x0·x3
+    x0 -> t2 [id="edge-x0-t2"]
+    x3 -> t2 [id="edge-x3-t2"]
+    // t3 = x2·x3
+    x2 -> t3 [id="edge-x2-t3"]
+    x3 -> t3 [id="edge-x3-t3"]
+    // n12 = ~t1 · ~t2 — both fanin edges inverted (dashed)
+    t1 -> n12 [id="edge-t1-n12", style=dashed]
+    t2 -> n12 [id="edge-t2-n12", style=dashed]
+    // n123 = n12 · ~t3 — t3 inverted, n12 positive
+    n12 -> n123 [id="edge-n12-n123"]
+    t3  -> n123 [id="edge-t3-n123", style=dashed]
+    // Output: f = ~n123 — inverted output edge
+    n123 -> f [id="edge-n123-f", style=dashed]
+}

@@ -1,31 +1,67 @@
 {
   "operator": "sim",
-  "circuit": "blackbox4",
+  "circuit": "sim_demo",
   "title": "Truth-table simulation on machine words",
   "steps": [
     {
-      "title": "32 patterns per word, propagated bitwise",
-      "narrative": "Resub, fraig, and dch all need to ask &quot;do these two nodes compute the same function?&quot; quickly. ABC's answer: simulate every node on the same set of input patterns packed 32-per-word, then hash on the resulting bitvector. Two nodes with different signatures are <em>guaranteed</em> different; two with the same signature are equivalence <em>candidates</em> (a real proof needs SAT).",
+      "title": "32 patterns per machine word, propagated bitwise",
+      "narrative": "Resub, fraig, and dch all need to ask &quot;do these two nodes compute the same function?&quot; quickly. ABC's answer: simulate every node on the same set of input patterns packed 32-per-word, then hash on the resulting bitvector. Two nodes with different signatures are <em>guaranteed</em> different; two with the same signature are equivalence <em>candidates</em> (a real proof needs SAT).<br><br>The cone on the left implements <code>f = x0·x1 + x0·x3 + x2·x3</code> as five fanin-2 ANDs (dashed edges = inverted). We'll fill in each node's 32-bit sim signature step by step.",
       "highlights": {
-        "node-cut": ["considering"]
+        "node-t1":   ["dimmed"],
+        "node-t2":   ["dimmed"],
+        "node-t3":   ["dimmed"],
+        "node-n12":  ["dimmed"],
+        "node-n123": ["dimmed"]
+      },
+      "textReplace": {
+        "node-x0":   "x0\n—",
+        "node-x1":   "x1\n—",
+        "node-x2":   "x2\n—",
+        "node-x3":   "x3\n—",
+        "node-t1":   "t1\n—",
+        "node-t2":   "t2\n—",
+        "node-t3":   "t3\n—",
+        "node-n12":  "n12\n—",
+        "node-n123": "n123\n—",
+        "node-f":    "f\n—"
       },
       "panes": [
         {
           "type": "kv",
-          "title": "Storage",
+          "title": "Storage per node",
           "entries": {
-            "Per-node":    "<code>nWords</code> × 32-bit unsigned",
-            "Default":     "<code>nWords</code> = 1 (32 patterns); 8 in dch (256 patterns)",
-            "Allocation":  "fixed pool, one slot per AIG object"
+            "Per-node":   "<code>nWords</code> × 32-bit unsigned",
+            "Default":    "<code>nWords</code> = 1 (32 patterns); 8 in dch (256 patterns)",
+            "Allocation": "fixed pool, one slot per AIG object"
           }
         }
       ]
     },
     {
-      "title": "Exhaustive 4-input enumeration with one word",
-      "narrative": "For a 4-input cut, 32 patterns is enough to evaluate <em>every</em> input combination twice (16 patterns × 2). ABC seeds the four input columns with these standard constants. Read each row left-to-right as <strong>MSB-first hex</strong> (bit 31 is leftmost, bit 0 is rightmost). <strong>Bit i</strong> of the column corresponds to <strong>input pattern i</strong>: x_k = bit k of i, for k = 0..3. The upper 16 patterns repeat the lower 16.",
+      "title": "Seed the four PIs with standard input columns",
+      "narrative": "For a 4-input cone, 32 patterns is enough to evaluate <em>every</em> input combination twice (16 patterns × 2). ABC seeds the inputs with these standard hex constants — read each row left-to-right as <strong>MSB-first</strong>, so bit i of the column corresponds to input pattern i: <code>x_k = bit k of i</code>, for k = 0..3.",
       "highlights": {
-        "node-cut": ["considering"]
+        "node-x0": ["cut-leaf"],
+        "node-x1": ["cut-leaf"],
+        "node-x2": ["cut-leaf"],
+        "node-x3": ["cut-leaf"],
+        "node-t1":   ["dimmed"],
+        "node-t2":   ["dimmed"],
+        "node-t3":   ["dimmed"],
+        "node-n12":  ["dimmed"],
+        "node-n123": ["dimmed"]
+      },
+      "textReplace": {
+        "node-x0":   "x0\nAAAAAAAA",
+        "node-x1":   "x1\nCCCCCCCC",
+        "node-x2":   "x2\nF0F0F0F0",
+        "node-x3":   "x3\nFF00FF00",
+        "node-t1":   "t1\n—",
+        "node-t2":   "t2\n—",
+        "node-t3":   "t3\n—",
+        "node-n12":  "n12\n—",
+        "node-n123": "n123\n—",
+        "node-f":    "f\n—"
       },
       "panes": [
         {
@@ -35,64 +71,246 @@
         },
         {
           "type": "bitvec",
-          "title": "sim(x1) = 0xCCCCCCCC — bit i = ((i &gt;&gt; 1) mod 2)",
+          "title": "sim(x1) = 0xCCCCCCCC — bit i = ((i&gt;&gt;1) mod 2)",
           "bits": "11001100110011001100110011001100"
         },
         {
           "type": "bitvec",
-          "title": "sim(x2) = 0xF0F0F0F0 — bit i = ((i &gt;&gt; 2) mod 2)",
+          "title": "sim(x2) = 0xF0F0F0F0 — bit i = ((i&gt;&gt;2) mod 2)",
           "bits": "11110000111100001111000011110000"
         },
         {
           "type": "bitvec",
-          "title": "sim(x3) = 0xFF00FF00 — bit i = ((i &gt;&gt; 3) mod 2)",
+          "title": "sim(x3) = 0xFF00FF00 — bit i = ((i&gt;&gt;3) mod 2)",
           "bits": "11111111000000001111111100000000"
         },
         {
           "type": "text",
-          "body": "Quick check: <strong>bit 0</strong> (rightmost) = pattern 0 (all inputs = 0). All four columns end with '0' — correct. <strong>Bit 3</strong> (4th from right in each row) = pattern 3 = (x0=1, x1=1, x2=0, x3=0). Confirms x0=1, x1=1, x2=0, x3=0."
+          "body": "<strong>Bit 0</strong> (rightmost) = pattern 0 (all inputs 0). All four columns end in 0 — correct. <strong>Bit 3</strong> (4th from right) = pattern 3 (x0=1, x1=1, x2=0, x3=0) — confirms."
         }
       ]
     },
     {
-      "title": "Propagate bitwise through ANDs",
-      "narrative": "For each AIG AND, simulate via <code>sim(z) = sim(p0) AND sim(p1)</code>, applying complements where edges are negated. This is a single 32-bit AND per node — extremely cheap. After one pass, every node carries a 32-bit signature.",
+      "title": "Level 1: bitwise AND through t1, t2, t3",
+      "narrative": "<code>sim(z) = sim(p0) AND sim(p1)</code>. One 32-bit machine instruction per node — extremely cheap. After one pass over level 1, the three primary ANDs carry their 32-bit signatures.",
       "highlights": {
-        "node-cut": ["considering"]
+        "node-x0": ["cut-leaf"],
+        "node-x1": ["cut-leaf"],
+        "node-x2": ["cut-leaf"],
+        "node-x3": ["cut-leaf"],
+        "node-t1": ["considering"],
+        "node-t2": ["considering"],
+        "node-t3": ["considering"],
+        "node-n12":  ["dimmed"],
+        "node-n123": ["dimmed"],
+        "edge-x0-t1": ["active"],
+        "edge-x1-t1": ["active"],
+        "edge-x0-t2": ["active"],
+        "edge-x3-t2": ["active"],
+        "edge-x2-t3": ["active"],
+        "edge-x3-t3": ["active"]
+      },
+      "textReplace": {
+        "node-x0":   "x0\nAAAAAAAA",
+        "node-x1":   "x1\nCCCCCCCC",
+        "node-x2":   "x2\nF0F0F0F0",
+        "node-x3":   "x3\nFF00FF00",
+        "node-t1":   "t1\n88888888",
+        "node-t2":   "t2\nAA00AA00",
+        "node-t3":   "t3\nF000F000",
+        "node-n12":  "n12\n—",
+        "node-n123": "n123\n—",
+        "node-f":    "f\n—"
       },
       "panes": [
         {
           "type": "bitvec",
-          "title": "sim(x0 ∧ x1) = 0xAA & 0xCC = 0x88",
+          "title": "sim(t1) = 0xAAAAAAAA &amp; 0xCCCCCCCC = 0x88888888",
           "bits": "10001000100010001000100010001000"
         },
         {
           "type": "bitvec",
-          "title": "sim(x0 ∧ x3) = 0xAA & 0xFF00 = 0xAA00",
+          "title": "sim(t2) = 0xAAAAAAAA &amp; 0xFF00FF00 = 0xAA00AA00",
           "bits": "10101010000000001010101000000000"
         },
         {
           "type": "bitvec",
-          "title": "sim(x2 ∧ x3) = 0xF0 & 0xFF00 = 0xF000",
+          "title": "sim(t3) = 0xF0F0F0F0 &amp; 0xFF00FF00 = 0xF000F000",
           "bits": "11110000000000001111000000000000"
-        },
-        {
-          "type": "bitvec",
-          "title": "sim(f) = 0xFA88_FA88 — the truth table of <code>x0·x1 + x0·x3 + x2·x3</code>",
-          "bits": "11111010100010001111101010001000"
         }
       ]
     },
     {
-      "title": "Two nodes with equal sim(): equivalence candidates",
-      "narrative": "Resub looks for <em>divisors</em> whose sim signature matches the target node's. Hash the divisors' signatures into a bucket; when a target arrives, hash and look in the bucket. Hits are candidate equivalences; either:<ul><li>they really are equivalent (then ABC may merge or substitute), or</li><li>they happen to agree on these 32 patterns but disagree on some unrepresented pattern (a <em>spurious</em> hit). Resub falls back to local truth-table verification; fraig falls back to SAT.</li></ul>",
+      "title": "Level 2: n12 = ¬t1 · ¬t2 — negation lives on the input",
+      "narrative": "Both fanin edges into n12 are dashed → both inputs are negated. Implementation: bitwise-NOT the fanin's sim word before ANDing. <code>sim(n12) = ~sim(t1) AND ~sim(t2)</code>. Edge polarity is read locally at each AND — no separate &quot;inverter&quot; nodes exist in the AIG.",
       "highlights": {
-        "node-cut": ["considering"]
+        "node-x0": ["dimmed"],
+        "node-x1": ["dimmed"],
+        "node-x2": ["dimmed"],
+        "node-x3": ["dimmed"],
+        "node-t1":  ["cut-leaf"],
+        "node-t2":  ["cut-leaf"],
+        "node-t3":  ["dimmed"],
+        "node-n12": ["considering"],
+        "node-n123": ["dimmed"],
+        "edge-t1-n12": ["active"],
+        "edge-t2-n12": ["active"]
+      },
+      "textReplace": {
+        "node-x0":   "x0\nAAAAAAAA",
+        "node-x1":   "x1\nCCCCCCCC",
+        "node-x2":   "x2\nF0F0F0F0",
+        "node-x3":   "x3\nFF00FF00",
+        "node-t1":   "t1\n88888888",
+        "node-t2":   "t2\nAA00AA00",
+        "node-t3":   "t3\nF000F000",
+        "node-n12":  "n12\n55775577",
+        "node-n123": "n123\n—",
+        "node-f":    "f\n—"
       },
       "panes": [
         {
+          "type": "bitvec",
+          "title": "~sim(t1) = ~0x88888888 = 0x77777777",
+          "bits": "01110111011101110111011101110111"
+        },
+        {
+          "type": "bitvec",
+          "title": "~sim(t2) = ~0xAA00AA00 = 0x55FF55FF",
+          "bits": "01010101111111110101010111111111"
+        },
+        {
+          "type": "bitvec",
+          "title": "sim(n12) = 0x77777777 &amp; 0x55FF55FF = 0x55775577",
+          "bits": "01010101011101110101010101110111"
+        }
+      ]
+    },
+    {
+      "title": "Top: n123 then f — the 32-bit signature is the truth table",
+      "narrative": "<code>sim(n123) = sim(n12) AND ~sim(t3)</code>. The output edge is dashed, so f's sim is just <code>~sim(n123)</code>.<br><br>Notice <code>0xFA88FA88</code> is <code>0xFA88</code> repeated twice — exactly the 16-bit truth table of f, evaluated once over patterns 0..15 and again over 16..31. For ≤ 4 inputs, one 32-bit word literally <em>is</em> the truth table (with redundancy).",
+      "highlights": {
+        "node-x0": ["dimmed"],
+        "node-x1": ["dimmed"],
+        "node-x2": ["dimmed"],
+        "node-x3": ["dimmed"],
+        "node-t1": ["dimmed"],
+        "node-t2": ["dimmed"],
+        "node-t3":  ["cut-leaf"],
+        "node-n12": ["cut-leaf"],
+        "node-n123": ["considering"],
+        "node-f":    ["considering"],
+        "edge-n12-n123": ["active"],
+        "edge-t3-n123":  ["active"],
+        "edge-n123-f":   ["active"]
+      },
+      "textReplace": {
+        "node-x0":   "x0\nAAAAAAAA",
+        "node-x1":   "x1\nCCCCCCCC",
+        "node-x2":   "x2\nF0F0F0F0",
+        "node-x3":   "x3\nFF00FF00",
+        "node-t1":   "t1\n88888888",
+        "node-t2":   "t2\nAA00AA00",
+        "node-t3":   "t3\nF000F000",
+        "node-n12":  "n12\n55775577",
+        "node-n123": "n123\n05770577",
+        "node-f":    "f\nFA88FA88"
+      },
+      "panes": [
+        {
+          "type": "bitvec",
+          "title": "sim(n123) = 0x55775577 &amp; 0x0FFF0FFF = 0x05770577",
+          "bits": "00000101011101110000010101110111"
+        },
+        {
+          "type": "bitvec",
+          "title": "sim(f) = ~sim(n123) = 0xFA88FA88",
+          "bits": "11111010100010001111101010001000"
+        },
+        {
+          "type": "tt-grid",
+          "title": "TT(f) over 4 inputs — cell i shows f at pattern i",
+          "label": "0xFA88 (lower 16 bits of sim(f))",
+          "tt": "0001000101011111",
+          "order": "lsb-first"
+        }
+      ]
+    },
+    {
+      "title": "Equal sim() → equivalence candidates",
+      "narrative": "Resub bucket-hashes every node's signature (with polarity normalized so a value and its complement collide). When a target arrives, hash and look in the bucket — any match is a candidate equivalence. Either it really is equivalent (then ABC may merge or substitute), or it agrees on these 32 patterns but disagrees on some unrepresented pattern (a <em>spurious</em> hit, only possible when nLeavesMax ≥ 6 — for 4 inputs the 32 patterns exhaust the input space, so any match here is real).",
+      "highlights": {
+        "node-n123": ["considering"],
+        "node-f":    ["considering"],
+        "edge-n123-f": ["active"]
+      },
+      "textReplace": {
+        "node-x0":   "x0\nAAAAAAAA",
+        "node-x1":   "x1\nCCCCCCCC",
+        "node-x2":   "x2\nF0F0F0F0",
+        "node-x3":   "x3\nFF00FF00",
+        "node-t1":   "t1\n88888888",
+        "node-t2":   "t2\nAA00AA00",
+        "node-t3":   "t3\nF000F000",
+        "node-n12":  "n12\n55775577",
+        "node-n123": "n123\n05770577",
+        "node-f":    "f\nFA88FA88"
+      },
+      "panes": [
+        {
+          "type": "table",
+          "title": "Sim bucket — every node in this cone, with polarity twin",
+          "header": ["node", "sim", "~sim (polarity twin)"],
+          "rows": [
+            ["x0",   "<code>0xAAAAAAAA</code>", "<code>0x55555555</code>"],
+            ["x1",   "<code>0xCCCCCCCC</code>", "<code>0x33333333</code>"],
+            ["x2",   "<code>0xF0F0F0F0</code>", "<code>0x0F0F0F0F</code>"],
+            ["x3",   "<code>0xFF00FF00</code>", "<code>0x00FF00FF</code>"],
+            ["t1",   "<code>0x88888888</code>", "<code>0x77777777</code>"],
+            ["t2",   "<code>0xAA00AA00</code>", "<code>0x55FF55FF</code>"],
+            ["t3",   "<code>0xF000F000</code>", "<code>0x0FFF0FFF</code>"],
+            ["n12",  "<code>0x55775577</code>", "<code>0xAA88AA88</code>"],
+            ["n123", "<code>0x05770577</code>", "<code>0xFA88FA88</code>"],
+            ["f",    "<code>0xFA88FA88</code>", "<code>0x05770577</code>"]
+          ]
+        },
+        {
           "type": "text",
-          "body": "<strong>fraig's dynamic patterns.</strong> When SAT returns SAT (i.e., it disproves equivalence), the counterexample is appended to the simulation vectors of all nodes (<code>fraigSim.c</code>). The next round of bucket-hashing benefits from a discriminating pattern, so spurious hits are rare in practice."
+          "body": "Two rows match by polarity: <code>sim(n123) = ~sim(f)</code>. This isn't an independent discovery — it's exactly how f is built (the dashed output edge into f). The pair lands in the same bucket because the hash function strips polarity. The <em>useful</em> matches happen when a node from a <em>different</em> cone elsewhere in the network hashes here: that's the equivalence candidate resub then verifies."
+        },
+        {
+          "type": "text",
+          "body": "<strong>fraig's dynamic patterns.</strong> When SAT disproves an equivalence, the counterexample input vector is appended to every node's sim word (<code>fraigSim.c</code>). Each round of bucket-hashing benefits from a more discriminating pattern set, so spurious hits become rarer."
+        }
+      ]
+    },
+    {
+      "title": "Bigger cuts: more words",
+      "narrative": "For a k-input cut, 2^k input patterns are needed; that's <code>nWords = max(1, 2^k / 32)</code>. resub's default <code>nLeavesMax = 8</code> → 256 patterns → 8 words. dch uses 8 words by default for richer pattern coverage even on small cuts. Operations stay bitwise: <code>for (w=0; w&lt;nWords; w++) sim_z[w] = sim_p0[w] &amp; sim_p1[w];</code>",
+      "highlights": {},
+      "textReplace": {
+        "node-x0":   "x0\nAAAAAAAA",
+        "node-x1":   "x1\nCCCCCCCC",
+        "node-x2":   "x2\nF0F0F0F0",
+        "node-x3":   "x3\nFF00FF00",
+        "node-t1":   "t1\n88888888",
+        "node-t2":   "t2\nAA00AA00",
+        "node-t3":   "t3\nF000F000",
+        "node-n12":  "n12\n55775577",
+        "node-n123": "n123\n05770577",
+        "node-f":    "f\nFA88FA88"
+      },
+      "panes": [
+        {
+          "type": "table",
+          "title": "Words per support size",
+          "header": ["support", "patterns", "nWords (resub default cap)"],
+          "rows": [
+            ["≤ 5 inputs", "32",  "1"],
+            ["6 inputs",   "64",  "2"],
+            ["7 inputs",   "128", "4"],
+            ["8 inputs",   "256", "8"]
+          ]
         },
         {
           "type": "table",
@@ -103,26 +321,6 @@
             ["bucket hash",           "1 word hash"],
             ["false-positive check",  "SAT call (resub: cone re-eval)"],
             ["counterexample replay", "1 bit append, 1 word ext"]
-          ]
-        }
-      ]
-    },
-    {
-      "title": "Bigger cuts: more words",
-      "narrative": "For a k-input cut, 2^k input patterns are needed; that's <code>nWords = max(1, 2^k / 32)</code>. resub's default nLeavesMax=8 → 256 patterns → 8 words. dch uses 8 words by default for richer pattern coverage even on small cuts. Operations stay bitwise: <code>for (w=0; w&lt;nWords; w++) sim_z[w] = sim_p0[w] & sim_p1[w];</code>",
-      "highlights": {
-        "node-cut": ["considering"]
-      },
-      "panes": [
-        {
-          "type": "table",
-          "title": "Words per support size",
-          "header": ["support", "patterns", "nWords (resub default cap)"],
-          "rows": [
-            ["≤ 5 inputs", "32", "1"],
-            ["6 inputs",   "64", "2"],
-            ["7 inputs",   "128","4"],
-            ["8 inputs",   "256","8"]
           ]
         }
       ]
