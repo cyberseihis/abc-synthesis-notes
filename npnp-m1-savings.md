@@ -8,8 +8,12 @@ NPN brute-force results for n=3 m=1 and n=4 m=1, comparing AIG cost
 
 | n m | classes | ao < 2·aig | ao = 2·aig | ao > 2·aig | timeout |
 | --- | --- | --- | --- | --- | --- |
-| 3 1 | 14  | 0 | 14  | 0 | 0   |
-| 4 1 | 222 | 1 | 107 | 0 | 114 |
+| 3 1 | 14  | 0 | 14  | 0 | 0  |
+| 4 1 | 222 | 1 | 132 | 0 | 89 |
+
+(After a rerun of the originally-timed-out 114 entries with a 20 min
+per-function wall budget; 25 of them resolved as SAT-at-M=14 upper bounds,
+89 still timed out at M=14 within the larger budget.)
 
 For 3-input single-output functions the 2× cost ratio is hit **exactly**
 on every NPN class. No internal-cone sharing happens because there's only
@@ -103,9 +107,19 @@ class stands alone among the 222.
 
 Our `aoexact` answer for `012e` is **a SAT upper bound at M=13**, not a
 proven optimum. The original sweep timed out at M=12 (90 s/M wall) and
-landed SAT at M=13. A direct probe at M=12 with a 23-minute budget is
-running; if M=12 turns out to be SAT, the saving doubles to 2 gates
-(13 → 12 vs 2×aig=14). If M=12 is UNSAT, we have the proven optimum at 13.
+landed SAT at M=13. A direct probe at M=12 with a 23-minute budget also
+timed out, so the true minimum is somewhere in {12, 13} — saving is
+**≥ 1, ≤ 2 gates** vs. the 2× ceiling of 14.
+
+More broadly, most of the 4-input dual-rail SAT results landing at 14
+gates are also upper bounds rather than proven optima: the `-m` sweep
+walks M upward with a per-M timeout, and for these classes M=12 and
+M=13 often time out within the budget while M=14 happens to be SAT
+quickly. We can't distinguish "proven optimum at 14" from "could be 12
+or 13 but the SAT solver couldn't decide" without per-M wall data.
+
+Nevertheless: the 2× ceiling is intact, no class exceeds it, and only
+one class is clearly *below* it.
 
 ## Files
 
