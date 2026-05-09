@@ -1,0 +1,223 @@
+tt0	status	gates	wall_s	chain
+0000	sat	4	0.06	F = n1 ; FN = n3 ; n3 = b | n2 ; n2 = a | bN ; n1 = b & n0 ; n0 = a & bN
+0002	sat	6	0.12	F = n5 ; FN = n4 ; n5 = dN & n2 ; n4 = n0 | n3 ; n3 = aN | b ; n2 = cN & n1 ; n1 = a & bN ; n0 = c | d
+0006	sat	10	12.11	F = n9 ; FN = n7 ; n9 = n6 & n8 ; n8 = cN & n1 ; n7 = d | n5 ; n6 = dN & n4 ; n5 = c | n3 ; n4 = aN | bN ; n3 = n0 & n2 ; n2 = aN | b ; n1 = a | b ; n0 = a | bN
+000a	sat	4	0.05	F = n1 ; FN = n3 ; n3 = d | n2 ; n2 = aN | c ; n1 = cN & n0 ; n0 = a & dN
+000e	sat	6	0.12	F = n3 ; FN = n5 ; n5 = d | n4 ; n4 = c | n1 ; n3 = n0 & n2 ; n2 = a | b ; n1 = aN & bN ; n0 = cN & dN
+0016	sat	14	329.32	F = n10 ; FN = n13 ; n13 = d | n12 ; n12 = n9 & n11 ; n11 = n5 | n8 ; n10 = n4 & n7 ; n9 = bN | n6 ; n8 = a & c ; n7 = b | n6 ; n6 = a | c ; n5 = b | n1 ; n4 = n2 & n3 ; n3 = dN & n0 ; n2 = bN | n1 ; n1 = aN & cN ; n0 = aN | cN
+0018	sat	12	190.75	F = n11 ; FN = n10 ; n11 = n2 & n5 ; n10 = n6 | n9 ; n9 = d | n8 ; n8 = n4 & n7 ; n7 = aN | bN ; n6 = b & c ; n5 = n0 & n3 ; n4 = a | cN ; n3 = dN & n1 ; n2 = bN | cN ; n1 = aN | b ; n0 = a | c
+001a	sat	10	9.66	F = n6 ; FN = n9 ; n9 = d | n8 ; n8 = n4 & n7 ; n7 = cN | n5 ; n6 = dN & n3 ; n5 = a | b ; n4 = aN | c ; n3 = n1 & n2 ; n2 = a | n0 ; n1 = aN | cN ; n0 = bN & c
+001e	sat	10	7.83	F = n8 ; FN = n9 ; n9 = n4 | n6 ; n8 = dN & n7 ; n7 = n1 | n5 ; n6 = c & n2 ; n5 = cN & n2 ; n4 = d | n3 ; n3 = cN & n0 ; n2 = a | b ; n1 = c & n0 ; n0 = aN & bN
+002e	sat	8	0.46	F = n7 ; FN = n6 ; n7 = dN & n5 ; n6 = d | n4 ; n5 = n1 & n2 ; n4 = n0 | n3 ; n3 = b & c ; n2 = a | b ; n1 = bN | cN ; n0 = aN & bN
+003c	sat	8	0.67	F = n7 ; FN = n6 ; n7 = dN & n4 ; n6 = d | n5 ; n5 = n2 & n3 ; n4 = n0 & n1 ; n3 = b | cN ; n2 = bN | c ; n1 = b | c ; n0 = bN | cN
+003e	sat	10	16.40	F = n4 ; FN = n9 ; n9 = n6 | n8 ; n8 = bN & n7 ; n7 = aN & cN ; n6 = d | n5 ; n5 = b & c ; n4 = dN & n3 ; n3 = n0 | n2 ; n2 = bN & n1 ; n1 = a | c ; n0 = b & cN
+007e	sat	12	189.88	F = n11 ; FN = n7 ; n11 = n8 & n10 ; n10 = aN | n9 ; n9 = bN | cN ; n8 = dN & n5 ; n7 = d | n6 ; n6 = n2 & n4 ; n5 = b | n3 ; n4 = a | cN ; n3 = a | c ; n2 = n0 & n1 ; n1 = aN | b ; n0 = bN | c
+008e	sat	10	37.77	F = n9 ; FN = n8 ; n9 = dN & n7 ; n8 = n3 | n5 ; n7 = n1 & n6 ; n6 = b | n2 ; n5 = aN & n4 ; n4 = bN | c ; n3 = d | n0 ; n2 = a & cN ; n1 = a | cN ; n0 = bN & c
+0096	sat	14	325.89	F = n13 ; FN = n11 ; n13 = n6 & n12 ; n12 = aN | n9 ; n11 = n5 | n10 ; n10 = aN & n9 ; n9 = n7 & n8 ; n8 = bN | c ; n7 = b | cN ; n6 = dN & n3 ; n5 = d | n4 ; n4 = a & n2 ; n3 = a | n2 ; n2 = n0 | n1 ; n1 = bN & c ; n0 = b & cN
+009e	sat	14	325.71	F = n13 ; FN = n9 ; n13 = dN & n12 ; n12 = n10 | n11 ; n11 = aN & n1 ; n10 = n2 & n4 ; n9 = d | n8 ; n8 = n6 & n7 ; n7 = cN | n2 ; n6 = n3 & n5 ; n5 = aN | n1 ; n4 = cN | n0 ; n3 = bN | c ; n2 = a | b ; n1 = bN & c ; n0 = a & b
+00aa	sat	2	0.02	F = n1 ; FN = n0 ; n1 = a & dN ; n0 = aN | d
+00ae	sat	6	0.12	F = n4 ; FN = n5 ; n5 = d | n3 ; n4 = dN & n2 ; n3 = aN & n1 ; n2 = a | n0 ; n1 = bN | c ; n0 = b & cN
+00be	sat	10	15.23	F = n9 ; FN = n7 ; n9 = dN & n8 ; n8 = a | n6 ; n7 = d | n3 ; n6 = n4 & n5 ; n5 = b | c ; n4 = bN | cN ; n3 = n0 & n2 ; n2 = aN & n1 ; n1 = b | cN ; n0 = bN | c
+00ee	sat	4	0.05	F = n3 ; FN = n2 ; n3 = dN & n1 ; n2 = d | n0 ; n1 = a | b ; n0 = aN & bN
+00fe	sat	6	0.11	F = n5 ; FN = n4 ; n5 = dN & n2 ; n4 = d | n3 ; n3 = aN & n1 ; n2 = a | n0 ; n1 = bN & cN ; n0 = b | c
+0116	timeout		28800.11	
+0118	timeout		28800.09	
+011a	sat	14	328.32	F = n13 ; FN = n11 ; n13 = n7 | n12 ; n12 = n6 & n10 ; n11 = n2 | n9 ; n10 = cN | dN ; n9 = aN & n8 ; n8 = n3 | n5 ; n7 = a & n3 ; n6 = n0 & n1 ; n5 = b | n4 ; n4 = c & d ; n3 = cN & dN ; n2 = a & n0 ; n1 = aN & bN ; n0 = c | d
+011e	sat	14	312.71	F = n13 ; FN = n12 ; n13 = n6 & n11 ; n12 = n8 | n10 ; n11 = n5 | n9 ; n10 = n5 & n9 ; n9 = a | b ; n8 = n3 & n7 ; n7 = cN | d ; n6 = n1 & n4 ; n5 = c | d ; n4 = cN | n2 ; n3 = c | n2 ; n2 = dN & n0 ; n1 = dN | n0 ; n0 = aN & bN
+012a	sat	14	327.95	F = n8 ; FN = n13 ; n13 = n5 | n12 ; n12 = n10 & n11 ; n11 = d | n9 ; n10 = n3 | n6 ; n9 = b & c ; n8 = n4 & n7 ; n7 = n2 | n3 ; n6 = b | c ; n5 = aN & dN ; n4 = dN | n0 ; n3 = a & bN ; n2 = cN & n1 ; n1 = a | d ; n0 = aN & bN
+012c	ub	15	22763.57	F = n11 ; FN = n14 ; n14 = n5 | n13 ; n13 = n6 | n12 ; n12 = bN & n8 ; n11 = n7 & n10 ; n10 = n4 & n9 ; n9 = n2 | n8 ; n8 = cN & dN ; n7 = c | n1 ; n6 = c & n1 ; n5 = d & n3 ; n4 = d | n3 ; n3 = a | b ; n2 = bN & n0 ; n1 = aN | b ; n0 = cN | dN
+012e	sat	13	224.29	F = n12 ; FN = n11 ; n12 = n2 & n6 ; n11 = n9 | n10 ; n10 = n1 & n8 ; n9 = c & n3 ; n8 = a | n7 ; n7 = b | dN ; n6 = n4 | n5 ; n5 = cN & n3 ; n4 = a & bN ; n3 = b | d ; n2 = dN | n0 ; n1 = d | n0 ; n0 = aN & bN
+013c	sat	14	331.71	F = n12 ; FN = n13 ; n13 = n6 | n9 ; n12 = n7 | n11 ; n11 = bN & n10 ; n10 = n2 & n8 ; n9 = n1 | n5 ; n8 = dN | n3 ; n7 = b & n4 ; n6 = b & n2 ; n5 = bN & n4 ; n4 = cN & dN ; n3 = aN & cN ; n2 = c | d ; n1 = d & n0 ; n0 = a | c
+013e	sat	14	312.31	F = n12 ; FN = n13 ; n13 = n8 & n11 ; n12 = n9 & n10 ; n11 = dN | n5 ; n10 = n3 | n5 ; n9 = n2 | n7 ; n8 = n3 | n7 ; n7 = aN & n6 ; n6 = bN & cN ; n5 = c | n4 ; n4 = a | b ; n3 = d | n0 ; n2 = dN & n1 ; n1 = bN | cN ; n0 = b & c
+0168	timeout		28800.10	
+016a	timeout		28800.11	
+016e	ub	15	22954.35	F = n14 ; FN = n13 ; n14 = n10 & n12 ; n13 = n5 | n9 ; n12 = n4 | n11 ; n11 = cN & n8 ; n10 = dN | n3 ; n9 = n7 & n8 ; n8 = d | n6 ; n7 = c | n4 ; n6 = a & b ; n5 = dN & n3 ; n4 = n0 | n2 ; n3 = aN & bN ; n2 = b & n1 ; n1 = aN | d ; n0 = a & bN
+017e	timeout		28800.11	
+0180	sat	14	318.67	F = n11 ; FN = n13 ; n13 = n2 | n12 ; n12 = n4 & n6 ; n11 = n9 & n10 ; n10 = aN | n8 ; n9 = n3 | n7 ; n8 = b & dN ; n7 = d & n5 ; n6 = aN | cN ; n5 = bN & cN ; n4 = b | c ; n3 = a & c ; n2 = n0 | n1 ; n1 = bN & dN ; n0 = a & d
+0182	timeout		28800.11	
+0186	timeout		28800.02	
+0188	sat	12	149.25	F = n10 ; FN = n11 ; n11 = n0 | n7 ; n10 = n8 | n9 ; n9 = n3 & n6 ; n8 = b & n2 ; n7 = n1 | n5 ; n6 = bN & cN ; n5 = aN & n4 ; n4 = c | dN ; n3 = aN & d ; n2 = a & dN ; n1 = b & d ; n0 = a & bN
+018a	sat	12	138.14	F = n10 ; FN = n11 ; n11 = n3 | n6 ; n10 = n4 & n9 ; n9 = n7 & n8 ; n8 = aN | dN ; n7 = b | cN ; n6 = n0 | n5 ; n5 = a & d ; n4 = a | n2 ; n3 = aN & n1 ; n2 = bN & d ; n1 = b | dN ; n0 = bN & c
+018e	sat	14	339.94	F = n13 ; FN = n10 ; n13 = n6 & n12 ; n12 = n5 | n11 ; n11 = dN & n8 ; n10 = n7 | n9 ; n9 = d & n8 ; n8 = a | n1 ; n7 = n3 | n4 ; n6 = b | cN ; n5 = d & n0 ; n4 = dN & n0 ; n3 = c & n2 ; n2 = aN | bN ; n1 = b & cN ; n0 = aN & bN
+0196	timeout		28800.11	
+0198	ub	14	16579.33	F = n13 ; FN = n12 ; n13 = n8 & n11 ; n12 = n7 | n9 ; n11 = n4 | n10 ; n10 = d & n6 ; n9 = dN & n6 ; n8 = aN | b ; n7 = n1 | n5 ; n6 = bN & n3 ; n5 = d & n2 ; n4 = dN & n2 ; n3 = a | cN ; n2 = a | n0 ; n1 = aN & b ; n0 = bN & c
+019a	ub	15	22852.35	F = n13 ; FN = n14 ; n14 = n7 & n10 ; n13 = n9 & n12 ; n12 = dN | n11 ; n11 = bN & cN ; n10 = aN | n5 ; n9 = n2 | n8 ; n8 = aN & n5 ; n7 = n4 | n6 ; n6 = a | n1 ; n5 = d | n3 ; n4 = d & n3 ; n3 = bN & c ; n2 = a & n1 ; n1 = b | n0 ; n0 = cN & dN
+019e	timeout		28800.11	
+01a8	sat	12	161.59	F = n11 ; FN = n6 ; n11 = n8 & n10 ; n10 = d | n9 ; n9 = a & n3 ; n8 = dN | n7 ; n7 = aN & n0 ; n6 = n4 | n5 ; n5 = d & n3 ; n4 = n1 | n2 ; n3 = b | c ; n2 = aN & dN ; n1 = a & n0 ; n0 = bN & cN
+01aa	sat	10	8.17	F = n7 ; FN = n9 ; n9 = n6 | n8 ; n8 = aN & n4 ; n7 = n1 | n5 ; n6 = a & d ; n5 = bN & n3 ; n4 = b | n2 ; n3 = d & n0 ; n2 = c | dN ; n1 = a & dN ; n0 = aN & cN
+01ac	sat	14	327.49	F = n11 ; FN = n13 ; n13 = n6 | n12 ; n12 = n2 | n4 ; n11 = n9 & n10 ; n10 = n0 | n8 ; n9 = dN | n7 ; n8 = cN & n5 ; n7 = aN & bN ; n6 = cN & n1 ; n5 = b | d ; n4 = d & n3 ; n3 = a | b ; n2 = aN & c ; n1 = bN & dN ; n0 = a & c
+01ae	sat	12	146.89	F = n9 ; FN = n11 ; n11 = n6 | n10 ; n10 = d & n7 ; n9 = n5 | n8 ; n8 = dN & n7 ; n7 = a | n2 ; n6 = n0 | n3 ; n5 = d & n4 ; n4 = cN & n1 ; n3 = dN & n1 ; n2 = b & cN ; n1 = aN & bN ; n0 = aN & c
+01bc	timeout		28800.11	
+01be	ub	15	22403.39	F = n11 ; FN = n14 ; n14 = n8 | n13 ; n13 = aN & n12 ; n12 = n4 | n9 ; n11 = n7 | n10 ; n10 = dN & n6 ; n9 = dN & n3 ; n8 = d & n6 ; n7 = n2 & n3 ; n6 = n1 | n5 ; n5 = b & cN ; n4 = b & c ; n3 = bN & cN ; n2 = aN & d ; n1 = a | n0 ; n0 = bN & c
+01e8	timeout		28800.10	
+01ea	sat	14	332.18	F = n10 ; FN = n13 ; n13 = n11 | n12 ; n12 = n1 & n6 ; n11 = aN & n3 ; n10 = n8 & n9 ; n9 = dN | n5 ; n8 = n4 & n7 ; n7 = c | n2 ; n6 = d | n5 ; n5 = aN & cN ; n4 = d | n0 ; n3 = c & n2 ; n2 = a | bN ; n1 = dN | n0 ; n0 = a | b
+01ee	sat	10	7.11	F = n5 ; FN = n9 ; n9 = n7 | n8 ; n8 = d & n6 ; n7 = dN & n3 ; n6 = c | n0 ; n5 = n1 | n4 ; n4 = n2 & n3 ; n3 = aN & bN ; n2 = cN & d ; n1 = dN & n0 ; n0 = a | b
+01fe	sat	10	7.38	F = n8 ; FN = n9 ; n9 = n3 | n6 ; n8 = n5 | n7 ; n7 = d & n4 ; n6 = dN & n4 ; n5 = dN & n1 ; n4 = aN & n2 ; n3 = d & n1 ; n2 = bN & cN ; n1 = c | n0 ; n0 = a | b
+022e	sat	12	189.06	F = n5 ; FN = n11 ; n11 = n8 & n10 ; n10 = d | n9 ; n9 = bN | c ; n8 = n6 | n7 ; n7 = c & d ; n6 = aN | b ; n5 = n3 | n4 ; n4 = a & n2 ; n3 = dN & n0 ; n2 = bN & n1 ; n1 = cN | dN ; n0 = b & cN
+023e	sat	12	191.23	F = n10 ; FN = n11 ; n11 = n7 | n8 ; n10 = n4 & n9 ; n9 = dN | n5 ; n8 = b & c ; n7 = n2 | n6 ; n6 = aN & n5 ; n5 = bN & cN ; n4 = n1 & n3 ; n3 = bN | cN ; n2 = d & n0 ; n1 = a | n0 ; n0 = b | c
+0246	sat	10	19.21	F = n9 ; FN = n8 ; n9 = n5 | n7 ; n8 = n1 & n3 ; n7 = dN & n6 ; n6 = aN & b ; n5 = cN & n4 ; n4 = a & bN ; n3 = b | n2 ; n2 = aN | c ; n1 = d | n0 ; n0 = a | bN
+024e	sat	10	13.02	F = n8 ; FN = n9 ; n9 = n1 | n6 ; n8 = n5 & n7 ; n7 = n0 | n2 ; n6 = n3 & n4 ; n5 = bN | dN ; n4 = a | bN ; n3 = aN | c ; n2 = a & cN ; n1 = b & d ; n0 = aN & b
+0256	sat	10	13.40	F = n8 ; FN = n9 ; n9 = n3 | n4 ; n8 = n6 & n7 ; n7 = a | n0 ; n6 = n1 | n5 ; n5 = aN & dN ; n4 = a & n0 ; n3 = aN & n2 ; n2 = d | n1 ; n1 = bN & cN ; n0 = b | c
+025a	sat	12	193.51	F = n6 ; FN = n11 ; n11 = n7 | n10 ; n10 = n8 & n9 ; n9 = aN | n3 ; n8 = cN | d ; n7 = a & c ; n6 = n4 & n5 ; n5 = bN | dN ; n4 = n1 | n2 ; n3 = b & d ; n2 = a & cN ; n1 = c & n0 ; n0 = aN & dN
+025e	sat	12	190.66	F = n11 ; FN = n6 ; n11 = n7 | n10 ; n10 = n8 & n9 ; n9 = aN | cN ; n8 = dN & n4 ; n7 = a & n0 ; n6 = n1 | n5 ; n5 = n2 & n3 ; n4 = b | c ; n3 = aN | b ; n2 = d | n0 ; n1 = a & c ; n0 = bN & cN
+026e	sat	14	1013.52	F = n11 ; FN = n13 ; n13 = n9 | n12 ; n12 = b & d ; n11 = n4 | n10 ; n10 = n6 & n8 ; n9 = n5 | n7 ; n8 = a & bN ; n7 = n2 & n3 ; n6 = dN | n0 ; n5 = aN & bN ; n4 = dN & n1 ; n3 = a & c ; n2 = b | d ; n1 = b & n0 ; n0 = aN | cN
+027e	sat	14	1094.68	F = n13 ; FN = n7 ; n13 = n8 & n12 ; n12 = n10 & n11 ; n11 = a | n1 ; n10 = cN | n9 ; n9 = aN | bN ; n8 = dN | n5 ; n7 = n4 & n6 ; n6 = d | n5 ; n5 = n2 & n3 ; n4 = aN | n1 ; n3 = cN | n0 ; n2 = bN | c ; n1 = b | c ; n0 = a & b
+0296	timeout		28800.11	
+029e	timeout		28800.10	
+02ae	sat	10	15.89	F = n9 ; FN = n4 ; n9 = n7 & n8 ; n8 = a | n5 ; n7 = dN | n6 ; n6 = cN & n0 ; n5 = b & cN ; n4 = n1 | n3 ; n3 = d & n2 ; n2 = b | c ; n1 = aN & n0 ; n0 = bN | c
+02be	sat	12	193.93	F = n10 ; FN = n11 ; n11 = n4 | n6 ; n10 = n5 & n9 ; n9 = a | n8 ; n8 = n0 & n7 ; n7 = bN | cN ; n6 = aN & n3 ; n5 = dN | n1 ; n4 = d & n0 ; n3 = n1 | n2 ; n2 = b & c ; n1 = bN & cN ; n0 = b | c
+02ce	sat	8	0.38	F = n4 ; FN = n7 ; n7 = n0 & n6 ; n6 = c | n5 ; n5 = aN | b ; n4 = n1 | n3 ; n3 = bN & n2 ; n2 = a & cN ; n1 = b & dN ; n0 = bN | d
+02d6	sat	14	1040.46	F = n13 ; FN = n11 ; n13 = n9 & n12 ; n12 = n2 | n3 ; n11 = n6 | n10 ; n10 = b & n4 ; n9 = n4 | n8 ; n8 = b | n7 ; n7 = aN & c ; n6 = n0 & n5 ; n5 = d | n2 ; n4 = a & cN ; n3 = dN & n0 ; n2 = bN & n1 ; n1 = a | cN ; n0 = aN | c
+02de	sat	12	190.90	F = n11 ; FN = n9 ; n11 = n8 & n10 ; n10 = n2 & n4 ; n9 = n5 & n7 ; n8 = cN | n6 ; n7 = c | n6 ; n6 = aN | b ; n5 = d | n3 ; n4 = dN | n3 ; n3 = bN & n0 ; n2 = b | n1 ; n1 = a | c ; n0 = a | cN
+02ea	sat	10	15.56	F = n4 ; FN = n9 ; n9 = n6 | n8 ; n8 = aN & n7 ; n7 = bN | cN ; n6 = d & n5 ; n5 = b | c ; n4 = n2 & n3 ; n3 = dN | n0 ; n2 = a | n1 ; n1 = b & c ; n0 = bN & cN
+02ee	sat	8	0.34	F = n7 ; FN = n3 ; n7 = n5 & n6 ; n6 = a | b ; n5 = dN | n4 ; n4 = bN & cN ; n3 = n1 | n2 ; n2 = d & n0 ; n1 = aN & bN ; n0 = b | c
+02fe	sat	8	0.46	F = n6 ; FN = n7 ; n7 = n1 | n3 ; n6 = n4 | n5 ; n5 = dN & n2 ; n4 = a & n0 ; n3 = d & n2 ; n2 = b | c ; n1 = aN & n0 ; n0 = bN & cN
+033c	sat	12	191.58	F = n9 ; FN = n11 ; n11 = n4 & n10 ; n10 = dN | n6 ; n9 = n5 & n8 ; n8 = n1 | n7 ; n7 = dN & n6 ; n6 = b | c ; n5 = bN | cN ; n4 = n2 | n3 ; n3 = b & c ; n2 = d | n0 ; n1 = d & n0 ; n0 = bN & cN
+033e	sat	14	321.86	F = n13 ; FN = n11 ; n13 = n5 | n12 ; n12 = n3 & n6 ; n11 = n9 | n10 ; n10 = c & d ; n9 = n7 | n8 ; n8 = b & n6 ; n7 = aN & n2 ; n6 = c | d ; n5 = n1 & n4 ; n4 = a | b ; n3 = bN & n0 ; n2 = bN & n1 ; n1 = cN & dN ; n0 = cN | dN
+0356	sat	10	5.34	F = n8 ; FN = n9 ; n9 = n5 | n6 ; n8 = n4 & n7 ; n7 = n0 | n1 ; n6 = n0 & n1 ; n5 = n2 & n3 ; n4 = n2 | n3 ; n3 = a | d ; n2 = b | c ; n1 = bN & cN ; n0 = aN & dN
+0358	sat	14	357.59	F = n12 ; FN = n13 ; n13 = n6 | n10 ; n12 = n7 & n11 ; n11 = n0 | n1 ; n10 = n8 | n9 ; n9 = c & n4 ; n8 = n0 & n1 ; n7 = n3 & n5 ; n6 = dN & n2 ; n5 = c | n4 ; n4 = a | d ; n3 = dN | n2 ; n2 = bN & cN ; n1 = b & cN ; n0 = aN | d
+035a	sat	12	194.27	F = n11 ; FN = n8 ; n11 = n0 & n10 ; n10 = n6 & n9 ; n9 = c | n5 ; n8 = n4 & n7 ; n7 = cN | n5 ; n6 = cN | n3 ; n5 = a | d ; n4 = c | n3 ; n3 = n1 & n2 ; n2 = aN | d ; n1 = b | dN ; n0 = bN | dN
+035e	sat	14	325.76	F = n13 ; FN = n12 ; n13 = n4 | n7 ; n12 = n10 | n11 ; n11 = n8 | n9 ; n10 = d & n3 ; n9 = a & c ; n8 = n1 & n6 ; n7 = n0 & n5 ; n6 = bN & cN ; n5 = cN & n2 ; n4 = n1 & n3 ; n3 = b | c ; n2 = bN | dN ; n1 = aN & dN ; n0 = a | d
+0368	timeout		28800.11	
+036a	timeout		28800.11	
+036c	sat	14	1046.21	F = n13 ; FN = n11 ; n13 = n8 | n12 ; n12 = b & n3 ; n11 = n9 | n10 ; n10 = bN & n3 ; n9 = n5 | n6 ; n8 = bN & n7 ; n7 = n1 & n4 ; n6 = b & n1 ; n5 = c & d ; n4 = cN | dN ; n3 = dN & n2 ; n2 = aN | cN ; n1 = d | n0 ; n0 = a & c
+036e	ub	14	21833.45	F = n13 ; FN = n11 ; n13 = n4 | n12 ; n12 = n3 & n10 ; n11 = n8 | n9 ; n10 = n2 | n6 ; n9 = n1 & n7 ; n8 = b & d ; n7 = n2 | n5 ; n6 = cN & n1 ; n5 = c & n3 ; n4 = bN & n0 ; n3 = b | d ; n2 = aN & dN ; n1 = bN | n0 ; n0 = a & dN
+037c	sat	14	1106.64	F = n13 ; FN = n12 ; n13 = n9 & n11 ; n12 = n6 | n7 ; n11 = bN | n10 ; n10 = aN | cN ; n9 = n4 & n8 ; n8 = dN | n5 ; n7 = n1 & n3 ; n6 = dN & n5 ; n5 = bN & cN ; n4 = d | n1 ; n3 = d | n2 ; n2 = c & n0 ; n1 = b | c ; n0 = a & b
+037e	timeout		28800.11	
+0396	timeout		28800.10	
+039a	sat	14	339.44	F = n12 ; FN = n13 ; n13 = n5 & n11 ; n12 = n9 & n10 ; n11 = n3 | n7 ; n10 = n6 | n8 ; n9 = bN | dN ; n8 = n3 & n7 ; n7 = a | d ; n6 = n2 & n4 ; n5 = n2 | n4 ; n4 = aN & dN ; n3 = b | cN ; n2 = n0 & n1 ; n1 = b | c ; n0 = bN | d
+039e	timeout		28800.09	
+03ae	sat	12	190.57	F = n7 ; FN = n11 ; n11 = n9 & n10 ; n10 = d | n8 ; n9 = dN | n3 ; n8 = aN & n4 ; n7 = n2 | n6 ; n6 = dN & n5 ; n5 = a | n1 ; n4 = bN | c ; n3 = b | c ; n2 = bN & n0 ; n1 = b & cN ; n0 = cN & d
+03be	sat	14	333.83	F = n12 ; FN = n13 ; n13 = n7 | n9 ; n12 = n10 & n11 ; n11 = n5 | n8 ; n10 = dN | n3 ; n9 = d & n1 ; n8 = n1 & n6 ; n7 = n0 & n4 ; n6 = bN | cN ; n5 = a | d ; n4 = n2 | n3 ; n3 = bN & cN ; n2 = b & c ; n1 = b | c ; n0 = aN & dN
+03c0	sat	10	11.26	F = n9 ; FN = n4 ; n9 = n6 | n8 ; n8 = bN & n7 ; n7 = cN & d ; n6 = dN & n5 ; n5 = b & c ; n4 = n0 | n3 ; n3 = n1 & n2 ; n2 = c | dN ; n1 = bN | cN ; n0 = b & d
+03c2	sat	12	190.83	F = n7 ; FN = n11 ; n11 = n9 | n10 ; n10 = b & n8 ; n9 = bN & n5 ; n8 = cN | d ; n7 = n4 & n6 ; n6 = b | cN ; n5 = c | n2 ; n4 = n1 | n3 ; n3 = bN & n0 ; n2 = aN & dN ; n1 = c & dN ; n0 = a | d
+03c6	sat	12	188.38	F = n6 ; FN = n11 ; n11 = n9 & n10 ; n10 = n3 | n8 ; n9 = d | n7 ; n8 = b | c ; n7 = bN | n1 ; n6 = n4 & n5 ; n5 = b | n1 ; n4 = bN | n3 ; n3 = dN & n2 ; n2 = aN | c ; n1 = cN & n0 ; n0 = a | d
+03ca	sat	12	188.49	F = n9 ; FN = n11 ; n11 = n8 | n10 ; n10 = dN & n3 ; n9 = n4 & n7 ; n8 = n0 | n5 ; n7 = n1 | n6 ; n6 = b & dN ; n5 = bN & c ; n4 = d | n2 ; n3 = aN & cN ; n2 = a | c ; n1 = bN & cN ; n0 = b & d
+03cc	sat	8	0.32	F = n7 ; FN = n5 ; n7 = n3 & n6 ; n6 = b | d ; n5 = n2 | n4 ; n4 = d & n1 ; n3 = dN | n0 ; n2 = bN & dN ; n1 = b | c ; n0 = bN & cN
+03ce	sat	10	11.83	F = n8 ; FN = n9 ; n9 = n0 | n3 ; n8 = n6 | n7 ; n7 = b & dN ; n6 = n4 & n5 ; n5 = a | d ; n4 = bN & cN ; n3 = bN & n2 ; n2 = c | n1 ; n1 = aN & dN ; n0 = b & d
+03d4	sat	14	1082.82	F = n12 ; FN = n13 ; n13 = n2 | n9 ; n12 = n10 | n11 ; n11 = d & n1 ; n10 = dN & n8 ; n9 = dN & n7 ; n8 = n4 | n6 ; n7 = n3 & n5 ; n6 = b & c ; n5 = a | n1 ; n4 = aN & n0 ; n3 = bN | cN ; n2 = d & n0 ; n1 = bN & cN ; n0 = b | c
+03d6	ub	14	18295.37	F = n13 ; FN = n11 ; n13 = n5 & n12 ; n12 = n2 | n9 ; n11 = n8 & n10 ; n10 = n4 | n9 ; n9 = d | n7 ; n8 = n2 | n3 ; n7 = a & n6 ; n6 = bN | cN ; n5 = n3 | n4 ; n4 = bN & cN ; n3 = dN & n1 ; n2 = b | c ; n1 = aN | n0 ; n0 = b & c
+03d8	sat	14	1064.55	F = n7 ; FN = n13 ; n13 = n10 & n12 ; n12 = c | n11 ; n11 = b | dN ; n10 = n8 | n9 ; n9 = a & bN ; n8 = d | n5 ; n7 = n3 | n6 ; n6 = d & n4 ; n5 = aN & cN ; n4 = bN & cN ; n3 = n0 & n2 ; n2 = dN & n1 ; n1 = aN | b ; n0 = a | c
+03da	sat	14	1011.65	F = n11 ; FN = n13 ; n13 = n4 | n12 ; n12 = dN & n7 ; n11 = n8 | n10 ; n10 = dN & n9 ; n9 = n5 & n6 ; n8 = bN & n2 ; n7 = aN & cN ; n6 = aN | b ; n5 = a | c ; n4 = n1 & n3 ; n3 = b | c ; n2 = cN & n1 ; n1 = d | n0 ; n0 = a & bN
+03dc	sat	12	188.93	F = n11 ; FN = n8 ; n11 = n9 | n10 ; n10 = cN & n5 ; n9 = dN & n2 ; n8 = n3 | n7 ; n7 = bN & n6 ; n6 = n0 | n4 ; n5 = bN & d ; n4 = cN & dN ; n3 = d & n2 ; n2 = b | n1 ; n1 = aN & c ; n0 = a & c
+03de	sat	12	146.47	F = n9 ; FN = n11 ; n11 = n7 | n10 ; n10 = n5 & n6 ; n9 = n4 & n8 ; n8 = n5 | n6 ; n7 = n0 & n3 ; n6 = b | c ; n5 = d | n1 ; n4 = n0 | n3 ; n3 = dN & n2 ; n2 = aN | b ; n1 = a & bN ; n0 = bN & cN
+03ea	sat	12	192.58	F = n11 ; FN = n5 ; n11 = n8 | n10 ; n10 = dN & n9 ; n9 = a | n6 ; n8 = d & n7 ; n7 = bN & cN ; n6 = b & c ; n5 = n3 & n4 ; n4 = b | n2 ; n3 = d | n1 ; n2 = c | dN ; n1 = aN & n0 ; n0 = bN | cN
+03ee	sat	10	12.72	F = n9 ; FN = n6 ; n9 = n4 | n8 ; n8 = bN & n7 ; n7 = cN & d ; n6 = n2 | n5 ; n5 = aN & n1 ; n4 = dN & n3 ; n3 = a | b ; n2 = d & n0 ; n1 = bN & dN ; n0 = b | c
+03fc	sat	8	0.30	F = n7 ; FN = n5 ; n7 = n1 & n6 ; n6 = dN | n2 ; n5 = n3 & n4 ; n4 = d | n2 ; n3 = dN | n0 ; n2 = bN & cN ; n1 = d | n0 ; n0 = b | c
+0660	sat	14	310.51	F = n13 ; FN = n8 ; n13 = n10 & n12 ; n12 = n9 | n11 ; n11 = a & bN ; n10 = n5 | n6 ; n9 = aN & b ; n8 = n2 | n7 ; n7 = n3 | n4 ; n6 = cN & d ; n5 = c & dN ; n4 = n0 | n1 ; n3 = c & d ; n2 = aN & bN ; n1 = cN & dN ; n0 = a & b
+0662	sat	14	322.30	F = n8 ; FN = n13 ; n13 = n11 | n12 ; n12 = c & d ; n11 = n1 & n10 ; n10 = bN | n9 ; n9 = a | n7 ; n8 = n4 & n6 ; n7 = cN & dN ; n6 = a | n5 ; n5 = b & n0 ; n4 = n2 & n3 ; n3 = aN | bN ; n2 = cN | dN ; n1 = aN | b ; n0 = c | d
+0666	sat	10	10.88	F = n6 ; FN = n9 ; n9 = n4 | n8 ; n8 = n5 & n7 ; n7 = a | bN ; n6 = n2 & n3 ; n5 = aN | b ; n4 = c & d ; n3 = a | b ; n2 = n0 & n1 ; n1 = cN | dN ; n0 = aN | bN
+0668	timeout		28800.20	
+066a	sat	14	1002.57	F = n12 ; FN = n13 ; n13 = n4 | n11 ; n12 = n1 & n9 ; n11 = n8 | n10 ; n10 = a & n3 ; n9 = n5 & n7 ; n8 = aN & n6 ; n7 = aN | n6 ; n6 = bN | n0 ; n5 = a | n3 ; n4 = c & d ; n3 = b & n2 ; n2 = c | d ; n1 = cN | dN ; n0 = cN & dN
+066e	sat	14	1042.25	F = n12 ; FN = n13 ; n13 = n5 | n9 ; n12 = n10 & n11 ; n11 = n4 | n8 ; n10 = cN | dN ; n9 = n6 | n7 ; n8 = b & n3 ; n7 = aN & bN ; n6 = c & d ; n5 = n0 & n1 ; n4 = a & bN ; n3 = aN | n2 ; n2 = cN & dN ; n1 = c | d ; n0 = a & b
+0672	sat	14	340.28	F = n12 ; FN = n13 ; n13 = n9 | n11 ; n12 = n7 & n8 ; n11 = n3 & n10 ; n10 = a | n6 ; n9 = c & d ; n8 = c | n5 ; n7 = n1 & n4 ; n6 = cN & n0 ; n5 = a | n2 ; n4 = aN | bN ; n3 = aN | b ; n2 = b & d ; n1 = cN | dN ; n0 = bN | dN
+0676	sat	12	188.86	F = n10 ; FN = n11 ; n11 = n5 | n7 ; n10 = n2 & n9 ; n9 = n0 | n8 ; n8 = aN & n3 ; n7 = cN & n6 ; n6 = aN & bN ; n5 = n1 | n4 ; n4 = c & d ; n3 = b | c ; n2 = cN | dN ; n1 = a & b ; n0 = a & bN
+0678	timeout		28800.10	
+067a	timeout		28800.25	
+067e	timeout		28800.27	
+0690	timeout		28800.26	
+0692	timeout		28800.29	
+0696	sat	14	332.91	F = n11 ; FN = n13 ; n13 = n10 | n12 ; n12 = n2 & n8 ; n11 = n5 & n9 ; n10 = c & n7 ; n9 = n4 | n7 ; n8 = cN | d ; n7 = n3 | n6 ; n6 = aN & b ; n5 = cN | n2 ; n4 = c & dN ; n3 = a & bN ; n2 = n0 | n1 ; n1 = aN & bN ; n0 = a & b
+069a	timeout		28800.21	
+069e	ub	15	23125.07	F = n12 ; FN = n14 ; n14 = n10 | n13 ; n13 = n4 & n6 ; n12 = n9 & n11 ; n11 = c | n4 ; n10 = n3 & n8 ; n9 = n5 | n7 ; n8 = d | n7 ; n7 = cN & n2 ; n6 = c & n2 ; n5 = dN & n3 ; n4 = a | b ; n3 = n0 | n1 ; n2 = aN | bN ; n1 = a & b ; n0 = aN & bN
+06b0	timeout		28800.28	
+06b2	timeout		28800.25	
+06b4	timeout		28800.25	
+06b6	sat	14	1043.66	F = n12 ; FN = n13 ; n13 = n6 & n11 ; n12 = n4 | n10 ; n11 = c | n8 ; n10 = n7 & n9 ; n9 = c & dN ; n8 = n2 & n7 ; n7 = a | bN ; n6 = cN | n5 ; n5 = d | n1 ; n4 = cN & n3 ; n3 = n0 | n1 ; n2 = aN | b ; n1 = aN & b ; n0 = a & bN
+06b8	timeout		28800.27	
+06ba	timeout		28800.28	
+06bc	timeout		28800.25	
+06be	sat	14	1025.41	F = n13 ; FN = n8 ; n13 = n2 | n12 ; n12 = n10 & n11 ; n11 = dN | n5 ; n10 = a | n9 ; n9 = bN & n3 ; n8 = n6 | n7 ; n7 = n3 & n4 ; n6 = aN & n5 ; n5 = bN & cN ; n4 = d | n0 ; n3 = c | n1 ; n2 = cN & n0 ; n1 = a & b ; n0 = aN & b
+06ea	sat	14	332.22	F = n7 ; FN = n13 ; n13 = n11 | n12 ; n12 = n9 & n10 ; n11 = c & d ; n10 = bN | n8 ; n9 = aN | n1 ; n8 = cN & n4 ; n7 = n3 & n6 ; n6 = dN | n5 ; n5 = cN & n2 ; n4 = a | dN ; n3 = a | n1 ; n2 = aN | bN ; n1 = b & n0 ; n0 = c | d
+06ee	sat	10	13.18	F = n7 ; FN = n9 ; n9 = n1 | n8 ; n8 = d & n5 ; n7 = n0 & n6 ; n6 = dN | n3 ; n5 = c | n4 ; n4 = a & b ; n3 = cN & n2 ; n2 = aN | bN ; n1 = aN & bN ; n0 = a | b
+06f0	sat	14	320.17	F = n12 ; FN = n13 ; n13 = n0 & n10 ; n12 = n9 & n11 ; n11 = dN | n8 ; n10 = c | n5 ; n9 = c | d ; n8 = cN & n7 ; n7 = n2 | n6 ; n6 = a & bN ; n5 = dN | n4 ; n4 = n1 & n3 ; n3 = a | bN ; n2 = aN & b ; n1 = aN | b ; n0 = cN | d
+06f2	sat	14	327.54	F = n8 ; FN = n13 ; n13 = n9 | n12 ; n12 = n2 & n11 ; n11 = bN | n10 ; n10 = a | dN ; n9 = c & d ; n8 = n0 & n7 ; n7 = c | n6 ; n6 = n4 & n5 ; n5 = a | n3 ; n4 = aN | bN ; n3 = b & d ; n2 = cN & n1 ; n1 = aN | b ; n0 = cN | dN
+06f6	sat	12	190.54	F = n11 ; FN = n10 ; n11 = n0 & n4 ; n10 = n6 | n9 ; n9 = cN & n8 ; n8 = n5 | n7 ; n7 = aN & bN ; n6 = c & d ; n5 = a & b ; n4 = n1 | n3 ; n3 = c | n2 ; n2 = aN & b ; n1 = a & bN ; n0 = cN | dN
+06f8	sat	14	1101.50	F = n11 ; FN = n13 ; n13 = n10 & n12 ; n12 = dN | n9 ; n11 = n6 & n8 ; n10 = d | n1 ; n9 = n5 | n7 ; n8 = d | n5 ; n7 = aN & bN ; n6 = dN | n4 ; n5 = c | n3 ; n4 = n1 & n2 ; n3 = a & b ; n2 = a | b ; n1 = cN & n0 ; n0 = aN | bN
+0776	sat	14	323.23	F = n10 ; FN = n13 ; n13 = n11 | n12 ; n12 = a & b ; n11 = n3 & n7 ; n10 = n6 & n9 ; n9 = c | n8 ; n8 = b | n5 ; n7 = d | n2 ; n6 = n0 & n4 ; n5 = a | d ; n4 = cN | dN ; n3 = c | dN ; n2 = bN & n1 ; n1 = aN & cN ; n0 = aN | bN
+0778	sat	14	322.39	F = n12 ; FN = n13 ; n13 = n9 | n11 ; n12 = n8 & n10 ; n11 = c & d ; n10 = n2 | n7 ; n9 = n4 | n6 ; n8 = cN | n5 ; n7 = dN & n3 ; n6 = cN & n5 ; n5 = dN & n0 ; n4 = n1 & n3 ; n3 = a & b ; n2 = n0 & n1 ; n1 = c | d ; n0 = aN | bN
+077a	sat	14	1042.68	F = n7 ; FN = n13 ; n13 = n11 | n12 ; n12 = n9 & n10 ; n11 = c & d ; n10 = aN | n8 ; n9 = a | n0 ; n8 = b & n2 ; n7 = n3 & n6 ; n6 = n4 | n5 ; n5 = a & n0 ; n4 = n1 & n2 ; n3 = cN | dN ; n2 = c | d ; n1 = aN | bN ; n0 = cN & dN
+077e	timeout		28800.24	
+0796	timeout		28800.28	
+079e	timeout		28800.27	
+07ae	sat	12	190.21	F = n10 ; FN = n11 ; n11 = n1 & n7 ; n10 = n8 | n9 ; n9 = n4 & n6 ; n8 = a & dN ; n7 = c | n3 ; n6 = cN & n5 ; n5 = aN | bN ; n4 = b | d ; n3 = n0 & n2 ; n2 = a | bN ; n1 = aN | d ; n0 = b | dN
+07b0	sat	14	1018.67	F = n12 ; FN = n13 ; n13 = n5 & n9 ; n12 = n10 | n11 ; n11 = n3 & n7 ; n10 = n0 & n8 ; n9 = d | n6 ; n8 = cN & d ; n7 = a | bN ; n6 = cN | n2 ; n5 = n1 | n4 ; n4 = c | dN ; n3 = c & dN ; n2 = aN & b ; n1 = a & b ; n0 = aN | bN
+07b2	ub	15	28053.62	F = n14 ; FN = n12 ; n14 = n9 | n13 ; n13 = n4 | n7 ; n12 = n1 | n11 ; n11 = n8 & n10 ; n10 = b | n0 ; n9 = bN & n6 ; n8 = n2 | n6 ; n7 = n3 & n5 ; n6 = a & cN ; n5 = c & dN ; n4 = d & n0 ; n3 = a | bN ; n2 = aN & dN ; n1 = c & d ; n0 = aN & cN
+07b4	sat	14	350.84	F = n13 ; FN = n12 ; n13 = n10 | n11 ; n12 = n4 & n6 ; n11 = n1 & n7 ; n10 = cN & n9 ; n9 = n3 | n8 ; n8 = bN & d ; n7 = c & dN ; n6 = c | n5 ; n5 = n0 & n1 ; n4 = n2 | n3 ; n3 = aN & b ; n2 = cN | d ; n1 = a | bN ; n0 = b | dN
+07b6	timeout		28800.26	
+07ba	sat	14	355.58	F = n13 ; FN = n12 ; n13 = n6 & n10 ; n12 = n9 & n11 ; n11 = d | n8 ; n10 = dN | n4 ; n9 = n1 | n5 ; n8 = aN & n7 ; n7 = b | cN ; n6 = a | n2 ; n5 = a & b ; n4 = cN & n3 ; n3 = aN | bN ; n2 = d | n0 ; n1 = c | dN ; n0 = bN & c
+07bc	ub	14	18160.43	F = n13 ; FN = n12 ; n13 = n4 & n11 ; n12 = n6 | n10 ; n11 = n7 | n9 ; n10 = n7 & n9 ; n9 = cN & n8 ; n8 = bN | n2 ; n7 = dN & n5 ; n6 = n1 & n3 ; n5 = a | bN ; n4 = n1 | n3 ; n3 = d | n2 ; n2 = aN & b ; n1 = c | n0 ; n0 = a & b
+07e0	sat	14	345.52	F = n13 ; FN = n7 ; n13 = n11 & n12 ; n12 = n8 | n10 ; n11 = c | d ; n10 = cN & n9 ; n9 = aN | bN ; n8 = dN & n6 ; n7 = n3 & n5 ; n6 = a | b ; n5 = n0 | n4 ; n4 = aN & bN ; n3 = n1 | n2 ; n2 = a & b ; n1 = c | dN ; n0 = cN | d
+07e2	sat	14	1016.67	F = n13 ; FN = n8 ; n13 = n11 & n12 ; n12 = n3 | n10 ; n11 = cN | dN ; n10 = n0 | n9 ; n9 = a & bN ; n8 = n6 | n7 ; n7 = c & d ; n6 = n2 & n5 ; n5 = n1 | n4 ; n4 = aN & bN ; n3 = aN & d ; n2 = a | dN ; n1 = b & cN ; n0 = b & c
+07e6	sat	14	1020.62	F = n13 ; FN = n6 ; n13 = n9 & n12 ; n12 = n7 & n11 ; n11 = c | n10 ; n10 = aN | bN ; n9 = d | n8 ; n8 = a | b ; n7 = cN | dN ; n6 = n4 | n5 ; n5 = c & d ; n4 = n2 & n3 ; n3 = n0 | n1 ; n2 = aN | b ; n1 = a & cN ; n0 = bN & dN
+07e8	sat	14	1079.14	F = n13 ; FN = n11 ; n13 = n6 & n12 ; n12 = d | n8 ; n11 = n5 | n10 ; n10 = n8 & n9 ; n9 = d | n7 ; n8 = c | n4 ; n7 = aN & bN ; n6 = n1 | n3 ; n5 = dN & n3 ; n4 = a & b ; n3 = cN & n2 ; n2 = aN | bN ; n1 = dN & n0 ; n0 = a | b
+07ea	sat	14	1106.59	F = n13 ; FN = n7 ; n13 = n10 | n12 ; n12 = dN & n11 ; n11 = a | n6 ; n10 = n8 & n9 ; n9 = aN | bN ; n8 = cN & d ; n7 = n3 | n5 ; n6 = b & n4 ; n5 = d & n4 ; n4 = c | n2 ; n3 = n0 & n1 ; n2 = a & b ; n1 = aN & dN ; n0 = bN | cN
+07f0	sat	10	13.12	F = n8 ; FN = n9 ; n9 = n2 & n6 ; n8 = n3 | n7 ; n7 = n4 & n5 ; n6 = cN | d ; n5 = aN | bN ; n4 = cN & d ; n3 = c & dN ; n2 = n0 | n1 ; n1 = a & b ; n0 = c | dN
+07f2	sat	12	189.49	F = n10 ; FN = n11 ; n11 = n7 | n9 ; n10 = n6 | n8 ; n9 = dN & n5 ; n8 = d & n5 ; n7 = n1 | n2 ; n6 = n3 | n4 ; n5 = aN & cN ; n4 = bN & n0 ; n3 = c & dN ; n2 = b & n0 ; n1 = c & d ; n0 = a & cN
+07f8	sat	10	8.16	F = n8 ; FN = n9 ; n9 = n4 & n6 ; n8 = n2 & n7 ; n7 = dN | n5 ; n6 = d | n5 ; n5 = cN & n3 ; n4 = dN | n1 ; n3 = aN | bN ; n2 = d | n1 ; n1 = c | n0 ; n0 = a & b
+088e	ub	14	22003.68	F = n10 ; FN = n13 ; n13 = n11 | n12 ; n12 = n1 & n7 ; n11 = n0 & n6 ; n10 = n8 | n9 ; n9 = cN & n5 ; n8 = dN & n2 ; n7 = aN | c ; n6 = aN | bN ; n5 = n3 & n4 ; n4 = a | b ; n3 = dN | n2 ; n2 = a & b ; n1 = bN | d ; n0 = c | d
+089e	timeout		28800.29	
+08ae	sat	10	19.30	F = n8 ; FN = n9 ; n9 = n2 | n5 ; n8 = n6 & n7 ; n7 = a | dN ; n6 = n0 | n3 ; n5 = d & n4 ; n4 = aN | n1 ; n3 = b & cN ; n2 = aN & n1 ; n1 = bN | c ; n0 = a & dN
+08be	sat	14	1094.89	F = n13 ; FN = n12 ; n13 = n9 | n10 ; n12 = n8 & n11 ; n11 = d | n4 ; n10 = dN & n7 ; n9 = b & n6 ; n8 = aN | n0 ; n7 = a | n1 ; n6 = cN & n5 ; n5 = a | dN ; n4 = n2 & n3 ; n3 = b | cN ; n2 = aN & n0 ; n1 = bN & c ; n0 = bN | c
+08ee	sat	10	17.65	F = n6 ; FN = n9 ; n9 = n2 | n8 ; n8 = d & n7 ; n7 = c | n0 ; n6 = n4 | n5 ; n5 = b & n3 ; n4 = dN & n1 ; n3 = a & cN ; n2 = aN & bN ; n1 = a | b ; n0 = aN | bN
+08fe	sat	12	186.51	F = n10 ; FN = n11 ; n11 = n8 & n9 ; n10 = n5 | n7 ; n9 = d | n4 ; n8 = n0 | n6 ; n7 = b & n3 ; n6 = bN | c ; n5 = dN & n2 ; n4 = aN & cN ; n3 = cN & n1 ; n2 = a | c ; n1 = a | dN ; n0 = aN & d
+0996	timeout		28800.25	
+099e	timeout		28800.27	
+09ae	sat	14	354.84	F = n13 ; FN = n8 ; n13 = n9 | n12 ; n12 = n7 & n11 ; n11 = cN & n10 ; n10 = b | n1 ; n9 = a & dN ; n8 = n5 & n6 ; n7 = bN | n0 ; n6 = c | n4 ; n5 = aN | d ; n4 = n2 & n3 ; n3 = bN | n1 ; n2 = b | n0 ; n1 = aN & d ; n0 = a | dN
+09b6	timeout		28800.27	
+09be	timeout		28800.20	
+09f6	sat	14	314.55	F = n13 ; FN = n12 ; n13 = n8 & n11 ; n12 = n4 & n10 ; n11 = d | n9 ; n10 = dN | n9 ; n9 = c | n7 ; n8 = dN | n3 ; n7 = n5 & n6 ; n6 = a | b ; n5 = aN | bN ; n4 = d | n3 ; n3 = n1 & n2 ; n2 = cN & n0 ; n1 = a | bN ; n0 = aN | b
+0abe	sat	14	1034.80	F = n9 ; FN = n13 ; n13 = n7 | n12 ; n12 = n10 & n11 ; n11 = aN | c ; n10 = d | n4 ; n9 = n6 & n8 ; n8 = n1 | n5 ; n7 = aN & n3 ; n6 = cN | n2 ; n5 = a | c ; n4 = bN & cN ; n3 = b & c ; n2 = dN & n0 ; n1 = b & dN ; n0 = a | bN
+0ace	sat	6	0.09	F = n3 ; FN = n5 ; n5 = n0 & n4 ; n4 = aN | c ; n3 = n1 | n2 ; n2 = a & cN ; n1 = b & dN ; n0 = bN | d
+0aee	sat	8	0.48	F = n6 ; FN = n7 ; n7 = n4 & n5 ; n6 = n0 & n3 ; n5 = aN | c ; n4 = d | n1 ; n3 = dN | n2 ; n2 = a & cN ; n1 = aN & bN ; n0 = a | b
+0afa	sat	6	0.09	F = n4 ; FN = n5 ; n5 = n1 | n2 ; n4 = n0 | n3 ; n3 = c & dN ; n2 = c & d ; n1 = aN & cN ; n0 = a & cN
+0bb6	timeout		28800.27	
+0bd6	ub	14	16003.99	F = n11 ; FN = n13 ; n13 = n7 & n12 ; n12 = n6 | n8 ; n11 = n9 & n10 ; n10 = n2 | n6 ; n9 = n5 | n8 ; n8 = d | n4 ; n7 = n2 | n5 ; n6 = cN & n3 ; n5 = c | n0 ; n4 = a & bN ; n3 = a | bN ; n2 = dN & n1 ; n1 = aN | b ; n0 = aN & b
+0bf2	sat	14	1124.74	F = n13 ; FN = n8 ; n13 = n11 & n12 ; n12 = c | n10 ; n11 = cN | dN ; n10 = n5 & n9 ; n9 = bN | d ; n8 = n0 | n7 ; n7 = cN & n6 ; n6 = n3 | n4 ; n5 = a | n1 ; n4 = aN & b ; n3 = dN & n2 ; n2 = aN | b ; n1 = bN & d ; n0 = c & d
+0ff0	sat	6	0.09	F = n2 ; FN = n5 ; n5 = n3 & n4 ; n4 = cN | d ; n3 = c | dN ; n2 = n0 & n1 ; n1 = cN | dN ; n0 = c | d
+1668	timeout		28800.26	
+166a	timeout		28800.25	
+166e	timeout		28800.28	
+167e	timeout		28800.12	
+1686	timeout		28800.27	
+168e	timeout		28800.28	
+1696	ub	15	24717.59	F = n14 ; FN = n13 ; n14 = n8 & n11 ; n13 = n9 | n12 ; n12 = a & n4 ; n11 = n7 | n10 ; n10 = aN & n4 ; n9 = aN & n6 ; n8 = dN | n0 ; n7 = a & n6 ; n6 = n1 & n5 ; n5 = bN | c ; n4 = n2 & n3 ; n3 = d | n0 ; n2 = b | c ; n1 = b | cN ; n0 = bN | cN
+1698	timeout		28800.27	
+169a	ub	15	22568.14	F = n12 ; FN = n14 ; n14 = n10 | n13 ; n13 = a & n9 ; n12 = n4 | n11 ; n11 = aN & n9 ; n10 = n6 | n8 ; n9 = n3 | n7 ; n8 = aN & n2 ; n7 = cN & n5 ; n6 = c & n5 ; n5 = b & d ; n4 = a & n2 ; n3 = bN & c ; n2 = n0 | n1 ; n1 = bN & cN ; n0 = b & dN
+169e	ub	15	25031.33	F = n11 ; FN = n14 ; n14 = n12 | n13 ; n13 = n1 | n6 ; n12 = cN & n7 ; n11 = n8 | n10 ; n10 = n3 | n9 ; n9 = cN & n5 ; n8 = c & n7 ; n7 = aN & bN ; n6 = c & n5 ; n5 = n2 | n4 ; n4 = a & bN ; n3 = dN & n0 ; n2 = aN & b ; n1 = d & n0 ; n0 = a & b
+16ac	timeout		28800.26	
+16bc	timeout		28800.29	
+177e	timeout		28800.20	
+178e	ub	15	24786.82	F = n14 ; FN = n12 ; n14 = n7 | n13 ; n13 = n3 & n9 ; n12 = n5 | n11 ; n11 = n6 & n10 ; n10 = d | n8 ; n9 = dN | n8 ; n8 = aN & bN ; n7 = cN & n4 ; n6 = dN | n2 ; n5 = c & n4 ; n4 = n0 | n1 ; n3 = d | n2 ; n2 = a & b ; n1 = a & bN ; n0 = aN & b
+1796	timeout		28800.28	
+1798	timeout		28800.26	
+179a	timeout		28800.20	
+17ac	timeout		28800.20	
+17e8	sat	14	1076.80	F = n13 ; FN = n11 ; n13 = n7 | n12 ; n12 = d & n9 ; n11 = n8 & n10 ; n10 = d | n9 ; n9 = n2 | n4 ; n8 = dN | n6 ; n7 = dN & n6 ; n6 = n3 | n5 ; n5 = a & n0 ; n4 = aN & bN ; n3 = b & c ; n2 = cN & n1 ; n1 = aN | bN ; n0 = b | c
+1886	timeout		28800.27	
+1896	timeout		28800.20	
+18a6	timeout		28800.25	
+18b6	timeout		28800.20	
+18e6	timeout		28800.28	
+1996	timeout		28800.27	
+19a6	timeout		28800.23	
+19b6	timeout		28800.24	
+19e6	sat	14	328.30	F = n13 ; FN = n12 ; n13 = n8 | n11 ; n12 = n7 & n10 ; n11 = d & n9 ; n10 = d | n9 ; n9 = n1 & n5 ; n8 = dN & n6 ; n7 = dN | n6 ; n6 = n3 & n4 ; n5 = a | bN ; n4 = a | b ; n3 = c | n2 ; n2 = aN | bN ; n1 = aN | n0 ; n0 = b & cN
+1ab6	timeout		28800.28	
+1ac6	timeout		28800.27	
+1ae6	timeout		28800.28	
+1bd8	timeout		28800.24	
+1be4	sat	12	166.19	F = n11 ; FN = n10 ; n11 = n6 & n8 ; n10 = n5 | n9 ; n9 = d & n7 ; n8 = d | n7 ; n7 = n0 | n2 ; n6 = dN | n4 ; n5 = dN & n4 ; n4 = n1 & n3 ; n3 = aN | cN ; n2 = aN & b ; n1 = a | bN ; n0 = a & c
+28be	sat	14	1008.86	F = n12 ; FN = n13 ; n13 = n6 & n8 ; n12 = n2 & n11 ; n11 = n5 | n10 ; n10 = n7 | n9 ; n9 = a & dN ; n8 = n3 | n4 ; n7 = bN & c ; n6 = aN | d ; n5 = b & cN ; n4 = n0 & n1 ; n3 = aN & d ; n2 = a | dN ; n1 = bN | c ; n0 = b | cN
+2996	timeout		28800.28	
+299e	timeout		28800.26	
+29d6	timeout		28800.20	
+2dd2	sat	14	994.57	F = n11 ; FN = n13 ; n13 = n8 | n12 ; n12 = n1 & n9 ; n11 = n5 & n10 ; n10 = n1 | n9 ; n9 = n6 & n7 ; n8 = n3 & n4 ; n7 = c | d ; n6 = cN | dN ; n5 = n3 | n4 ; n4 = aN | b ; n3 = n0 | n2 ; n2 = c & d ; n1 = a & bN ; n0 = cN & dN
+6996	timeout		28800.20	
+80fe	sat	12	164.47	F = n11 ; FN = n8 ; n11 = n6 & n10 ; n10 = dN | n9 ; n9 = a & b ; n8 = n5 & n7 ; n7 = d | n3 ; n6 = c | n4 ; n5 = bN | n2 ; n4 = dN & n1 ; n3 = aN & cN ; n2 = d & n0 ; n1 = a | b ; n0 = aN | cN
+817e	timeout		28800.20	
+82be	sat	12	180.48	F = n9 ; FN = n11 ; n11 = n6 | n10 ; n10 = d & n5 ; n9 = n7 | n8 ; n8 = a & n4 ; n7 = dN & n5 ; n6 = aN & n4 ; n5 = n1 & n3 ; n4 = n0 & n2 ; n3 = bN | cN ; n2 = bN | c ; n1 = b | c ; n0 = b | cN
+833e	timeout		28800.20	
+88ee	sat	8	0.52	F = n7 ; FN = n4 ; n7 = n5 | n6 ; n6 = dN & n3 ; n5 = a & b ; n4 = n0 & n2 ; n3 = a | b ; n2 = aN | n1 ; n1 = bN & d ; n0 = bN | d
+9696	sat	12	187.58	F = n9 ; FN = n11 ; n11 = n8 | n10 ; n10 = cN & n5 ; n9 = n6 & n7 ; n8 = c & n4 ; n7 = cN | n5 ; n6 = c | n4 ; n5 = n1 | n3 ; n4 = n0 | n2 ; n3 = a & b ; n2 = a & bN ; n1 = aN & bN ; n0 = aN & b
+aaaa	sat	0	0.02	F = a ; FN = aN

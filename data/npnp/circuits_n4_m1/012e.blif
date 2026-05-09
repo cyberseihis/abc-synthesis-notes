@@ -1,0 +1,22 @@
+# Realization of given 4-input 1-output function using 7 two-input and-nodes synthesized by ABC on Sat May  9 00:59:43 2026
+.model 012e
+.inputs a b c d
+.outputs F
+.names b c 05
+10 1
+.names a b 06
+10 1
+.names 05 06 07
+00 1
+.names d 07 08
+00 1
+.names c d 09
+01 1
+.names 07 09 10
+11 1
+.names 08 10 11
+00 1
+.names 11 F
+0 1
+.end
+

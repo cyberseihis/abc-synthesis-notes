@@ -1,0 +1,15 @@
+tt0	status	gates	wall_s	chain
+00	sat	2	0.01	F =  B ; B = !a  &   A ; A =  a  &   b
+02	sat	2	0.01	F =  B ; B = !c  &   A ; A =  a  &  !b
+06	sat	4	0.02	F =  D ; D = !A  &   C ; C = !c  &  !B ; B =  a  &   b ; A = !a  &  !b
+0a	sat	1	0.01	F =  A ; A =  a  &  !c
+0e	sat	2	0.01	F =  B ; B = !c  &  !A ; A = !a  &  !b
+16	sat	6	0.07	F =  F ; F = !C  &   E ; E = !B  &  !D ; D = !c  &   A ; C =  a  &   b ; B =  c  &  !A ; A = !a  &  !b
+18	sat	5	0.04	F =  E ; E =  C  &  !D ; D =  b  &   c ; C = !A  &  !B ; B =  a  &  !b ; A = !a  &  !c
+1a	sat	4	0.02	F =  D ; D = !B  &  !C ; C = !a  &  !A ; B =  a  &   c ; A = !b  &   c
+1e	sat	4	0.02	F = !D ; D = !B  &  !C ; C = !c  &  !A ; B =  c  &   A ; A = !a  &  !b
+2e	sat	3	0.03	F = !C ; C = !A  &  !B ; B =  a  &  !b ; A =  b  &  !c
+3c	sat	3	0.02	F = !C ; C = !A  &  !B ; B = !b  &   c ; A =  b  &  !c
+8e	sat	4	0.02	F = !D ; D = !B  &  !C ; C =  a  &   b ; B = !c  &  !A ; A = !a  &  !b
+96	sat	6	0.07	F =  F ; F = !D  &  !E ; E =  b  &   C ; D = !b  &  !C ; C = !A  &  !B ; B =  a  &   c ; A = !a  &  !c
+aa	sat	0	0.01	F =  a

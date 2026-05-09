@@ -1,0 +1,17 @@
+# NPNP canonical classes, n=3, m=1
+# count = 14
+# format: tt0  (hex, low bit = f(0..0))
+00
+02
+06
+0a
+0e
+16
+18
+1a
+1e
+2e
+3c
+8e
+96
+aa

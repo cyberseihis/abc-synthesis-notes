@@ -1,0 +1,15 @@
+tt0	status	gates	wall_s	chain
+00	sat	4	0.03	F = n1 ; FN = n3 ; n3 = a | n2 ; n2 = b | n0 ; n1 = b & n0 ; n0 = aN & bN
+02	sat	4	0.03	F = n1 ; FN = n3 ; n3 = c | n2 ; n2 = aN | b ; n1 = a & n0 ; n0 = bN & cN
+06	sat	8	0.24	F = n5 ; FN = n7 ; n7 = n3 | n6 ; n6 = a & b ; n5 = n2 & n4 ; n4 = aN | bN ; n3 = c | n0 ; n2 = cN & n1 ; n1 = a | b ; n0 = aN & bN
+0a	sat	2	0.01	F = n1 ; FN = n0 ; n1 = a & cN ; n0 = aN | c
+0e	sat	4	0.03	F = n3 ; FN = n2 ; n3 = cN & n1 ; n2 = c | n0 ; n1 = a | b ; n0 = aN & bN
+16	sat	12	126.80	F = n6 ; FN = n11 ; n11 = n9 | n10 ; n10 = n7 | n8 ; n9 = a & b ; n8 = c & n2 ; n7 = aN & n1 ; n6 = n4 & n5 ; n5 = n0 | n3 ; n4 = aN | n1 ; n3 = cN & n2 ; n2 = a | b ; n1 = bN & cN ; n0 = bN & c
+18	sat	10	8.19	F = n8 ; FN = n9 ; n9 = n4 | n5 ; n8 = n1 | n7 ; n7 = c & n6 ; n6 = aN & bN ; n5 = n2 & n3 ; n4 = bN & cN ; n3 = aN | c ; n2 = a | b ; n1 = a & n0 ; n0 = b & cN
+1a	sat	8	0.20	F = n7 ; FN = n4 ; n7 = n0 & n6 ; n6 = cN | n5 ; n5 = aN & bN ; n4 = n2 & n3 ; n3 = aN | c ; n2 = b | n1 ; n1 = a | cN ; n0 = a | c
+1e	sat	8	0.21	F = n7 ; FN = n6 ; n7 = n4 & n5 ; n6 = n2 | n3 ; n5 = c | n1 ; n4 = cN | n0 ; n3 = c & n1 ; n2 = cN & n0 ; n1 = a | b ; n0 = aN & bN
+2e	sat	6	0.06	F = n4 ; FN = n5 ; n5 = n1 & n2 ; n4 = n0 & n3 ; n3 = bN | cN ; n2 = aN | b ; n1 = bN | c ; n0 = a | b
+3c	sat	6	0.05	F = n4 ; FN = n5 ; n5 = n1 & n3 ; n4 = n0 & n2 ; n3 = b | cN ; n2 = bN | cN ; n1 = bN | c ; n0 = b | c
+8e	sat	8	0.42	F = n7 ; FN = n6 ; n7 = n2 | n4 ; n6 = n1 & n5 ; n5 = c | n3 ; n4 = a & b ; n3 = aN & bN ; n2 = cN & n0 ; n1 = aN | bN ; n0 = a | b
+96	sat	12	114.17	F = n11 ; FN = n10 ; n11 = n4 | n8 ; n10 = n5 | n9 ; n9 = c & n7 ; n8 = cN & n7 ; n7 = n1 & n6 ; n6 = a | b ; n5 = cN & n3 ; n4 = c & n3 ; n3 = n0 & n2 ; n2 = a | bN ; n1 = aN | bN ; n0 = aN | b
+aa	sat	0	0.02	F = a ; FN = aN

@@ -1,0 +1,223 @@
+tt0	status	gates	wall_s	chain
+0000	sat	2	0.02	F =  B ; B = !a  &   A ; A =  a  &   b
+0002	sat	3	0.03	F =  C ; C =  a  &   B ; B = !c  &   A ; A = !b  &  !d
+0006	sat	5	0.07	F =  E ; E =  B  &   D ; D = !d  &  !C ; C = !a  &  !b ; B = !c  &  !A ; A =  a  &   b
+000a	sat	2	0.02	F =  B ; B =  a  &   A ; A = !c  &  !d
+000e	sat	3	0.03	F =  C ; C = !A  &   B ; B = !c  &  !d ; A = !a  &  !b
+0016	sat	7	0.59	F =  G ; G = !D  &   F ; F =  C  &  !E ; E =  c  &  !A ; D = !c  &   A ; C = !d  &  !B ; B =  a  &   b ; A = !a  &  !b
+0018	sat	6	0.12	F =  F ; F =  B  &  !E ; E = !C  &  !D ; D =  a  &   b ; C = !a  &   c ; B = !d  &  !A ; A =  b  &   c
+001a	sat	5	0.07	F =  E ; E = !C  &   D ; D = !d  &  !B ; C = !a  &  !A ; B =  a  &   c ; A = !b  &   c
+001e	sat	5	0.08	F =  E ; E =  C  &  !D ; D = !c  &   A ; C = !d  &  !B ; B =  c  &  !A ; A = !a  &  !b
+002e	sat	4	0.04	F =  D ; D = !B  &   C ; C = !d  &  !A ; B = !a  &  !b ; A =  b  &   c
+003c	sat	4	0.04	F =  D ; D = !A  &   C ; C = !d  &  !B ; B =  b  &   c ; A = !b  &  !c
+003e	sat	5	0.07	F =  E ; E = !C  &   D ; D = !d  &  !A ; C = !a  &   B ; B = !b  &  !c ; A =  b  &   c
+007e	sat	6	0.12	F =  F ; F = !d  &  !E ; E =  C  &  !D ; D =  a  &  !c ; C = !A  &  !B ; B = !a  &   b ; A = !b  &   c
+008e	sat	5	0.07	F =  E ; E = !d  &   D ; D = !A  &  !C ; C =  c  &  !B ; B =  a  &   b ; A = !a  &  !b
+0096	sat	7	0.77	F =  G ; G = !d  &   F ; F = !D  &  !E ; E =  c  &   C ; D = !c  &  !C ; C = !A  &  !B ; B =  a  &   b ; A = !a  &  !b
+009e	sat	7	0.74	F =  G ; G =  E  &  !F ; F = !c  &   A ; E = !d  &  !D ; D =  B  &  !C ; C =  a  &   b ; B =  c  &  !A ; A = !a  &  !b
+00aa	sat	1	0.02	F =  A ; A =  a  &  !d
+00ae	sat	3	0.02	F =  C ; C = !d  &  !B ; B = !a  &  !A ; A =  b  &  !c
+00be	sat	5	0.07	F =  E ; E = !d  &  !D ; D = !B  &   C ; C = !a  &  !A ; B = !b  &   c ; A =  b  &  !c
+00ee	sat	2	0.02	F =  B ; B = !d  &  !A ; A = !a  &  !b
+00fe	sat	3	0.03	F =  C ; C = !d  &  !B ; B = !b  &   A ; A = !a  &  !c
+0116	sat	9	52.96	F = !I ; I = !D  &  !H ; H = !B  &   G ; G = !E  &   F ; F = !b  &  !C ; E =  d  &  !A ; D =  b  &   C ; C = !d  &   A ; B =  a  &   c ; A = !a  &  !c
+0118	sat	8	3.63	F =  H ; H = !D  &   G ; G = !E  &   F ; F = !B  &  !C ; E =  c  &   d ; D = !b  &   A ; C =  a  &  !A ; B = !a  &   b ; A = !c  &  !d
+011a	sat	7	0.85	F =  G ; G = !D  &   F ; F = !C  &  !E ; E =  c  &   d ; D =  a  &  !A ; C = !a  &  !B ; B = !b  &  !A ; A = !c  &  !d
+011e	sat	7	0.44	F =  G ; G = !E  &  !F ; F =  c  &  !A ; E = !C  &  !D ; D = !d  &  !B ; C =  d  &   B ; B = !c  &   A ; A = !a  &  !b
+012a	sat	7	0.48	F =  G ; G = !D  &   F ; F = !A  &  !E ; E = !a  &  !C ; D =  d  &  !B ; C = !b  &   d ; B = !a  &  !c ; A =  b  &   c
+012c	sat	8	3.15	F = !H ; H = !B  &  !G ; G = !b  &   F ; F = !A  &   E ; E = !C  &  !D ; D =  a  &   d ; C = !a  &   c ; B =  b  &   A ; A = !c  &  !d
+012e	sat	7	0.54	F = !G ; G = !D  &  !F ; F =  C  &   E ; E = !c  &   d ; D = !d  &  !C ; C = !A  &  !B ; B =  a  &  !b ; A =  b  &  !c
+013c	sat	7	0.42	F =  G ; G =  E  &  !F ; F =  b  &  !A ; E = !C  &  !D ; D =  d  &  !B ; C = !b  &   A ; B = !a  &  !c ; A = !c  &  !d
+013e	sat	7	0.51	F =  G ; G =  E  &  !F ; F =  b  &   c ; E = !C  &  !D ; D =  d  &  !B ; C = !d  &   B ; B = !c  &   A ; A = !a  &  !b
+0168	sat	9	49.46	F = !I ; I = !F  &  !H ; H = !E  &   G ; G = !a  &  !B ; F =  D  &   E ; E = !d  &  !C ; D =  a  &  !A ; C =  b  &   c ; B =  d  &  !A ; A = !b  &  !c
+016a	sat	8	4.90	F =  H ; H = !D  &   G ; G = !C  &  !F ; F =  d  &  !E ; E = !b  &  !c ; D =  a  &  !B ; C = !a  &   B ; B = !d  &  !A ; A =  b  &   c
+016e	sat	8	3.11	F =  H ; H = !F  &  !G ; G =  D  &  !E ; F = !C  &  !D ; E = !c  &  !C ; D = !a  &  !b ; C = !d  &  !B ; B =  a  &   A ; A =  b  &   c
+017e	sat	8	3.06	F =  H ; H = !F  &  !G ; G = !C  &  !D ; F =  b  &   E ; E =  a  &   c ; D = !d  &  !B ; C =  d  &   B ; B = !b  &   A ; A = !a  &  !c
+0180	sat	7	0.50	F =  G ; G = !E  &  !F ; F = !B  &  !D ; E = !c  &  !C ; D =  b  &   A ; C = !a  &  !b ; B = !c  &   d ; A =  a  &  !d
+0182	sat	8	2.74	F =  H ; H =  C  &   G ; G = !E  &  !F ; F = !b  &   c ; E =  d  &  !D ; D = !a  &  !b ; C = !A  &  !B ; B = !a  &  !d ; A =  b  &  !c
+0186	sat	9	49.69	F =  I ; I = !A  &   H ; H =  F  &  !G ; G = !a  &  !C ; F = !D  &  !E ; E =  a  &   C ; D =  b  &   d ; C = !c  &  !B ; B = !b  &  !d ; A = !b  &   c
+0188	sat	6	0.16	F =  F ; F =  C  &  !E ; E =  d  &  !D ; D = !b  &  !c ; C = !A  &  !B ; B =  a  &  !b ; A = !a  &  !d
+018a	sat	6	0.17	F =  F ; F = !A  &  !E ; E = !B  &  !D ; D =  d  &   C ; C = !a  &  !b ; B =  a  &  !d ; A = !b  &   c
+018e	sat	7	0.50	F =  G ; G = !E  &   F ; F = !C  &  !D ; E = !d  &   A ; D =  d  &  !A ; C =  c  &  !B ; B =  a  &   b ; A = !a  &  !b
+0196	sat	9	39.90	F = !I ; I = !G  &  !H ; H = !E  &   F ; G =  b  &   D ; F = !b  &  !D ; E =  d  &  !A ; D = !d  &  !C ; C = !A  &  !B ; B =  a  &   c ; A = !a  &  !c
+0198	sat	8	3.28	F =  H ; H = !F  &  !G ; G = !D  &  !E ; F = !B  &   E ; E = !a  &  !d ; D = !B  &  !C ; C =  b  &   d ; B = !b  &  !A ; A = !a  &  !c
+019a	sat	8	3.21	F =  H ; H = !C  &   G ; G = !D  &  !F ; F =  d  &  !E ; E = !c  &   B ; D = !a  &  !B ; C =  a  &   B ; B = !b  &  !A ; A = !c  &  !d
+019e	sat	9	41.67	F =  I ; I = !G  &  !H ; H =  d  &  !A ; G = !E  &   F ; F = !C  &  !D ; E =  c  &   B ; D = !c  &  !B ; C =  a  &   b ; B = !d  &   A ; A = !a  &  !b
+01a8	sat	6	0.12	F =  F ; F = !D  &   E ; E = !B  &  !C ; D =  a  &   A ; C =  d  &  !A ; B = !a  &  !d ; A = !b  &  !c
+01aa	sat	5	0.08	F =  E ; E = !A  &  !D ; D =  d  &  !C ; C = !a  &   B ; B = !b  &  !c ; A = !a  &  !d
+01ac	sat	7	0.54	F = !G ; G = !C  &  !F ; F = !A  &   E ; E = !d  &  !D ; D = !a  &   c ; C = !a  &   B ; B =  d  &   A ; A = !b  &  !c
+01ae	sat	6	0.12	F =  F ; F =  D  &  !E ; E = !a  &   c ; D = !B  &  !C ; C =  d  &  !A ; B = !d  &   A ; A = !a  &  !b
+01bc	sat	8	2.55	F =  H ; H =  F  &  !G ; G =  d  &  !D ; F = !C  &  !E ; E = !a  &   B ; D = !a  &  !b ; C = !c  &   A ; B =  c  &  !A ; A = !b  &  !d
+01be	sat	8	2.66	F =  H ; H =  F  &  !G ; G = !d  &   D ; F = !B  &  !E ; E =  d  &  !D ; D = !a  &   C ; C = !b  &  !c ; B = !a  &   A ; A =  b  &   c
+01e8	sat	8	4.35	F =  H ; H = !E  &   G ; G = !D  &  !F ; F =  b  &   C ; E =  d  &  !C ; D = !A  &   B ; C = !a  &  !c ; B = !b  &  !d ; A =  a  &   c
+01ea	sat	7	0.59	F = !G ; G = !E  &  !F ; F =  C  &   D ; E = !d  &  !D ; D = !a  &  !B ; C = !c  &   d ; B =  b  &  !A ; A = !c  &  !d
+01ee	sat	5	0.07	F = !E ; E = !C  &  !D ; D = !d  &  !B ; C =  A  &   B ; B = !a  &  !b ; A = !c  &   d
+01fe	sat	5	0.08	F =  E ; E = !C  &  !D ; D = !d  &   B ; C =  d  &  !B ; B = !b  &   A ; A = !a  &  !c
+022e	sat	6	0.13	F =  F ; F =  D  &  !E ; E =  d  &  !B ; D = !A  &  !C ; C = !a  &  !b ; B = !b  &  !c ; A =  b  &   c
+023e	sat	6	0.11	F =  F ; F = !A  &   E ; E = !C  &  !D ; D =  d  &  !B ; C = !a  &   B ; B = !b  &  !c ; A =  b  &   c
+0246	sat	5	0.07	F =  E ; E = !A  &  !D ; D = !B  &  !C ; C = !a  &  !d ; B = !b  &  !c ; A = !a  &  !b
+024e	sat	5	0.07	F =  E ; E =  C  &  !D ; D =  b  &   d ; C = !A  &  !B ; B = !a  &  !b ; A =  a  &   c
+0256	sat	5	0.07	F =  E ; E = !B  &  !D ; D = !a  &  !C ; C = !d  &  !A ; B =  a  &  !A ; A = !b  &  !c
+025a	sat	6	0.11	F =  F ; F =  C  &  !E ; E =  d  &  !D ; D =  a  &  !b ; C = !A  &  !B ; B = !a  &  !c ; A =  a  &   c
+025e	sat	6	0.10	F =  F ; F = !D  &  !E ; E =  d  &  !A ; D = !B  &  !C ; C =  a  &  !c ; B = !a  &  !A ; A = !b  &  !c
+026e	sat	7	0.55	F =  G ; G = !E  &  !F ; F =  d  &  !C ; E = !A  &  !D ; D =  a  &  !B ; C = !b  &  !c ; B =  b  &   c ; A = !a  &   b
+027e	sat	7	0.52	F =  G ; G = !B  &  !F ; F = !A  &  !E ; E = !d  &  !D ; D =  c  &   C ; C =  a  &   b ; B = !a  &   A ; A = !b  &  !c
+0296	sat	8	3.46	F =  H ; H = !B  &  !G ; G = !E  &  !F ; F =  b  &   D ; E = !b  &  !D ; D = !A  &  !C ; C = !a  &   c ; B =  d  &  !A ; A =  a  &  !c
+029e	sat	8	2.58	F = !H ; H = !E  &  !G ; G =  D  &   F ; F =  a  &  !c ; E = !d  &  !D ; D = !B  &  !C ; C = !b  &   A ; B =  b  &  !A ; A = !a  &   c
+02ae	sat	5	0.07	F =  E ; E = !B  &  !D ; D = !a  &  !C ; C =  b  &  !c ; B =  d  &  !A ; A = !b  &  !c
+02be	sat	6	0.29	F =  F ; F = !C  &  !E ; E = !a  &  !D ; D = !A  &  !B ; C =  d  &  !B ; B = !b  &  !c ; A =  b  &   c
+02ce	sat	4	0.04	F =  D ; D = !B  &  !C ; C = !b  &  !A ; B =  b  &   d ; A =  a  &  !c
+02d6	sat	7	0.73	F = !G ; G = !C  &  !F ; F = !d  &   E ; E = !B  &  !D ; D = !b  &  !A ; C = !b  &   B ; B =  a  &  !c ; A = !a  &   c
+02de	sat	6	0.13	F = !F ; F = !C  &  !E ; E = !d  &  !D ; D = !b  &  !A ; C = !b  &   B ; B =  a  &  !c ; A = !a  &   c
+02ea	sat	5	0.07	F =  E ; E = !C  &  !D ; D =  d  &  !B ; C = !a  &  !A ; B = !b  &  !c ; A =  b  &   c
+02ee	sat	4	0.04	F =  D ; D = !B  &  !C ; C = !a  &  !b ; B =  d  &  !A ; A = !b  &  !c
+02fe	sat	4	0.04	F = !D ; D = !B  &  !C ; C = !d  &  !A ; B =  a  &   A ; A = !b  &  !c
+033c	sat	6	0.11	F =  F ; F = !A  &   E ; E = !C  &  !D ; D = !c  &   B ; C =  c  &  !B ; B = !b  &  !d ; A =  b  &   d
+033e	sat	7	0.41	F =  G ; G = !B  &   F ; F = !C  &  !E ; E =  A  &   D ; D = !a  &  !b ; C =  b  &  !A ; B =  c  &   d ; A = !c  &  !d
+0356	sat	5	0.07	F = !E ; E = !C  &  !D ; D = !A  &   B ; C =  A  &  !B ; B = !a  &  !d ; A = !b  &  !c
+0358	sat	7	1.09	F = !G ; G = !E  &  !F ; F = !B  &  !D ; E =  B  &   D ; D = !A  &  !C ; C = !b  &  !c ; B = !c  &  !d ; A = !a  &  !d
+035a	sat	6	0.11	F =  F ; F = !D  &   E ; E = !B  &  !C ; D = !c  &   A ; C =  c  &  !A ; B =  b  &   d ; A = !a  &  !d
+035e	sat	7	0.77	F =  G ; G = !C  &  !F ; F = !B  &  !E ; E = !c  &  !D ; D = !b  &   A ; C =  b  &   d ; B =  c  &   A ; A = !a  &  !d
+0368	sat	8	10.00	F = !H ; H = !F  &  !G ; G = !D  &  !E ; F =  D  &   E ; E = !d  &  !B ; D = !A  &  !C ; C = !b  &  !c ; B =  b  &   c ; A = !a  &  !d
+036a	sat	8	3.60	F =  H ; H = !F  &  !G ; G = !B  &  !E ; F =  d  &  !D ; E = !A  &  !C ; D = !b  &  !c ; C = !a  &  !d ; B = !a  &   A ; A =  b  &   c
+036c	sat	7	1.02	F =  G ; G = !A  &  !F ; F = !D  &  !E ; E = !b  &  !C ; D =  b  &   C ; C = !d  &  !B ; B =  a  &   c ; A =  c  &   d
+036e	sat	8	3.59	F = !H ; H = !F  &  !G ; G = !C  &   E ; F =  D  &  !E ; E = !d  &  !B ; D = !c  &  !A ; C = !a  &  !b ; B =  a  &   b ; A =  b  &   d
+037c	sat	7	0.81	F = !G ; G = !E  &  !F ; F =  d  &   D ; E =  C  &  !D ; D = !b  &  !c ; C = !d  &  !B ; B =  b  &   A ; A =  a  &   c
+037e	sat	8	4.33	F =  H ; H = !E  &  !G ; G =  D  &  !F ; F = !d  &  !A ; E =  B  &   C ; D = !B  &  !C ; C = !b  &  !c ; B = !a  &  !d ; A =  b  &   c
+0396	sat	8	2.79	F =  H ; H = !F  &  !G ; G = !C  &  !E ; F =  C  &   E ; E = !B  &  !D ; D = !b  &   c ; C = !a  &  !d ; B =  b  &  !A ; A =  c  &  !d
+039a	sat	7	0.44	F =  G ; G = !E  &  !F ; F =  C  &  !D ; E = !C  &   D ; D = !A  &  !B ; C = !a  &  !d ; B =  b  &  !d ; A = !b  &  !c
+039e	sat	8	5.88	F =  H ; H = !E  &  !G ; G =  b  &  !F ; F = !d  &  !D ; E =  C  &  !D ; D =  c  &   A ; C = !b  &  !B ; B = !c  &  !A ; A = !a  &  !d
+03ae	sat	6	0.11	F = !F ; F = !A  &  !E ; E = !B  &   D ; D = !c  &  !C ; C =  b  &   d ; B = !b  &  !d ; A =  a  &  !d
+03be	sat	7	1.08	F =  G ; G = !E  &  !F ; F =  C  &  !D ; E =  d  &  !B ; D = !A  &  !B ; C = !a  &  !d ; B = !b  &  !c ; A =  b  &   c
+03c0	sat	5	0.07	F =  E ; E =  C  &  !D ; D =  c  &   d ; C = !A  &  !B ; B = !b  &  !d ; A =  b  &  !c
+03c2	sat	6	0.11	F =  F ; F = !B  &  !E ; E = !C  &  !D ; D =  b  &  !d ; C = !c  &  !A ; B =  b  &  !c ; A = !a  &  !d
+03c6	sat	6	0.14	F =  F ; F = !D  &  !E ; E =  b  &  !C ; D = !b  &  !B ; C = !d  &  !B ; B = !c  &  !A ; A = !a  &  !d
+03ca	sat	6	0.12	F =  F ; F = !D  &   E ; E = !A  &  !B ; D = !c  &   C ; C = !a  &  !d ; B = !b  &   c ; A =  b  &   d
+03cc	sat	4	0.04	F =  D ; D = !B  &  !C ; C = !b  &  !A ; B =  b  &   d ; A = !c  &   d
+03ce	sat	5	0.07	F = !E ; E = !A  &  !D ; D =  B  &  !C ; C = !a  &  !d ; B = !b  &  !c ; A =  b  &  !d
+03d4	sat	7	0.63	F = !G ; G = !B  &  !F ; F = !A  &   E ; E = !d  &  !D ; D =  a  &  !C ; C =  b  &   c ; B =  d  &   A ; A = !b  &  !c
+03d6	sat	7	1.07	F = !G ; G = !E  &  !F ; F = !B  &   D ; E =  B  &  !D ; D = !d  &  !C ; C =  a  &  !A ; B = !b  &  !c ; A =  b  &   c
+03d8	sat	7	0.60	F = !G ; G = !C  &  !F ; F = !d  &   E ; E = !A  &  !D ; D =  a  &  !b ; C = !c  &   B ; B = !b  &   d ; A = !a  &  !c
+03da	sat	7	0.44	F = !G ; G = !E  &  !F ; F = !B  &  !D ; E =  c  &   B ; D = !A  &  !C ; C =  b  &  !d ; B = !a  &  !d ; A = !b  &  !c
+03dc	sat	6	0.11	F =  F ; F = !C  &  !E ; E =  d  &  !D ; D = !c  &   B ; C = !d  &   B ; B = !b  &  !A ; A = !a  &   c
+03de	sat	6	0.11	F = !F ; F = !D  &  !E ; E =  B  &  !C ; D = !B  &   C ; C = !b  &  !c ; B = !d  &  !A ; A =  a  &  !b
+03ea	sat	6	0.14	F = !F ; F = !B  &  !E ; E = !d  &  !D ; D = !a  &  !C ; C =  b  &   c ; B =  d  &   A ; A = !b  &  !c
+03ee	sat	5	0.07	F = !E ; E = !B  &  !D ; D = !d  &  !C ; C = !a  &  !b ; B =  d  &   A ; A = !b  &  !c
+03fc	sat	4	0.04	F = !D ; D = !B  &  !C ; C = !d  &  !A ; B =  d  &   A ; A = !b  &  !c
+0660	sat	7	0.52	F =  G ; G = !B  &   F ; F = !A  &   E ; E = !C  &  !D ; D =  c  &   d ; C =  a  &   b ; B = !a  &  !b ; A = !c  &  !d
+0662	sat	7	0.43	F =  G ; G =  D  &  !F ; F = !a  &  !E ; E =  b  &  !A ; D = !B  &  !C ; C =  a  &   b ; B =  c  &   d ; A = !c  &  !d
+0666	sat	5	0.07	F =  E ; E = !B  &   D ; D = !A  &  !C ; C = !a  &  !b ; B =  c  &   d ; A =  a  &   b
+0668	sat	9	28.34	F =  I ; I =  G  &  !H ; H = !B  &  !E ; G = !A  &  !F ; F =  B  &  !D ; E = !C  &  !D ; D = !c  &  !d ; C =  c  &   d ; B =  a  &   b ; A = !a  &  !b
+066a	sat	7	0.81	F =  G ; G = !E  &   F ; F = !C  &  !D ; E = !a  &  !B ; D =  c  &   d ; C =  a  &   B ; B =  b  &  !A ; A = !c  &  !d
+066e	sat	7	0.69	F =  G ; G =  E  &  !F ; F =  a  &   D ; E = !A  &  !B ; D =  b  &  !C ; C = !c  &  !d ; B =  c  &   d ; A = !a  &  !b
+0672	sat	7	0.46	F =  G ; G = !C  &  !F ; F = !A  &  !E ; E = !a  &  !D ; D = !c  &  !B ; C =  c  &   d ; B =  b  &   d ; A =  a  &  !b
+0676	sat	6	0.11	F =  F ; F = !A  &  !E ; E = !B  &  !D ; D = !b  &  !C ; C = !a  &  !c ; B = !a  &   b ; A =  c  &   d
+0678	sat	9	43.80	F = !I ; I = !G  &  !H ; H =  E  &   F ; G = !E  &  !F ; F = !c  &  !D ; E = !B  &  !C ; D =  a  &   d ; C = !a  &  !d ; B = !b  &  !A ; A =  c  &   d
+067a	sat	8	3.16	F =  H ; H =  E  &  !G ; G = !a  &   F ; F = !c  &  !B ; E = !C  &  !D ; D =  a  &   B ; C =  c  &   d ; B =  b  &  !A ; A = !c  &  !d
+067e	sat	8	3.63	F =  H ; H = !E  &   G ; G = !B  &  !F ; F =  a  &   D ; E = !a  &   A ; D =  b  &  !C ; C = !c  &  !d ; B =  c  &   d ; A = !b  &  !c
+0690	sat	8	3.70	F =  H ; H = !A  &  !G ; G = !E  &  !F ; F = !c  &  !D ; E = !d  &   D ; D = !B  &  !C ; C = !a  &   b ; B =  a  &  !b ; A = !c  &  !d
+0692	sat	9	46.98	F = !I ; I = !F  &  !H ; H = !E  &   G ; G = !c  &  !C ; F =  D  &   E ; E = !A  &  !B ; D =  c  &  !d ; C = !a  &  !d ; B =  a  &  !b ; A = !a  &   b
+0696	sat	7	0.63	F = !G ; G = !E  &  !F ; F = !C  &   D ; E = !c  &   C ; D =  c  &  !d ; C = !A  &  !B ; B = !a  &  !b ; A =  a  &   b
+069a	sat	8	2.87	F = !H ; H = !E  &  !G ; G = !A  &   F ; F = !a  &  !D ; E =  a  &   D ; D = !B  &  !C ; C =  b  &   d ; B = !b  &   c ; A =  c  &   d
+069e	sat	8	3.06	F = !H ; H = !D  &  !G ; G = !d  &  !F ; F = !C  &  !E ; E =  c  &   A ; D =  B  &  !C ; C =  a  &   b ; B = !c  &  !A ; A = !a  &  !b
+06b0	sat	8	2.78	F = !H ; H = !F  &  !G ; G =  C  &  !E ; F =  c  &   D ; E = !A  &  !B ; D = !d  &  !A ; C = !c  &   d ; B =  a  &  !b ; A = !a  &   b
+06b2	sat	8	3.79	F =  H ; H =  F  &  !G ; G = !B  &   E ; F = !A  &  !C ; E = !c  &  !D ; D =  a  &  !b ; C = !d  &   B ; B = !a  &   b ; A =  c  &   d
+06b4	sat	8	3.27	F =  H ; H = !C  &  !G ; G = !c  &  !F ; F = !B  &  !E ; E = !A  &  !D ; D =  a  &  !b ; C =  c  &  !B ; B = !d  &  !A ; A = !a  &   b
+06b6	sat	7	0.64	F =  G ; G = !E  &  !F ; F =  c  &  !D ; E =  B  &  !C ; D = !d  &  !A ; C =  a  &  !b ; B = !c  &  !A ; A = !a  &   b
+06b8	sat	9	53.30	F =  I ; I = !E  &  !H ; H = !D  &  !G ; G =  d  &  !F ; F = !a  &  !A ; E =  d  &   D ; D = !B  &  !C ; C = !a  &   b ; B = !c  &  !A ; A =  b  &  !c
+06ba	sat	8	3.58	F =  H ; H = !A  &  !G ; G = !D  &   F ; F = !C  &  !E ; E =  a  &  !B ; D = !b  &   c ; C = !a  &   B ; B =  b  &   d ; A =  c  &   d
+06bc	sat	8	6.49	F = !H ; H = !F  &  !G ; G =  A  &   E ; F = !A  &  !E ; E = !C  &  !D ; D = !d  &  !B ; C = !a  &  !c ; B = !a  &   b ; A = !b  &  !c
+06be	sat	8	3.87	F =  H ; H = !B  &  !G ; G = !A  &  !F ; F = !D  &  !E ; E =  c  &   d ; D =  b  &  !C ; C =  a  &  !d ; B = !b  &   A ; A = !a  &  !c
+06ea	sat	7	1.70	F =  G ; G = !D  &  !F ; F =  d  &  !E ; E = !c  &  !C ; D = !a  &  !B ; C =  a  &   B ; B =  b  &  !A ; A = !c  &  !d
+06ee	sat	5	0.07	F =  E ; E = !A  &  !D ; D =  d  &  !C ; C = !c  &  !B ; B =  a  &   b ; A = !a  &  !b
+06f0	sat	7	0.59	F =  G ; G = !E  &  !F ; F = !c  &  !D ; E =  d  &  !B ; D =  d  &  !C ; C =  a  &   b ; B = !c  &  !A ; A = !a  &  !b
+06f2	sat	7	0.60	F = !G ; G = !B  &  !F ; F =  D  &  !E ; E =  b  &  !C ; D = !c  &  !A ; C = !a  &   d ; B =  c  &  !d ; A = !a  &  !b
+06f6	sat	6	0.12	F = !F ; F = !C  &  !E ; E =  B  &  !D ; D = !a  &  !b ; C =  c  &  !d ; B = !c  &  !A ; A =  a  &   b
+06f8	sat	7	0.88	F =  G ; G = !D  &  !F ; F =  d  &  !E ; E = !A  &   C ; D = !d  &   C ; C = !c  &  !B ; B =  a  &   b ; A = !a  &  !b
+0776	sat	7	0.51	F =  G ; G = !A  &  !F ; F = !B  &  !E ; E = !a  &  !D ; D = !d  &   C ; C = !b  &  !c ; B =  a  &  !b ; A =  c  &   d
+0778	sat	7	0.55	F =  G ; G = !C  &   F ; F = !D  &  !E ; E =  c  &   A ; D =  d  &  !B ; C = !d  &   B ; B = !c  &  !A ; A =  a  &   b
+077a	sat	7	0.54	F =  G ; G =  D  &  !F ; F =  a  &   E ; E =  b  &  !A ; D = !B  &  !C ; C = !a  &   A ; B =  c  &   d ; A = !c  &  !d
+077e	sat	8	4.22	F =  H ; H = !C  &   G ; G = !D  &  !F ; F = !b  &   E ; E = !a  &   B ; D =  A  &  !B ; C =  c  &   d ; B = !c  &  !d ; A =  a  &   b
+0796	sat	8	2.97	F =  H ; H = !E  &  !G ; G =  D  &  !F ; F =  c  &  !d ; E =  c  &  !D ; D = !B  &  !C ; C = !a  &   b ; B = !b  &  !A ; A = !a  &  !d
+079e	sat	8	10.28	F = !H ; H = !F  &  !G ; G =  B  &  !E ; F = !B  &   E ; E = !d  &  !D ; D = !A  &  !C ; C = !a  &  !b ; B = !c  &  !A ; A =  a  &   b
+07ae	sat	6	0.21	F = !F ; F = !A  &  !E ; E = !C  &   D ; D = !c  &  !B ; C = !b  &  !d ; B =  a  &   b ; A =  a  &  !d
+07b0	sat	7	0.56	F = !G ; G = !E  &  !F ; F =  d  &   D ; E =  c  &   B ; D = !c  &  !C ; C =  a  &   b ; B = !d  &  !A ; A = !a  &   b
+07b2	sat	8	3.34	F =  H ; H = !A  &  !G ; G = !E  &  !F ; F = !C  &  !D ; E =  c  &  !B ; D = !a  &  !d ; C =  b  &  !B ; B = !a  &   b ; A =  c  &   d
+07b4	sat	7	0.76	F = !G ; G = !E  &  !F ; F =  B  &   D ; E = !c  &  !D ; D = !A  &  !C ; C = !a  &   b ; B =  c  &  !d ; A = !b  &   d
+07b6	sat	8	3.31	F = !H ; H = !D  &  !G ; G = !C  &   F ; F = !c  &  !E ; E = !a  &   B ; D =  c  &   B ; C =  b  &  !A ; B = !d  &  !A ; A = !a  &   b
+07ba	sat	7	0.58	F =  G ; G = !D  &  !F ; F =  d  &  !E ; E = !c  &  !C ; D =  A  &  !B ; C =  a  &   b ; B = !b  &   c ; A = !a  &  !d
+07bc	sat	7	1.20	F = !G ; G = !E  &  !F ; F =  C  &  !D ; E = !C  &   D ; D = !c  &  !B ; C = !d  &  !A ; B =  a  &   b ; A = !a  &   b
+07e0	sat	7	0.54	F = !G ; G = !D  &  !F ; F =  A  &  !E ; E =  a  &   b ; D =  B  &  !C ; C = !a  &  !b ; B =  c  &  !d ; A = !c  &   d
+07e2	sat	7	0.64	F =  G ; G = !A  &  !F ; F = !B  &  !E ; E = !C  &  !D ; D =  b  &  !c ; C = !a  &  !b ; B = !a  &   d ; A =  c  &   d
+07e6	sat	7	0.59	F =  G ; G = !B  &   F ; F = !C  &  !E ; E = !d  &   D ; D = !a  &  !b ; C =  a  &   A ; B =  c  &   d ; A =  b  &  !c
+07e8	sat	7	0.58	F = !G ; G = !D  &  !F ; F = !d  &   E ; E = !A  &  !C ; D =  d  &   C ; C = !c  &  !B ; B =  a  &   b ; A = !a  &  !b
+07ea	sat	7	0.68	F = !G ; G = !D  &  !F ; F =  C  &  !E ; E =  b  &  !B ; D = !d  &  !B ; C = !c  &   d ; B = !a  &  !A ; A =  b  &   c
+07f0	sat	5	0.07	F =  E ; E = !B  &  !D ; D =  d  &  !C ; C = !c  &  !A ; B = !c  &  !d ; A =  a  &   b
+07f2	sat	6	0.13	F = !F ; F = !C  &  !E ; E = !c  &  !D ; D = !A  &  !B ; C =  c  &  !d ; B =  a  &  !b ; A = !a  &   d
+07f8	sat	5	0.07	F =  E ; E = !C  &  !D ; D = !d  &   B ; C =  d  &  !B ; B = !c  &  !A ; A =  a  &   b
+088e	sat	7	0.58	F =  G ; G = !B  &  !F ; F = !C  &  !E ; E =  A  &  !D ; D =  c  &   d ; C = !c  &  !d ; B = !a  &  !b ; A =  a  &   b
+089e	sat	9	50.45	F =  I ; I = !E  &   H ; H = !F  &  !G ; G = !a  &   D ; F = !b  &  !C ; E =  d  &  !D ; D =  b  &   C ; C = !A  &  !B ; B = !a  &  !c ; A =  a  &   c
+08ae	sat	5	0.07	F =  E ; E = !B  &  !D ; D = !A  &  !C ; C =  b  &  !c ; B = !a  &   d ; A =  a  &  !d
+08be	sat	7	0.43	F =  G ; G = !E  &  !F ; F =  d  &  !B ; E =  C  &  !D ; D = !b  &   c ; C = !a  &  !A ; B =  a  &   A ; A =  b  &  !c
+08ee	sat	5	0.07	F =  E ; E = !B  &  !D ; D =  d  &  !C ; C =  a  &   A ; B = !a  &  !b ; A =  b  &  !c
+08fe	sat	6	0.11	F =  F ; F = !C  &  !E ; E = !B  &  !D ; D =  a  &  !c ; C =  d  &   A ; B = !d  &  !A ; A = !b  &  !c
+0996	sat	9	39.20	F =  I ; I = !F  &  !H ; H = !D  &  !G ; G =  C  &  !E ; F =  C  &   D ; E =  c  &   d ; D = !c  &  !d ; C = !A  &  !B ; B = !a  &   b ; A =  a  &  !b
+099e	sat	9	41.74	F =  I ; I = !A  &  !H ; H = !E  &   G ; G = !C  &  !F ; F =  a  &  !D ; E = !a  &   D ; D = !b  &  !B ; C =  b  &   B ; B = !c  &  !d ; A =  c  &   d
+09ae	sat	7	0.58	F = !G ; G = !A  &  !F ; F = !c  &  !E ; E = !C  &  !D ; D =  b  &  !B ; C = !b  &   B ; B = !a  &   d ; A =  a  &  !d
+09b6	sat	9	39.71	F =  I ; I = !D  &  !H ; H = !F  &  !G ; G =  B  &  !E ; F = !B  &   E ; E = !c  &  !C ; D =  d  &   A ; C =  a  &  !b ; B = !d  &  !A ; A = !a  &   b
+09be	sat	9	52.99	F = !I ; I = !G  &  !H ; H = !c  &   E ; G = !C  &  !F ; F = !B  &  !D ; E =  b  &  !B ; D = !d  &  !A ; C = !a  &   b ; B =  d  &   A ; A = !a  &  !c
+09f6	sat	7	0.59	F = !G ; G = !E  &  !F ; F = !d  &  !D ; E =  d  &   D ; D = !B  &   C ; C = !c  &  !A ; B =  a  &  !b ; A = !a  &   b
+0abe	sat	7	0.56	F = !G ; G = !A  &  !F ; F =  D  &  !E ; E =  b  &   B ; D = !d  &  !C ; C = !b  &  !c ; B = !a  &   c ; A =  a  &  !c
+0ace	sat	3	0.02	F = !C ; C = !A  &  !B ; B =  b  &  !d ; A =  a  &  !c
+0aee	sat	4	0.04	F = !D ; D = !B  &  !C ; C = !d  &  !A ; B =  a  &  !c ; A = !a  &  !b
+0afa	sat	3	0.02	F = !C ; C = !A  &  !B ; B =  a  &  !c ; A =  c  &  !d
+0bb6	sat	9	40.55	F =  I ; I = !C  &  !H ; H =  E  &  !G ; G = !B  &  !F ; F =  d  &   A ; E = !c  &  !D ; D =  a  &  !b ; C =  c  &  !B ; B = !d  &  !A ; A = !a  &   b
+0bd6	sat	7	0.64	F = !G ; G = !E  &  !F ; F =  C  &  !D ; E = !C  &   D ; D = !d  &  !B ; C = !c  &  !A ; B =  a  &  !b ; A = !a  &   b
+0bf2	sat	7	0.53	F = !G ; G = !B  &  !F ; F = !D  &   E ; E = !c  &  !C ; D = !a  &  !A ; C =  b  &  !d ; B =  c  &  !d ; A = !b  &   d
+0ff0	sat	3	0.02	F = !C ; C = !A  &  !B ; B = !c  &   d ; A =  c  &  !d
+1668	sat	9	23.52	F = !I ; I = !G  &  !H ; H = !E  &  !F ; G =  E  &   F ; F = !A  &  !D ; E = !B  &  !C ; D = !b  &  !d ; C =  b  &   d ; B =  a  &   c ; A = !a  &  !c
+166a	sat	9	49.39	F = !I ; I = !F  &  !H ; H = !D  &   G ; G = !a  &  !E ; F =  a  &   E ; E = !B  &  !C ; D =  d  &   C ; C =  b  &   c ; B =  d  &  !A ; A = !b  &  !c
+166e	sat	9	41.54	F = !I ; I = !F  &  !H ; H = !E  &   G ; G = !B  &  !D ; F =  D  &   E ; E =  c  &  !C ; D = !a  &  !b ; C = !d  &  !A ; B =  d  &   A ; A =  a  &   b
+167e	sat	9	64.75	F =  I ; I = !E  &  !H ; H =  F  &  !G ; G = !A  &  !D ; F =  d  &  !B ; E = !C  &  !D ; D =  c  &  !A ; C = !c  &  !B ; B = !a  &  !b ; A =  a  &   b
+1686	sat	9	40.98	F =  I ; I = !G  &  !H ; H =  D  &  !F ; G = !D  &   F ; F = !A  &  !E ; E = !a  &  !b ; D = !B  &  !C ; C =  c  &  !A ; B =  a  &   b ; A =  c  &  !d
+168e	sat	9	53.64	F =  I ; I = !G  &  !H ; H =  C  &  !D ; G = !b  &  !F ; F = !A  &  !E ; E =  c  &  !B ; D =  a  &  !d ; C =  b  &  !A ; B = !a  &   d ; A = !a  &  !c
+1696	sat	8	3.37	F =  H ; H = !E  &   G ; G = !D  &  !F ; F = !a  &  !C ; E =  d  &   B ; D =  a  &   C ; C = !A  &  !B ; B =  b  &   c ; A = !b  &  !c
+1698	sat	9	32.74	F = !I ; I =  G  &  !H ; H =  E  &   F ; G = !C  &  !D ; F = !c  &   d ; E = !A  &  !B ; D =  c  &   A ; C = !d  &   B ; B =  a  &   b ; A = !a  &  !b
+169a	sat	8	3.27	F = !H ; H = !F  &  !G ; G =  a  &  !E ; F =  C  &   E ; E = !B  &  !D ; D =  b  &  !d ; C = !a  &  !A ; B = !b  &  !c ; A =  b  &   c
+169e	sat	8	2.98	F =  H ; H = !E  &  !G ; G = !C  &  !F ; F =  c  &  !D ; E =  d  &   B ; D = !A  &  !B ; C = !c  &  !A ; B =  a  &   b ; A = !a  &  !b
+16ac	sat	9	41.98	F =  I ; I = !C  &   H ; H = !E  &  !G ; G = !D  &   F ; F = !a  &   c ; E =  A  &  !B ; D = !b  &   d ; C = !A  &   B ; B =  a  &   d ; A = !b  &  !c
+16bc	sat	8	2.13	F = !H ; H = !E  &  !G ; G = !C  &   F ; F = !B  &  !D ; E =  B  &   D ; D =  a  &   d ; C =  b  &   A ; B = !b  &  !c ; A = !a  &   c
+177e	sat	9	64.98	F =  I ; I = !G  &  !H ; H = !D  &   F ; G = !B  &  !E ; F =  a  &   d ; E = !C  &  !D ; D = !b  &  !c ; C =  c  &  !A ; B = !b  &  !A ; A = !a  &  !d
+178e	sat	8	3.97	F =  H ; H = !F  &  !G ; G =  d  &   C ; F =  D  &  !E ; E =  d  &   A ; D = !B  &  !C ; C =  a  &   b ; B = !c  &  !A ; A = !a  &  !b
+1796	sat	9	34.56	F = !I ; I = !G  &  !H ; H = !c  &   F ; G = !D  &  !F ; F = !A  &  !E ; E = !a  &  !b ; D = !B  &  !C ; C = !a  &   d ; B =  c  &  !d ; A =  a  &   b
+1798	sat	8	2.81	F =  H ; H = !D  &  !G ; G = !A  &   F ; F = !C  &  !E ; E =  c  &   B ; D =  d  &   A ; C = !c  &   d ; B = !a  &  !b ; A =  a  &   b
+179a	sat	8	3.91	F = !H ; H = !E  &  !G ; G = !B  &   F ; F =  a  &  !A ; E = !a  &  !D ; D = !A  &  !C ; C = !c  &   d ; B =  b  &   d ; A = !b  &   c
+17ac	sat	8	4.03	F = !H ; H = !D  &  !G ; G = !B  &  !F ; F = !C  &  !E ; E = !c  &  !A ; D = !d  &   B ; C = !b  &   d ; B =  a  &  !A ; A = !b  &  !c
+17e8	sat	7	0.80	F =  G ; G = !E  &  !F ; F = !d  &   D ; E =  d  &  !D ; D = !B  &  !C ; C =  a  &   c ; B =  b  &  !A ; A = !a  &  !c
+1886	sat	11	150.76	F =  K ; K = !H  &  !J ; J = !E  &  !I ; I = !D  &  !G ; H =  E  &  !G ; G = !d  &  !F ; F = !B  &  !C ; E =  c  &  !C ; D =  A  &  !B ; C = !a  &  !b ; B =  a  &   b ; A = !c  &   d
+1896	sat	9	60.34	F =  I ; I = !G  &  !H ; H = !c  &  !F ; G = !E  &   F ; F = !B  &  !C ; E = !c  &  !D ; D =  d  &  !A ; C = !a  &  !b ; B = !d  &   A ; A =  a  &   b
+18a6	sat	10	104.83	F =  J ; J = !E  &   I ; I = !F  &  !H ; H = !D  &   G ; G = !B  &  !C ; F =  C  &   D ; E = !A  &   B ; D =  b  &  !c ; C =  a  &  !d ; B = !a  &   d ; A = !b  &   c
+18b6	sat	9	68.64	F =  I ; I = !E  &  !H ; H =  a  &  !G ; G = !B  &  !F ; F =  d  &  !A ; E =  C  &  !D ; D = !b  &   c ; C = !a  &  !B ; B = !d  &   A ; A =  b  &  !c
+18e6	sat	9	24.55	F = !I ; I = !G  &  !H ; H = !E  &   F ; G = !d  &   E ; F =  d  &  !A ; E = !C  &  !D ; D = !a  &  !b ; C =  b  &   B ; B =  a  &  !c ; A = !b  &  !c
+1996	sat	9	43.42	F =  I ; I = !G  &  !H ; H =  D  &  !F ; G = !D  &   F ; F = !C  &  !E ; E =  b  &   B ; D = !c  &  !d ; C = !a  &  !b ; B =  a  &  !A ; A =  c  &   d
+19a6	sat	8	3.69	F =  H ; H = !F  &  !G ; G = !D  &   E ; F =  D  &  !E ; E =  b  &  !B ; D = !A  &  !C ; C =  a  &  !d ; B =  c  &  !A ; A = !a  &   d
+19b6	sat	9	35.21	F =  I ; I = !G  &  !H ; H =  D  &  !F ; G = !D  &   F ; F = !A  &  !E ; E = !d  &  !C ; D =  b  &  !B ; C = !a  &  !c ; B =  a  &   c ; A = !a  &   d
+19e6	sat	7	0.45	F =  G ; G = !E  &  !F ; F =  d  &  !D ; E = !d  &   D ; D = !A  &  !C ; C =  b  &  !B ; B =  a  &  !c ; A =  a  &  !b
+1ab6	sat	9	35.10	F =  I ; I = !G  &  !H ; H =  a  &  !F ; G =  C  &  !E ; F = !A  &  !E ; E = !d  &   D ; D =  b  &  !c ; C = !a  &  !B ; B = !b  &   c ; A =  c  &   d
+1ac6	sat	9	25.49	F = !I ; I = !G  &  !H ; H =  E  &  !F ; G = !E  &   F ; F = !C  &  !D ; E =  a  &  !c ; D =  d  &  !B ; C = !b  &  !A ; B = !a  &  !b ; A =  c  &   d
+1ae6	sat	9	22.61	F = !I ; I = !G  &  !H ; H = !a  &  !E ; G = !D  &   F ; F =  a  &  !B ; E = !A  &  !C ; D = !c  &   A ; C = !b  &   B ; B =  c  &   d ; A =  b  &  !d
+1bd8	sat	9	62.92	F =  I ; I = !D  &  !H ; H = !E  &   G ; G =  d  &  !F ; F = !a  &  !b ; E =  a  &  !c ; D = !d  &  !C ; C = !A  &  !B ; B = !a  &  !c ; A =  a  &  !b
+1be4	sat	6	0.11	F = !F ; F = !D  &  !E ; E = !d  &  !C ; D =  d  &   C ; C = !A  &  !B ; B = !a  &   b ; A =  a  &   c
+28be	sat	7	0.31	F = !G ; G = !A  &  !F ; F = !C  &   E ; E = !B  &  !D ; D = !a  &   d ; C = !b  &  !c ; B =  b  &   c ; A =  a  &  !d
+2996	sat	10	108.22	F = !J ; J = !H  &  !I ; I =  F  &   G ; H = !F  &  !G ; G = !C  &  !D ; F = !A  &  !E ; E =  B  &  !C ; D =  a  &  !b ; C = !a  &   b ; B =  c  &   d ; A = !c  &  !d
+299e	sat	10	107.00	F = !J ; J = !H  &  !I ; I = !b  &  !G ; H =  C  &  !F ; G = !E  &  !F ; F = !a  &   D ; E =  a  &  !D ; D = !A  &  !B ; C =  b  &  !B ; B =  c  &   d ; A = !c  &  !d
+29d6	sat	9	41.86	F = !I ; I = !G  &  !H ; H = !d  &   F ; G =  d  &  !F ; F = !D  &  !E ; E =  b  &   A ; D = !b  &   C ; C = !A  &  !B ; B = !a  &   c ; A =  a  &  !c
+2dd2	sat	7	0.51	F =  G ; G = !E  &  !F ; F =  B  &   D ; E = !B  &  !D ; D = !A  &  !C ; C = !c  &  !d ; B =  a  &  !b ; A =  c  &   d
+6996	sat	9	25.84	F = !I ; I = !G  &  !H ; H = !d  &   F ; G =  d  &  !F ; F = !D  &  !E ; E =  c  &   C ; D = !c  &  !C ; C = !A  &  !B ; B =  a  &   b ; A = !a  &  !b
+80fe	sat	6	0.11	F = !F ; F = !D  &  !E ; E = !d  &  !B ; D =  a  &  !C ; C =  d  &  !A ; B = !b  &  !c ; A =  b  &   c
+817e	sat	8	2.27	F =  H ; H = !F  &  !G ; G = !d  &   E ; F =  d  &  !E ; E = !B  &  !D ; D =  a  &  !C ; C =  b  &   c ; B = !a  &  !A ; A = !b  &  !c
+82be	sat	6	0.11	F =  F ; F = !D  &  !E ; E = !a  &  !C ; D =  d  &   C ; C = !A  &  !B ; B =  b  &   c ; A = !b  &  !c
+833e	sat	9	17.26	F =  I ; I = !F  &  !H ; H = !c  &  !G ; G = !B  &  !D ; F =  c  &   E ; E = !A  &  !C ; D = !a  &   A ; C =  a  &   B ; B =  b  &   d ; A = !b  &  !d
+88ee	sat	4	0.04	F = !D ; D = !B  &  !C ; C =  a  &  !A ; B =  b  &  !d ; A = !b  &   d
+9696	sat	6	0.12	F =  F ; F = !D  &  !E ; E = !b  &  !C ; D =  b  &   C ; C = !A  &  !B ; B = !a  &  !c ; A =  a  &   c
+aaaa	sat	0	0.01	F =  a
