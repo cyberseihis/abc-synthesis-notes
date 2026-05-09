@@ -50,30 +50,30 @@ Two functions land at 0 gates because both outputs are PI literals
 
 **Dual-rail (`aoexact`):**
 
-| gates | count |
-| --- | --- |
-| 0 | 2 |
-| 2 | 3 |
-| 4 | 14 |
-| 6 | 24 |
-| 8 | 53 |
-| 10 | 69 |
-| 11 | 5 |
-| 12 | 75 |
-| 13 | 16 |
-| 14 | 31 |
-| 15 | 6 |
-| 16 | 9 |
-| 17 | 1 |
-| **total** | **308** |
+| gates | proven optima | upper-bound only |
+| --- | --- | --- |
+| 0 | 2 | |
+| 2 | 3 | |
+| 4 | 14 | |
+| 6 | 24 | |
+| 8 | 53 | |
+| 10 | 69 | |
+| 11 | 5 | |
+| 12 | 75 | |
+| 13 | 16 | |
+| 14 | 31 | |
+| 15 | 6 | |
+| 16 | 8 | 1 (`(1e, 78)`) |
+| 17 |   | 1 (`(18, 96)`) |
+| **subtotal** | **306** | **2** |
 
-Mode 12, max 17. The original sweep had 2 unresolved at 10 min wall budget
-(`(18, 96)` and `(1e, 78)`, both XOR3-flavored); a follow-up rerun at
-23 min/M with directly-specified M values resolved each as an **upper
-bound**: `(18, 96)` ≤ 17 (M=15, M=16 timed out so the true minimum may be
-lower), `(1e, 78)` ≤ 16. Two functions land at 0 gates because all four
-output slots happen to coincide with PI rails directly (no internal nodes
-needed).
+Mode 12, max 17. Two entries are recorded with `status=ub` (upper bound)
+rather than `sat` in the TSV: a follow-up rerun at 23 min/M proved them
+SAT at the listed M, but the next-smallest M values (M=15, M=16 for
+`(18, 96)`; M=14, M=15 for `(1e, 78)`) timed out without a UNSAT proof,
+so the true minima may be lower. Two functions land at 0 gates because
+all four output slots happen to coincide with PI rails directly (no
+internal nodes needed).
 
 ## The 2× rule
 
@@ -81,32 +81,40 @@ Pairing the two TSVs and comparing `ao_gates` against `2 × aig_gates`:
 
 | relation | count |
 | --- | --- |
-| ao < 2·aig | **33** |
-| ao = 2·aig | **275** |
+| ao < 2·aig (proven) | **32** |
+| ao < 2·aig (upper-bound) | 1 (`(18, 96)`) |
+| ao = 2·aig (proven) | **274** |
+| ao = 2·aig (upper-bound) | 1 (`(1e, 78)`) |
 | ao > 2·aig | 0 |
-| unresolved | 0 |
 
-**89 % of classes hit the 2× ratio exactly**. None go above
+**89 % of classes hit the 2× ratio exactly** (proven). The two upper-bound
+entries match a strict-2× or sub-2× position at their *current* upper
+bounds; tighter bounds wouldn't make them exceed 2× either way. None go above
 (good — 2× is a constructive upper bound: take an AIG, expand each
 polarized AND into AND-of-positive-rails plus an OR-of-negative-rails
 to materialize the complement, route outputs accordingly).
 
-## The 33 sub-2× wins
+## The 32 proven sub-2× wins (+1 upper-bound candidate)
 
 After the floor relaxation, every remaining sub-2× case is a **genuine
-internal-cone sharing win**. Distribution of "saved" amounts:
+internal-cone sharing win**. Distribution of "saved" amounts among the
+32 proven cases:
 
 | saved | count |
 | --- | --- |
-| 1 | 26 |
+| 1 | 25 |
 | 2 | 7 |
 | 3 | 0 |
 | 4 | 0 |
 
-Mode 1, mean ≈ 1.2. One of the 33 — `(18, 96)`, with ao=17 vs aig=9 — is
-an upper-bound result from a 23-min-per-M direct probe; the true optimum
-could be as low as 15 (M=15 and M=16 both timed out without resolving).
-The other 32 are proven optima. The savings ceiling is small because dual-rail
+Mode 1, mean ≈ 1.2.
+
+The 33rd candidate `(18, 96)` is **not yet proven**: ao=17 (vs aig=9,
+2×aig=18) is a SAT upper bound from a 23-min-per-M direct probe.
+M=15 and M=16 both timed out without UNSAT proofs, so the true optimum
+could be as low as 15 — in which case `(18, 96)` would shift from
+`saved=1` to `saved=3`. Listed separately so the proven-optima
+distribution stays clean. The savings ceiling is small because dual-rail
 synthesis fundamentally has to compute every output's negation as a
 separate monotonic cone — sharing buys you partial gates, not whole ones.
 
