@@ -63,14 +63,17 @@ Two functions land at 0 gates because both outputs are PI literals
 | 13 | 16 |
 | 14 | 31 |
 | 15 | 6 |
-| 16 | 8 |
-| timeout | 2 |
+| 16 | 9 |
+| 17 | 1 |
 | **total** | **308** |
 
-Mode 12, max 16. Two unresolved at 10 min wall budget: `(18, 96)` and
-`(1e, 78)`, both XOR3-flavored. Same two functions land at 0 gates
-because all four output slots happen to coincide with PI rails directly
-(no internal nodes needed).
+Mode 12, max 17. The original sweep had 2 unresolved at 10 min wall budget
+(`(18, 96)` and `(1e, 78)`, both XOR3-flavored); a follow-up rerun at
+23 min/M with directly-specified M values resolved each as an **upper
+bound**: `(18, 96)` ≤ 17 (M=15, M=16 timed out so the true minimum may be
+lower), `(1e, 78)` ≤ 16. Two functions land at 0 gates because all four
+output slots happen to coincide with PI rails directly (no internal nodes
+needed).
 
 ## The 2× rule
 
@@ -78,29 +81,32 @@ Pairing the two TSVs and comparing `ao_gates` against `2 × aig_gates`:
 
 | relation | count |
 | --- | --- |
-| ao < 2·aig | **32** |
-| ao = 2·aig | **274** |
+| ao < 2·aig | **33** |
+| ao = 2·aig | **275** |
 | ao > 2·aig | 0 |
-| unresolved | 2 |
+| unresolved | 0 |
 
-**89 % of resolved classes hit the 2× ratio exactly**. None go above
+**89 % of classes hit the 2× ratio exactly**. None go above
 (good — 2× is a constructive upper bound: take an AIG, expand each
 polarized AND into AND-of-positive-rails plus an OR-of-negative-rails
 to materialize the complement, route outputs accordingly).
 
-## The 32 sub-2× wins
+## The 33 sub-2× wins
 
 After the floor relaxation, every remaining sub-2× case is a **genuine
 internal-cone sharing win**. Distribution of "saved" amounts:
 
 | saved | count |
 | --- | --- |
-| 1 | 25 |
+| 1 | 26 |
 | 2 | 7 |
 | 3 | 0 |
 | 4 | 0 |
 
-Mode 1, mean ≈ 1.2. The savings ceiling is small because dual-rail
+Mode 1, mean ≈ 1.2. One of the 33 — `(18, 96)`, with ao=17 vs aig=9 — is
+an upper-bound result from a 23-min-per-M direct probe; the true optimum
+could be as low as 15 (M=15 and M=16 both timed out without resolving).
+The other 32 are proven optima. The savings ceiling is small because dual-rail
 synthesis fundamentally has to compute every output's negation as a
 separate monotonic cone — sharing buys you partial gates, not whole ones.
 
