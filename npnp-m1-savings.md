@@ -8,12 +8,14 @@ NPN brute-force results for n=3 m=1 and n=4 m=1, comparing AIG cost
 
 | n m | classes | ao < 2·aig | ao = 2·aig | ao > 2·aig | timeout |
 | --- | --- | --- | --- | --- | --- |
-| 3 1 | 14  | 0 | 14  | 0 | 0  |
-| 4 1 | 222 | 1 | 132 | 0 | 89 |
+| 3 1 | 14  | 0  | 14  | 0 | 0  |
+| 4 1 | 222 | 14 | 135 | 0 | 73 |
 
-(After a rerun of the originally-timed-out 114 entries with a 20 min
-per-function wall budget; 25 of them resolved as SAT-at-M=14 upper bounds,
-89 still timed out at M=14 within the larger budget.)
+(After progressive reruns: original 4 min/function wall left 114 timeouts;
+20 min/function wall resolved 25 more (still all at the 2× line); 8 h /
+function wall in a 90-way parallel batch resolved 16 more, including 13
+additional sub-2× cases. The 2× ceiling holds across every one of the
+149 resolved 4-input single-output classes; no bound violations.)
 
 For 3-input single-output functions the 2× cost ratio is hit **exactly**
 on every NPN class. No internal-cone sharing happens because there's only
@@ -21,15 +23,49 @@ one logical output (and its complement) — `andexact` already captures
 every gate-level reuse via its per-fanin polarity bits, leaving nothing
 for dual-rail to reclaim.
 
-For 4-input single-output, the same picture *almost* holds: of 222 NPN
-classes, 107 of the resolved 108 hit 2× exactly, and **only one class
-breaks the pattern**: `0x012e` (saves 1 gate, aig=7, ao=13 vs 2×aig=14).
+For 4-input single-output, the picture is more interesting once enough
+SAT time is spent. After the 8-hour-per-function YOLO rerun, **14 classes
+beat the 2× ratio** (out of 149 resolved); 135 hit it exactly; 73 still
+time out. The 14 wins all have AIG count 7 or 8 — exactly the regime
+where the SAT-search wall for dual-rail sits at M ≈ 14-16. Most are
+upper-bound results (the iter sweep walked through M values that timed
+out before landing SAT), but they still demonstrate that *some*
+internal-cone sharing happens for 4-input single-output, which doesn't
+happen at all for 3-input.
 
-The 114 unresolved cases all cluster at AIG=7-9 — the SAT-search wall
-for dual-rail at 4 inputs hits right at M≈14-18, exactly the range the
-2× upper bound predicts for these AIG counts.
+The 73 still-unresolved cases all have AIG ≥ 8 with the search wall above
+M=15 even at 8 h/function. Pushing further would need either more wall
+time or different SAT tactics (possibly CEGAR, or a tighter
+symmetry-breaking encoding).
 
-## The surprising class: `0x012e`
+## All 14 sub-2× wins
+
+| ao | tt | aig | 2·aig | saved | status |
+| --- | --- | --- | --- | --- | --- |
+| 13 | `012e` | 7 | 14 | 1 | sat |
+| 14 | `0198` | 8 | 16 | 2 | ub |
+| 14 | `036e` | 8 | 16 | 2 | ub |
+| 14 | `06be` | 8 | 16 | 2 | sat |
+| 15 | `012c` | 8 | 16 | 1 | ub |
+| 15 | `016e` | 8 | 16 | 1 | ub |
+| 15 | `019a` | 8 | 16 | 1 | ub |
+| 15 | `01be` | 8 | 16 | 1 | ub |
+| 15 | `069e` | 8 | 16 | 1 | ub |
+| 15 | `07b2` | 8 | 16 | 1 | ub |
+| 15 | `1696` | 8 | 16 | 1 | ub |
+| 15 | `169a` | 8 | 16 | 1 | ub |
+| 15 | `169e` | 8 | 16 | 1 | ub |
+| 15 | `178e` | 8 | 16 | 1 | ub |
+
+All 14 have AIG count in {7, 8} (savings of 1 or 2 gates). Three save
+2 gates: `0198`, `036e`, `06be` — those have AIG=8 and ao=14, the
+biggest absolute savings observed in the m=1 regime.
+
+`status=sat` means the iter sweep walked through every M < ao with a
+proven UNSAT result; `status=ub` means at least one earlier M timed out
+inside the budget so the true minimum could be slightly lower.
+
+## The first surprising class: `0x012e`
 
 Truth table (4 vars; `f(a,b,c,d) = 1` at the bold minterms):
 
