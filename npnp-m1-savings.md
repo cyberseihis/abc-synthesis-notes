@@ -38,6 +38,25 @@ M=15 even at 8 h/function. Pushing further would need either more wall
 time or different SAT tactics (possibly CEGAR, or a tighter
 symmetry-breaking encoding).
 
+## Soundness check on the sub-2× claims
+
+Most of the 14 sub-2× cases have ao status `ub` rather than `sat`. The
+inequality `ao_ub < 2 × aig_reported` is only sound if the AIG side is
+a proven optimum (so `2 × aig_reported = 2 × aig_true`). To verify, a
+direct probe at `M = aig_reported − 1` was run for each of the 14 wins
+with a 5 min wall budget. **All 14 returned UNSAT**, so every AIG count
+in the table below is the proven minimum and `ao_true ≤ ao_ub <
+2 × aig_true` for each.
+
+* 2 cases with both sides proven: `012e` (sat ao=13) and `06be` (sat ao=14).
+* 12 cases with ao status `ub` and aig proven — sub-2× still sound,
+  AO side could be 1-2 gates lower than reported.
+
+**Greatest improvement vs 2× AIG in this regime**: `0198` (ao=14 ub vs
+aig=8) saves 2 gates of 16, i.e. **12.5 %**. The actual margin could be
+larger if `0198`'s true AO minimum is below 14. Note the n=3 m=2 dataset
+has a higher proven margin (`(2e, e2)` at **20.0 %**).
+
 ## All 14 sub-2× wins
 
 | ao | tt | aig | 2·aig | saved | status |

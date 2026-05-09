@@ -142,6 +142,25 @@ The biggest single-saving cluster is the `(16, …)` and `(1a, …)` rows —
 all save 1-2 gates against AIG=7-8 baselines. The `(18, 36)` case is the
 largest absolute count where dual-rail beats 2×: aig=8, ao=14, saved=2.
 
+## Soundness check on the sub-2× claims
+
+A sub-2× claim has the form `ao_reported < 2 × aig_reported`. For the
+inequality to imply `ao_true < 2 × aig_true` we need the AIG side to be
+a proven optimum (so `aig_reported = aig_true = aig_lb`). To verify, a
+direct probe at `M = aig_reported − 1` was run for each of the 33 sub-2×
+classes, with a 5 min wall budget per probe. **All 33 returned UNSAT**,
+confirming that every reported AIG count is the proven minimum and the
+sub-2× conclusions hold:
+
+* 32 cases: ao status `sat` and aig proven → both sides proven.
+* 1 case (`(18, 96)`): ao status `ub` and aig proven → still sound for
+  the sub-2× claim (`ao_true ≤ ao_ub < 2 × aig_proven`), even though
+  the AO side itself isn't pinned down.
+
+**Greatest improvement vs 2× AIG**: `(2e, e2)` saves 2 gates of 10, i.e.
+**20.0 %** (aig=5, ao=8). Mode saving is 1 gate (≈ 7-14 % depending on
+the AIG baseline).
+
 ## AIG floor relaxation
 
 The first sweep used unmodified `andexact` and reported 45 sub-2× cases
