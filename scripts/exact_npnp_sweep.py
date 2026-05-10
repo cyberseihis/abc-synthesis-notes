@@ -7,9 +7,13 @@ Usage:
   python3 exact_npnp_sweep.py --engine andexact --n-in 3 --n-out 1 \
       --input /work/npnp/classes_n3_m1.txt --output /work/npnp/aig_npnp_n3_m1.tsv
 
-Status field uses 'sat' for proven minima from the -m sweep, 'ub' for
-upper-bound results from a direct -M probe (set --status-override ub),
-and 'timeout' / 'unknown' otherwise.
+Status field is decided from ABC's structured EXA9_ITER_RESULT /
+EXA10_ITER_RESULT line:
+  sat     -- proven minimum (every smaller M was UNSAT)
+  ub      -- chain valid, optimum unproven (some smaller M timed out)
+  unsat   -- no realization within -M (rare for sane ceilings)
+  timeout -- wall-killed or no SAT and at least one M timed out
+  tt_mismatch / verify_mismatch / unknown -- diagnostic, should never trip
 """
 
 import argparse
@@ -18,6 +22,8 @@ import os
 import re
 import subprocess
 import time
+
+from _exa_parse import parse_run_output, classify_iter
 
 ABC = "/work/abc/abc"
 
@@ -63,22 +69,22 @@ def run_one(engine, n_in, n_out, tts, max_nodes, per_m_timeout, wall_timeout, sw
 
     GATES_RE = GATES_RE_AO if engine == "aoexact" else GATES_RE_AIG
 
-    # Capture the LAST realization block (the SAT one).
-    gates = None
+    # Capture the LAST realization block (the SAT one) for the chain field.
     blocks = []
     last_block = []
     capture = False
     for ln in out.splitlines():
         m = GATES_RE.search(ln)
         if m:
-            gates = int(m.group(1))
             blocks.append(last_block)
             last_block = []
             capture = True
             continue
         if capture:
             if (ln.startswith("Finished") or ln.startswith("Total runtime") or
-                ln.startswith("Running") or ln.strip() == ""):
+                ln.startswith("Running") or ln.startswith("EXA9_") or
+                ln.startswith("EXA10_") or ln.startswith("Iter result:") or
+                ln.strip() == ""):
                 continue
             stripped = ln.strip()
             if stripped:
@@ -87,16 +93,14 @@ def run_one(engine, n_in, n_out, tts, max_nodes, per_m_timeout, wall_timeout, sw
         blocks.append(last_block)
     chain_lines = blocks[-1] if blocks else []
 
-    if gates is not None:
-        status = "sat"
-    elif timed_out or "timed out" in out:
-        status = "timeout"
-    else:
-        status = "unknown"
+    parsed = parse_run_output(out, engine)
+    expected_tt = ",".join(tts)
+    status, gates, verify = classify_iter(parsed, timed_out, expected_tt)
 
     return {"tts": tts, "status": status,
             "gates": gates if gates is not None else "",
             "wall_s": f"{wall:.2f}",
+            "verify": verify,
             "chain": " ; ".join(chain_lines)}
 
 
@@ -136,33 +140,39 @@ def main():
                 row = fut.result()
             except Exception as exc:
                 row = {"tts": t, "status": f"err:{exc}", "gates": "",
-                       "wall_s": "", "chain": ""}
+                       "wall_s": "", "verify": "n/a", "chain": ""}
             rows.append(row)
             done += 1
             if done % 25 == 0 or done == len(cls):
                 el = time.time() - started
                 ok = sum(1 for r in rows if r["status"] == "sat")
+                ub = sum(1 for r in rows if r["status"] == "ub")
                 to = sum(1 for r in rows if r["status"] == "timeout")
-                print(f"[{done}/{len(cls)}] elapsed={el:.1f}s  sat={ok} timeout={to}",
+                print(f"[{done}/{len(cls)}] elapsed={el:.1f}s  sat={ok} ub={ub} timeout={to}",
                       flush=True)
 
     rows.sort(key=lambda r: tuple(int(x, 16) for x in r["tts"]))
 
     cols = [f"tt{i}" for i in range(args.n_out)]
     with open(args.output, "w") as fh:
-        fh.write("\t".join(cols + ["status", "gates", "wall_s", "chain"]) + "\n")
+        fh.write("\t".join(cols + ["status", "gates", "wall_s", "verify",
+                                   "chain"]) + "\n")
         for r in rows:
             fh.write("\t".join(list(r["tts"])
                                + [r["status"], str(r["gates"]),
-                                  r["wall_s"], r["chain"]]) + "\n")
+                                  r["wall_s"], r["verify"], r["chain"]]) + "\n")
 
     hist = {}
     for r in rows:
-        k = r["gates"] if r["status"] == "sat" else r["status"]
+        if r["status"] == "sat":
+            k = f"sat:{r['gates']}"
+        elif r["status"] == "ub":
+            k = f"ub:{r['gates']}"
+        else:
+            k = r["status"]
         hist[k] = hist.get(k, 0) + 1
     print(f"\nWrote {args.output}\nHistogram:")
-    for k in sorted(hist.keys(),
-                    key=lambda x: (str(x).isdigit() and int(x) or 999, str(x))):
+    for k in sorted(hist.keys()):
         print(f"  {k}: {hist[k]}")
 
 

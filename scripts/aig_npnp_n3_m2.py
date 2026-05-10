@@ -5,12 +5,13 @@
 Reads /work/npnp/classes_n3_m2.txt, runs `andexact -m -M MAX -T PERM` on
 each entry in a thread pool, and writes a tab-separated result file:
 
-    tt0\ttt1\tstatus\tgates\twall_s\tchain
+    tt0\ttt1\tstatus\tgates\twall_s\tverify\tchain
 
-`status` ∈ {"sat", "timeout"}; `chain` is the raw gate listing from ABC's
-solution printout (one line per gate, semicolon-separated), useful as a
-proof-of-circuit. Hard cases that don't resolve within the per-function
-wall budget are recorded as "timeout".
+`status` is decided from the structured EXA9_ITER_RESULT line emitted by
+patched ABC: 'sat' (proven minimum), 'ub' (chain valid, optimum unproven),
+'unsat', 'timeout', 'tt_mismatch', 'verify_mismatch', or 'unknown'.
+`chain` is the raw gate listing for the SAT solution; `verify` is ABC's
+internal-verifier flag for that chain.
 """
 
 import argparse
@@ -20,6 +21,8 @@ import re
 import subprocess
 import sys
 import time
+
+from _exa_parse import parse_run_output, classify_iter
 
 ABC = "/work/abc/abc"
 DEFAULT_INPUT = "/work/npnp/classes_n3_m2.txt"
@@ -61,7 +64,6 @@ def run_one(tt0, tt1, max_nodes, per_m_timeout, wall_timeout):
     wall = time.time() - t0
 
     # Walk lines from the bottom of the last realization block (the SAT one).
-    gates = None
     chain_lines = []
     capture = False
     last_block = []
@@ -69,14 +71,15 @@ def run_one(tt0, tt1, max_nodes, per_m_timeout, wall_timeout):
     for ln in out.splitlines():
         m = GATES_RE.search(ln)
         if m:
-            gates = int(m.group(1))
             blocks.append(last_block)
             last_block = []
             capture = True
             continue
         if capture:
-            if ln.startswith("Finished") or ln.startswith("Total runtime") \
-               or ln.startswith("Running") or ln.strip() == "":
+            if (ln.startswith("Finished") or ln.startswith("Total runtime") or
+                ln.startswith("Running") or ln.startswith("EXA9_") or
+                ln.startswith("EXA10_") or ln.startswith("Iter result:") or
+                ln.strip() == ""):
                 continue
             stripped = ln.strip()
             if stripped:
@@ -86,12 +89,8 @@ def run_one(tt0, tt1, max_nodes, per_m_timeout, wall_timeout):
     if blocks:
         chain_lines = blocks[-1]
 
-    if gates is not None:
-        status = "sat"
-    elif timed_out or "timed out" in out:
-        status = "timeout"
-    else:
-        status = "unknown"
+    parsed = parse_run_output(out, "andexact")
+    status, gates, verify = classify_iter(parsed, timed_out, f"{tt0},{tt1}")
 
     return {
         "tt0": tt0,
@@ -99,6 +98,7 @@ def run_one(tt0, tt1, max_nodes, per_m_timeout, wall_timeout):
         "status": status,
         "gates": gates if gates is not None else "",
         "wall_s": f"{wall:.2f}",
+        "verify": verify,
         "chain": " ; ".join(chain_lines),
     }
 
@@ -140,29 +140,31 @@ def main():
                 row = fut.result()
             except Exception as exc:
                 row = {"tt0": t0, "tt1": t1, "status": f"err:{exc}",
-                       "gates": "", "wall_s": "", "chain": ""}
+                       "gates": "", "wall_s": "", "verify": "n/a", "chain": ""}
             rows.append(row)
             done += 1
             if done % 25 == 0 or done == len(cls):
                 el = time.time() - started
                 ok = sum(1 for r in rows if r["status"] == "sat")
+                ub = sum(1 for r in rows if r["status"] == "ub")
                 to = sum(1 for r in rows if r["status"] == "timeout")
-                print(f"[{done}/{len(cls)}] elapsed={el:.1f}s  sat={ok} timeout={to}",
+                print(f"[{done}/{len(cls)}] elapsed={el:.1f}s  sat={ok} ub={ub} timeout={to}",
                       flush=True)
 
     rows.sort(key=lambda r: (int(r["tt0"], 16), int(r["tt1"], 16)))
     with open(args.output, "w") as fh:
-        fh.write("tt0\ttt1\tstatus\tgates\twall_s\tchain\n")
+        fh.write("tt0\ttt1\tstatus\tgates\twall_s\tverify\tchain\n")
         for r in rows:
-            fh.write(f"{r['tt0']}\t{r['tt1']}\t{r['status']}\t{r['gates']}\t{r['wall_s']}\t{r['chain']}\n")
+            fh.write(f"{r['tt0']}\t{r['tt1']}\t{r['status']}\t{r['gates']}\t{r['wall_s']}\t{r['verify']}\t{r['chain']}\n")
 
-    # quick histogram
+    # quick histogram by status:gates so 'sat' and 'ub' don't collapse
     hist = {}
     for r in rows:
-        k = r["gates"] if r["status"] == "sat" else r["status"]
+        k = (f"{r['status']}:{r['gates']}" if r["status"] in ("sat", "ub")
+             else r["status"])
         hist[k] = hist.get(k, 0) + 1
-    print(f"\nWrote {args.output}\nGate-count histogram (gates → count):")
-    for k in sorted(hist.keys(), key=lambda x: (str(x).isdigit() and int(x) or 999, str(x))):
+    print(f"\nWrote {args.output}\nGate-count histogram:")
+    for k in sorted(hist.keys()):
         print(f"  {k}: {hist[k]}")
 
 
