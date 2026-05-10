@@ -4,6 +4,24 @@ NPN brute-force results for n=3 m=1 and n=4 m=1, comparing AIG cost
 (`andexact` with the floor relaxation patch) to dual-rail AND/OR cost
 (`aoexact`).
 
+The AIG side has been audited at M = aig − 1 with a 10 min wall budget per
+class (`audit_aig_n4_m1.tsv`): 219 of 222 classes are proven optima,
+1 trivial (`0000`, k=2), **1 over-counted** by the iter sweep (`1886`:
+reported 11, but a 600s probe at M=10 returned SAT and a longer probe
+at M=9 confirmed UNSAT, so the true minimum is exactly 10), and 1 still
+inconclusive at the standard audit budget (`18a6`, k=10 — a separate
+extended probe at M=9 returned UNSAT after 740 s, so the true minimum
+is also exactly 10). The other two classes that exceeded the previously
+reported max-of-9 for n=4 NPN (`2996`, `299e`) both probed to proven
+M=10 — they are real high-count classes. The AO side has been audited
+at M = ao − 1 with a 20 min wall budget per class
+(`audit_ao_n4_m1.tsv`, 149 SAT/UB rows): 44 classes are proven optima,
+1 trivial, and 104 remain upper bounds (the optimum could be 1-2 gates
+lower than reported). The over-count on `1886` was caused by the iter
+loop in `bmcMaj9.c` collapsing UNSAT and TIMEOUT into one return code;
+with the structured-output patch (`EXA9_RESULT:` / `EXA9_ITER_RESULT:`)
+future sweeps self-label proven vs upper-bound.
+
 ## Headline
 
 | n m | classes | ao < 2·aig | ao = 2·aig | ao > 2·aig | timeout |
@@ -40,17 +58,27 @@ symmetry-breaking encoding).
 
 ## Soundness check on the sub-2× claims
 
-Most of the 14 sub-2× cases have ao status `ub` rather than `sat`. The
-inequality `ao_ub < 2 × aig_reported` is only sound if the AIG side is
-a proven optimum (so `2 × aig_reported = 2 × aig_true`). To verify, a
-direct probe at `M = aig_reported − 1` was run for each of the 14 wins
-with a 5 min wall budget. **All 14 returned UNSAT**, so every AIG count
-in the table below is the proven minimum and `ao_true ≤ ao_ub <
-2 × aig_true` for each.
+The inequality `ao_reported < 2 × aig_reported` is only sound as a
+sub-2× claim if the AIG side is a proven optimum (so
+`2 × aig_reported = 2 × aig_true`); the AO side only needs to be a
+valid upper bound (which it is, by construction — every reported count
+comes with a working chain). To verify the AIG side, a direct probe at
+`M = aig_reported − 1` was run for each of the 14 wins. **All 14
+returned UNSAT**, so every AIG count in the table below is the proven
+minimum and `ao_true ≤ ao_reported < 2 × aig_true` for each.
 
-* 2 cases with both sides proven: `012e` (sat ao=13) and `06be` (sat ao=14).
-* 12 cases with ao status `ub` and aig proven — sub-2× still sound,
-  AO side could be 1-2 gates lower than reported.
+The AO side was audited the same way at the longer 20 min budget. **All
+14 AO probes timed out at M − 1**, including the two cases (`012e`
+ao=13, `06be` ao=14) the original sweep status-coded as `sat`. The
+status='sat' label from the iter sweep does *not* by itself prove
+optimality at the AO side: iter mode walks M upward with a per-M
+timeout, and an UNSAT result at every M < ao_reported is
+indistinguishable from "every M < ao_reported timed out before
+deciding" in the pre-patch tool. The structured-output patch
+(`EXA10_RESULT:` / `EXA10_ITER_RESULT:`) fixes this for future sweeps,
+but the current dataset can't tell them apart. So conservatively, all
+14 AO counts are upper bounds at this budget; the true AO minimum could
+be 1-2 gates lower for any of them.
 
 **Greatest improvement vs 2× AIG in this regime**: `0198` (ao=14 ub vs
 aig=8) saves 2 gates of 16, i.e. **12.5 %**. The actual margin could be
@@ -80,9 +108,12 @@ All 14 have AIG count in {7, 8} (savings of 1 or 2 gates). Three save
 2 gates: `0198`, `036e`, `06be` — those have AIG=8 and ao=14, the
 biggest absolute savings observed in the m=1 regime.
 
-`status=sat` means the iter sweep walked through every M < ao with a
-proven UNSAT result; `status=ub` means at least one earlier M timed out
-inside the budget so the true minimum could be slightly lower.
+`status=sat` is what the iter sweep reported (it landed SAT at this M
+and saw "no SAT" at every smaller M, but that "no SAT" collapses UNSAT
+and timeout — see the soundness check above); `status=ub` means at
+least one earlier M was a known timeout. After the M − 1 audit at 20
+min/probe, all 14 AO counts in this table are best treated as upper
+bounds.
 
 ## The first surprising class: `0x012e`
 

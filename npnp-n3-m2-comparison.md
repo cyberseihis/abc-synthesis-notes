@@ -77,46 +77,87 @@ internal nodes needed).
 
 ## The 2× rule
 
-Pairing the two TSVs and comparing `ao_gates` against `2 × aig_gates`:
+Pairing the two TSVs and comparing `ao_gates` against `2 × aig_gates`. The
+AO side is now reported with the audit-corrected proof status (see
+`/work/npnp/audit_ao_n3_m2.tsv`); the AIG side is fully proven optimal
+(see `/work/npnp/audit_aig_n3_m2.tsv`):
 
-| relation | count |
-| --- | --- |
-| ao < 2·aig (proven) | **32** |
-| ao < 2·aig (upper-bound) | 1 (`(18, 96)`) |
-| ao = 2·aig (proven) | **274** |
-| ao = 2·aig (upper-bound) | 1 (`(1e, 78)`) |
-| ao > 2·aig | 0 |
+| relation | proven | upper-bound | total |
+| --- | --- | --- | --- |
+| ao < 2·aig | **10** | 23 (sound — see below) | **33** |
+| ao = 2·aig | **221** | 50 (could flip to sub-2× with longer SAT) | 271 |
+| ao > 2·aig | 0 | 0 | 0 |
+| trivial (k=0) | 2 | — | 2 |
 
-**89 % of classes hit the 2× ratio exactly** (proven). The two upper-bound
-entries match a strict-2× or sub-2× position at their *current* upper
-bounds; tighter bounds wouldn't make them exceed 2× either way. None go above
-(good — 2× is a constructive upper bound: take an AIG, expand each
-polarized AND into AND-of-positive-rails plus an OR-of-negative-rails
-to materialize the complement, route outputs accordingly).
+**No class exceeds 2× — that ceiling holds across all 308.** 2× is a
+constructive upper bound: take an AIG, expand each polarized AND into
+AND-of-positive-rails plus an OR-of-negative-rails to materialize the
+complement, route outputs accordingly.
 
-## The 32 proven sub-2× wins (+1 upper-bound candidate)
+About proof strength on the sub-2× side:
 
-After the floor relaxation, every remaining sub-2× case is a **genuine
-internal-cone sharing win**. Distribution of "saved" amounts among the
-32 proven cases:
+* **10 cases are fully proven sub-2×** — both AIG and AO sides have a
+  UNSAT proof at `aig − 1` and `ao − 1` respectively (20 min budget).
+* **23 cases are sound but unproven sub-2×** — AIG side is proven, AO
+  side timed out at `ao − 1`. The claim `ao_min < 2·aig_proven` still
+  holds because `ao_min ≤ ao_reported < 2·aig_proven`; the savings could
+  be **larger** than reported.
 
-| saved | count |
-| --- | --- |
-| 1 | 25 |
-| 2 | 7 |
-| 3 | 0 |
-| 4 | 0 |
+About the at-2× row:
 
-Mode 1, mean ≈ 1.2.
+* **50 cases originally tabulated as "exactly 2×" are actually
+  upper-bound matches**, not proven optima. With longer SAT budgets,
+  some of these may flip to sub-2×.
+* The audit found one such flip already: **`(16, 6e)` was reported
+  ao=16 (= 2·aig=8) but a 10-min probe at M=15 returned SAT, so its true
+  AO minimum is at most 15.** Promoted to the sub-2× row above.
+* The original sweep used a per-M timeout that masked these as if they
+  were proven optima — the iter loop in `bmcMaj9.c` collapsed UNSAT and
+  TIMEOUT into the same return code. After the structured-output patch
+  (`EXA9_RESULT:` / `EXA9_ITER_RESULT:`) and per-M proof tracking, future
+  sweeps self-label proven vs upper-bound and won't repeat this.
 
-The 33rd candidate `(18, 96)` is **not yet proven**: ao=17 (vs aig=9,
-2×aig=18) is a SAT upper bound from a 23-min-per-M direct probe.
-M=15 and M=16 both timed out without UNSAT proofs, so the true optimum
-could be as low as 15 — in which case `(18, 96)` would shift from
-`saved=1` to `saved=3`. Listed separately so the proven-optima
-distribution stays clean. The savings ceiling is small because dual-rail
-synthesis fundamentally has to compute every output's negation as a
-separate monotonic cone — sharing buys you partial gates, not whole ones.
+## Sub-2× wins after the audit
+
+After per-row M=ao−1 audit probes (20 min wall budget), **10 sub-2×
+cases are fully proven** with proven AIG and proven AO sides. Another **23**
+are sound-but-unproven sub-2× — the AO side timed out at M=ao−1 in the
+audit, but the inequality `ao_min ≤ ao_reported < 2·aig_proven` still holds.
+
+Proven sub-2× wins:
+
+| (tt0, tt1) | aig | ao | saved | %  |
+| --- | --- | --- | --- | --- |
+| (2e, e2) | 5 | 8 | 2 | **20.0** |
+| (1a, 5e) | 6 | 10 | 2 | 16.7 |
+| (18, 24) | 7 | 12 | 2 | 14.3 |
+| (18, 2e) | 7 | 12 | 2 | 14.3 |
+| (0e, 2c) | 6 | 11 | 1 | 8.3 |
+| (1a, 4a) | 6 | 11 | 1 | 8.3 |
+| (1a, 4e) | 6 | 11 | 1 | 8.3 |
+| (2e, 8e) | 6 | 11 | 1 | 8.3 |
+| (8e, b2) | 6 | 11 | 1 | 8.3 |
+| (16, 9e) | 7 | 13 | 1 | 7.1 |
+
+`(2e, e2)` remains the best proven savings at 20.0 % (aig=5, ao=8). The
+10th proven entry, `(16, 9e)`, was upper-bound at the 10-min audit
+budget and flipped to proven once the audit was rerun at 20 min.
+
+The 23 unproven sub-2× cases all have aig ∈ {6, 7, 8, 9} with reported
+ao between 13 and 17. Their **true** AO minima could be smaller, in which
+case the savings would grow beyond 1-2 gates. None of these is a
+counterexample — they're just cases where the SAT solver couldn't prove
+the optimum within the 20 min audit budget.
+
+One additional case showed up via the audit's `WRONG` verdict:
+`(16, 6e)` was originally tabulated at exactly-2× (aig=8, ao=16) but a
+10-min M=15 probe returned SAT. So `(16, 6e)` is now a **proven sub-2×
+case at saved≥1** — promoted from the at-2× row. It's the only flip the
+audit caught at this budget.
+
+The savings ceiling stays small because dual-rail synthesis must compute
+every output's negation as a separate monotonic cone — sharing buys you
+partial gates, not whole ones.
 
 Concrete example, `(1a, 5e)` saves 2 gates (aig=6, ao=10):
 
@@ -142,24 +183,39 @@ The biggest single-saving cluster is the `(16, …)` and `(1a, …)` rows —
 all save 1-2 gates against AIG=7-8 baselines. The `(18, 36)` case is the
 largest absolute count where dual-rail beats 2×: aig=8, ao=14, saved=2.
 
-## Soundness check on the sub-2× claims
+## Soundness checks
 
-A sub-2× claim has the form `ao_reported < 2 × aig_reported`. For the
-inequality to imply `ao_true < 2 × aig_true` we need the AIG side to be
-a proven optimum (so `aig_reported = aig_true = aig_lb`). To verify, a
-direct probe at `M = aig_reported − 1` was run for each of the 33 sub-2×
-classes, with a 5 min wall budget per probe. **All 33 returned UNSAT**,
-confirming that every reported AIG count is the proven minimum and the
-sub-2× conclusions hold:
+Two independent audit passes give us proof status on each side:
 
-* 32 cases: ao status `sat` and aig proven → both sides proven.
-* 1 case (`(18, 96)`): ao status `ub` and aig proven → still sound for
-  the sub-2× claim (`ao_true ≤ ao_ub < 2 × aig_proven`), even though
-  the AO side itself isn't pinned down.
+**AIG side (M = aig_reported − 1):** For all 308 classes, the audit
+harness ran a probe at M = aig_reported − 1 with a 10 min wall budget
+(`/work/npnp/audit_aig_n3_m2.tsv`). Result: 306 proven, 2 trivial,
+0 wrong, 0 upper-bound — **every reported AIG count is the proven
+minimum**, including the 33 (now 34, after the `(16, 6e)` flip)
+sub-2× classes.
 
-**Greatest improvement vs 2× AIG**: `(2e, e2)` saves 2 gates of 10, i.e.
-**20.0 %** (aig=5, ao=8). Mode saving is 1 gate (≈ 7-14 % depending on
-the AIG baseline).
+**AO side (M = ao_reported − 1):** For all 308 classes (including ones
+the original sweep marked `ub`), the audit harness ran a probe at
+M = ao_reported − 1 with a 20 min wall budget. Result: 231 proven
+(UNSAT at M = ao_reported − 1), 74 upper-bound (timeout at
+M = ao_reported − 1), 1 wrong (SAT at M = ao_reported − 1 — the
+`(16, 6e)` flip flagged above), 2 trivial. Per-row results in
+`/work/npnp/audit_ao_n3_m2.tsv`. The longer 20-min budget downgraded
+~20 cases from upper-bound to proven vs the prior 10-min audit,
+including one sub-2× case (`(16, 9e)`).
+
+Combining both sides into the sub-2× claim:
+
+* **10 cases** have proven AIG **and** proven AO → claim is fully proven.
+* **23 cases** have proven AIG but upper-bound AO → claim is sound
+  (`ao_min ≤ ao_reported < 2·aig_proven`), but the savings could be larger.
+* **1 case** (`(16, 6e)`) was originally at-2× but the audit found SAT
+  at M=15 → now a sub-2× upper-bound win.
+
+**Greatest proven improvement vs 2× AIG**: `(2e, e2)` saves 2 gates of 10,
+i.e. **20.0 %** (aig=5, ao=8). One unproven case (`(18, 36)`, aig=8,
+ao_reported=14, saved≥2) could push higher if its AO minimum drops below
+14 with longer SAT.
 
 ## AIG floor relaxation
 
@@ -201,13 +257,17 @@ which is why the win count drops from 45 to 32.
 
 ## Takeaways
 
-* **2× is a tight bound** for dual-rail vs AIG. No class exceeds it; 89 %
-  hit it exactly after the floor relaxation.
-* **Genuine sharing savings are small (1-2 gates) and rare (10 % of classes).**
+* **2× is a tight bound** for dual-rail vs AIG. No class exceeds it.
+  Audit-corrected at the 20 min budget: ~72 % proven exactly at 2×
+  (221/308), ~11 % sub-2× (34/308 = 10 proven + 23 sound-but-unproven
+  + the `(16, 6e)` flip), the remaining 50 at-2× rows bounded
+  above-but-not-pinned (could still flip to sub-2× with longer SAT).
+* **Genuine sharing savings are small (proven 1-2 gates, mode 1).**
   This matches the structural intuition: monotonic dual-rail has very
   little room to share work between a function's positive cone and its
   complement cone, because the complement isn't reachable through the
-  body.
+  body. Some unproven cases may push the savings count higher with a
+  longer SAT budget, but the ceiling is not large.
 * **The original `andexact` floor was a real comparison artifact, not a
   feature.** It's an arbitrary input-validation rule plus a SAT-side "every
   PI consumed" rule that combine to make trivially-realizable functions
