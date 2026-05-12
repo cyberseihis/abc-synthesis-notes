@@ -48,9 +48,9 @@ In `sat_bench/`:
   `--kissat | --cadical`, `--phase FILE`, `--cad-opt name=val[,...]`,
   `--kis-opt name=val[,...]`, `--dump-model FILE`. Reports
   `SAT|UNSAT|UNKNOWN wall_s=<sec>`. Phase hints are only supported on
-  CaDiCaL (Kissat has no per-variable phase API). The build line is in
-  the file's leading comment; it expects the ABC build at
-  `/work/abc-cnfdump` to have been compiled (so the `.o` files exist).
+  CaDiCaL (Kissat has no per-variable phase API). Build expects
+  `/work/abc` to have been compiled (so the vendored Kissat/CaDiCaL
+  `.o` files exist).
 
 - **`translate_model.py`** — pure-Python Exa10 model translator that
   takes a SAT assignment at M=K_src and emits phase hints for M=K_dst

@@ -9,7 +9,8 @@ CaDiCaL with configurable options.
 
 ## Setup
 
-- Worktree: `/work/abc-cnfdump` on branch `cnfdump-experiment`.
+- Branch: `andexact-relax-floor` on `/work/abc` (merged from the
+  `cnfdump-experiment` worktree that produced the patch).
 - Patches: `src/sat/bmc/bmcMaj9.c`, `src/sat/bmc/bmcMaj10.c`, `src/base/abci/abc.c`.
 - Both `andexact` and `aoexact` learned a `-c` flag that writes
   `<engine>_<tt>_N<n>_O<m>_M<k>.cnf` (DIMACS) alongside the normal solve.
@@ -176,6 +177,3 @@ table on a meaningful slice of instances.
 - No witness sidecar dump *inside ABC* (the Python translator covers
   the cross-M case for our experiments; if integrated into state_resume
   the dump can happen at the ABC layer after a SAT call).
-- No commits to either repo. The worktree at `/work/abc-cnfdump` is
-  staged for review; the parent `/work/abc` checkout still has the
-  same PO-only constant-slot WIP it had before this experiment.
