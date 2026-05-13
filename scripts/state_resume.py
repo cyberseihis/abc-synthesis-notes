@@ -47,6 +47,14 @@ from _state_io import (read_state, write_state, update_row_with_attempt,
 from _exa_run import run_fixed_M
 
 
+def _atomic_write_state(path, rows):
+    """Write state then atomically replace `path`. POSIX rename ⇒ a kill
+    mid-write leaves either the old file or the fully-written new one."""
+    tmp = path + ".tmp"
+    write_state(tmp, rows)
+    os.replace(tmp, path)
+
+
 def pick_next_M_aig(row, max_M, new_budget):
     """For AIG, probe smallest untried M in (hi_unsat, lo_sat). If
     everything in the gap is settled, return None. If everything is
@@ -151,6 +159,10 @@ def main():
 
     t0 = time.time()
 
+    # Seed the output file with the input contents so any kill during the
+    # loop still leaves a complete, well-formed state file on disk.
+    _atomic_write_state(out_path, rows)
+
     def task(i, M):
         row = rows[i]
         r = run_fixed_M(row["engine"], row["n_in"], row["n_out"],
@@ -189,6 +201,8 @@ def main():
                 else:
                     timed_out += 1
             done += 1
+            # Checkpoint after every probe so a kill never loses settled work.
+            _atomic_write_state(out_path, rows)
             if done % 25 == 0 or done == len(probes):
                 el = time.time() - t0
                 print(f"  [{done}/{len(probes)}] el={el:.1f}s  "
