@@ -123,7 +123,19 @@ def main():
                     help="upper M cap for AIG unbounded probes (ignored for AO)")
     ap.add_argument("--workers", type=int, default=32)
     ap.add_argument("--only", default=None,
-                    help="comma-separated tt(s) to probe (default: all eligible)")
+                    help="comma-separated tt(s) to probe (default: all eligible). "
+                         "Multi-output TTs would be ambiguous if split on ','; for "
+                         "those use --only-file instead.")
+    ap.add_argument("--only-file", default=None,
+                    help="path with one tt per line (whole-line match; safe for "
+                         "multi-output comma-joined TTs)")
+    ap.add_argument("--only-sat-rows", action="store_true",
+                    help="restrict to rows whose attempts include at least one SAT "
+                         "outcome — refines confirmed wins without re-probing "
+                         "timeout-only rows when bumping the wall budget")
+    ap.add_argument("--dry-run", action="store_true",
+                    help="print the planned probe set and a histogram, write "
+                         "nothing, launch nothing")
     args = ap.parse_args()
 
     rows = read_state(args.input)
@@ -132,11 +144,23 @@ def main():
         sys.exit("refusing to overwrite the input state file")
 
     only = set(args.only.split(",")) if args.only else None
+    if args.only_file:
+        with open(args.only_file) as fh:
+            file_tts = {ln.strip() for ln in fh if ln.strip() and not ln.startswith("#")}
+        only = (only or set()) | file_tts
 
     # Build the probe list: (row_index, M)
     probes = []
+    skipped_filter = 0
+    skipped_sat_filter = 0
+    skipped_eligible = 0
     for i, row in enumerate(rows):
         if only is not None and row["tt"] not in only:
+            skipped_filter += 1
+            continue
+        if args.only_sat_rows and not any(
+                a.get("outcome") == "sat" for a in row["attempts"]):
+            skipped_sat_filter += 1
             continue
         if row["engine"] == "andexact":
             M = pick_next_M_aig(row, args.max_nodes, args.wall_timeout)
@@ -146,11 +170,40 @@ def main():
             continue
         if M is not None:
             probes.append((i, M))
+        else:
+            skipped_eligible += 1
 
     print(f"Resume {args.input} → {out_path}")
     print(f"  rows total:     {len(rows)}")
     print(f"  to probe:       {len(probes)}")
     print(f"  wall/probe:     {args.wall_timeout}s   workers: {args.workers}")
+    if args.only_sat_rows:
+        print(f"  --only-sat-rows skipped: {skipped_sat_filter}")
+    if only is not None:
+        print(f"  --only/--only-file skipped: {skipped_filter}")
+    print(f"  eligible-but-settled at current budget: {skipped_eligible}")
+
+    if args.dry_run:
+        from collections import Counter
+        m_hist = Counter(M for _, M in probes)
+        eng_hist = Counter(rows[i]["engine"] for i, _ in probes)
+        print("\n--- DRY RUN: no probes will launch, no files will be written ---")
+        print(f"engine breakdown:  {dict(eng_hist)}")
+        print("probe M histogram (M: count, top 20):")
+        for M, c in sorted(m_hist.items())[:20]:
+            print(f"  M={M:3d}  count={c}")
+        if len(m_hist) > 20:
+            print(f"  ... ({len(m_hist) - 20} more M values)")
+        # Sample probes for spot-checking.
+        print("\nfirst 10 probes (tt, engine, M, lo_sat, hi_unsat, status, attempts_at_M):")
+        for i, M in probes[:10]:
+            r = rows[i]
+            prior = [a for a in r["attempts"] if a["M"] == M]
+            print(f"  tt={r['tt']:20s}  {r['engine']:8s}  M={M:3d}  "
+                  f"lo={r['lo_sat']} hi={r['hi_unsat']} st={r['status']:12s}  "
+                  f"prior@M={prior}")
+        return
+
     if not probes:
         print("Nothing to do — every eligible row is settled at current budget.")
         write_state(out_path, rows)
